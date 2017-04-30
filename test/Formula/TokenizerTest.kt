@@ -32,59 +32,59 @@ internal class TokenizerTest {
     @Test
     fun tokenize() {
         assertEquals(listOf(token(TokenType.LOWER, "x", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("x").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("x"))
         assertEquals(listOf(token(TokenType.UPPER, "P", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("P").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("P"))
         assertEquals(listOf(token(TokenType.COMMA, ",", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer(",").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize(","))
         assertEquals(listOf(token(TokenType.DOT, ".", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer(".").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("."))
         assertEquals(listOf(token(TokenType.LPAREN, "(", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("(").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("("))
         assertEquals(listOf(token(TokenType.RPAREN, ")", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer(")").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize(")"))
         assertEquals(listOf(token(TokenType.EQUALS, "=", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("=").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("="))
         assertEquals(listOf(token(TokenType.TRUE, "TRUE", 1, 1)
-                , token(TokenType.END, "", 1, 5)), Tokenizer("TRUE").tokenize())
+                , token(TokenType.END, "", 1, 5)), tokenize("TRUE"))
         assertEquals(listOf(token(TokenType.TRUE, "⊤", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("⊤").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("⊤"))
         assertEquals(listOf(token(TokenType.FALSE, "FALSE", 1, 1)
-                , token(TokenType.END, "", 1, 6)), Tokenizer("FALSE").tokenize())
+                , token(TokenType.END, "", 1, 6)), tokenize("FALSE"))
         assertEquals(listOf(token(TokenType.FALSE, "⟘", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("⟘").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("⟘"))
         assertEquals(listOf(token(TokenType.NOT, "not", 1, 1)
-                , token(TokenType.END, "", 1, 4)), Tokenizer("not").tokenize())
+                , token(TokenType.END, "", 1, 4)), tokenize("not"))
         assertEquals(listOf(token(TokenType.NOT, "~", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("~").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("~"))
         assertEquals(listOf(token(TokenType.NOT, "¬", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("¬").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("¬"))
         assertEquals(listOf(token(TokenType.AND, "and", 1, 1)
-                , token(TokenType.END, "", 1, 4)), Tokenizer("and").tokenize())
+                , token(TokenType.END, "", 1, 4)), tokenize("and"))
         assertEquals(listOf(token(TokenType.AND, "&", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("&").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("&"))
         assertEquals(listOf(token(TokenType.AND, "∧", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("∧").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("∧"))
         assertEquals(listOf(token(TokenType.OR, "or", 1, 1)
-                , token(TokenType.END, "", 1, 3)), Tokenizer("or").tokenize())
+                , token(TokenType.END, "", 1, 3)), tokenize("or"))
         assertEquals(listOf(token(TokenType.OR, "|", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("|").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("|"))
         assertEquals(listOf(token(TokenType.OR, "∨", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("∨").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("∨"))
         assertEquals(listOf(token(TokenType.IMPLIES, "implies", 1, 1)
-                , token(TokenType.END, "", 1, 8)), Tokenizer("implies").tokenize())
+                , token(TokenType.END, "", 1, 8)), tokenize("implies"))
         assertEquals(listOf(token(TokenType.IMPLIES, "->", 1, 1)
-                , token(TokenType.END, "", 1, 3)), Tokenizer("->").tokenize())
+                , token(TokenType.END, "", 1, 3)), tokenize("->"))
         assertEquals(listOf(token(TokenType.IMPLIES, "→", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("→").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("→"))
         assertEquals(listOf(token(TokenType.FORALL, "forall", 1, 1)
-                , token(TokenType.END, "", 1, 7)), Tokenizer("forall").tokenize())
+                , token(TokenType.END, "", 1, 7)), tokenize("forall"))
         assertEquals(listOf(token(TokenType.FORALL, "∀", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("∀").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("∀"))
         assertEquals(listOf(token(TokenType.EXISTS, "exists", 1, 1)
-                , token(TokenType.END, "", 1, 7)), Tokenizer("exists").tokenize())
+                , token(TokenType.END, "", 1, 7)), tokenize("exists"))
         assertEquals(listOf(token(TokenType.EXISTS, "∃", 1, 1)
-                , token(TokenType.END, "", 1, 2)), Tokenizer("∃").tokenize())
+                , token(TokenType.END, "", 1, 2)), tokenize("∃"))
 
         assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
@@ -94,7 +94,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 2, 1),
                 token(TokenType.END, "", 2, 2)
-        ), Tokenizer("P(x,            y     \n)").tokenize())
+        ), tokenize("P(x,            y     \n)"))
         assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
                 token(TokenType.LPAREN, "(", 1, 2),
@@ -103,7 +103,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 2, 3),
                 token(TokenType.END, "", 2, 4)
-        ), Tokenizer("P(x,            y     \n  )").tokenize())
+        ), tokenize("P(x,            y     \n  )"))
         assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
                 token(TokenType.LPAREN, "(", 1, 2),
@@ -112,7 +112,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 2, 3),
                 token(TokenType.END, "", 2, 4)
-        ), Tokenizer("P(x,            y     \r\n  )").tokenize())
+        ), tokenize("P(x,            y     \r\n  )"))
         assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
                 token(TokenType.LPAREN, "(", 1, 2),
@@ -121,7 +121,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 2, 3),
                 token(TokenType.END, "", 2, 4)
-        ), Tokenizer("P(x,            y     \r  )").tokenize())
+        ), tokenize("P(x,            y     \r  )"))
         assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
                 token(TokenType.LPAREN, "(", 1, 2),
@@ -130,7 +130,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 4, 3),
                 token(TokenType.END, "", 4, 4)
-        ), Tokenizer("P(x,            y     \n\n  \n  )").tokenize())
+        ), tokenize("P(x,            y     \n\n  \n  )"))
         assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
                 token(TokenType.LPAREN, "(", 1, 2),
@@ -141,7 +141,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "z", 3, 1),
                 token(TokenType.RPAREN, ")", 5, 3),
                 token(TokenType.END, "", 5, 4)
-        ), Tokenizer("P(x,            y,    \n\nz \r\r\n  )").tokenize())
+        ), tokenize("P(x,            y,    \n\nz \r\r\n  )"))
 
         assertEquals(listOf(
                 token(TokenType.FORALL, "forall", 1, 1),
@@ -159,7 +159,7 @@ internal class TokenizerTest {
                 token(TokenType.RPAREN, ")", 1, 28),
                 token(TokenType.RPAREN, ")", 1, 29),
                 token(TokenType.END, "", 1, 30)
-        ), Tokenizer("forall x. (exists y. P(x, y))").tokenize())
+        ), tokenize("forall x. (exists y. P(x, y))"))
         assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
                 token(TokenType.LPAREN, "(", 1, 2),
@@ -176,7 +176,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "z", 1, 18),
                 token(TokenType.RPAREN, ")", 1, 19),
                 token(TokenType.END, "", 1, 20)
-        ), Tokenizer("P(x) -> Q(y) → R(z)").tokenize())
+        ), tokenize("P(x) -> Q(y) → R(z)"))
         assertEquals(listOf(
                 token(TokenType.NOT, "¬", 1, 1),
                 token(TokenType.LPAREN, "(", 1, 2),
@@ -218,6 +218,6 @@ internal class TokenizerTest {
                 token(TokenType.RPAREN, ")", 1, 44),
                 token(TokenType.RPAREN, ")", 1, 45),
                 token(TokenType.END, "", 1, 46)
-        ), Tokenizer("¬(∃x.∀y.(P(x) ∧ Q(y)) → ∀x.∃y.(¬P(x) ∨ ¬Q(y))").tokenize())
+        ), tokenize("¬(∃x.∀y.(P(x) ∧ Q(y)) → ∀x.∃y.(¬P(x) ∨ ¬Q(y))"))
     }
 }
