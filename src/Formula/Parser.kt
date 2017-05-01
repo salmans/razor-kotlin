@@ -1,7 +1,6 @@
 package Formula
 
-import java.util.*
-
+class ParserException(message: String): Exception(message)
 
 class Parser {
     var tokens: List<Token> = emptyList()
@@ -17,16 +16,19 @@ class Parser {
             if (it != null && it.type == type) {
                 index++
                 return it
+            } else if (it == null) {
+                throw ParserException("Unreachable!")
+            } else {
+                throw ParserException("Parsing Error at ${it.location}: expecting ${type.toString()} but ${it.token} is found.")
             }
         }
-        throw RuntimeException("error 2")
     }
 
     private fun <T> many(parser: () -> T?): List<T> {
-        val result: LinkedList<T> = LinkedList()
+        var result: List<T> = emptyList()
         while (true) {
             val item = parser() ?: break
-            result.add(item)
+            result += item
         }
         return result
     }
@@ -55,7 +57,7 @@ class Parser {
     fun parse(source: String): Theory? {
         this.tokens = tokenize(source)
         val theory = parseTheory()
-        expect { consume(TokenType.END) }
+        consume(TokenType.END)
         return theory
     }
 
@@ -265,3 +267,5 @@ class Parser {
         return null
     }
 }
+
+fun String.parseTheory() = Parser().parse(this)
