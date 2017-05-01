@@ -3,36 +3,60 @@ package Formula
 class ParserException(message: String): Exception(message)
 
 class Parser {
+    /**
+     * List of tokens, obtained by tokenizing the source
+     */
     var tokens: List<Token> = emptyList()
       set(value){
           // resetting the input: reset the index
           index = 0
           field = value
       }
+
+    /**
+     *
+     */
+    var exceptions: List<ParserException> = emptyList()
+
+    /**
+     * Pointer to the next token.
+     */
     var index = 0
+
+    /**
+     * Returns the next token without consuming it. It returns null if the token is missing.
+     */
     fun peek(): Token? = tokens.getOrNull(index)
+
+    /**
+     * Consumes a token of the given type.
+     */
     fun consume(type: TokenType): Token {
-        peek().let {
-            if (it != null && it.type == type) {
-                index++
-                return it
-            } else if (it == null) {
-                throw ParserException("Unreachable!")
-            } else {
-                throw ParserException("Parsing Error at ${it.location}: expecting ${type.toString()} but ${it.token} is found.")
+        // If the parser is correct, consume is always called when a token is left; thus, the result of {@code peek()} is nonnull.
+        peek()!!.let {
+            if (it.type != type) {
+                throw ParserException("Parsing Error at ${it.location}: expecting $type but ${it.token} is found.")
             }
+            index++
+            return it
         }
     }
 
+    /**
+     * For a given parser `parser`, parses `parser*` and return the result in a list.
+     */
     private fun <T> many(parser: () -> T?): List<T> {
         var result: List<T> = emptyList()
         while (true) {
-            val item = parser() ?: break
+            val item = parser() ?: break // failed to apply the parser again
             result += item
         }
         return result
     }
 
+    /**
+     * For a given parser `parser`, returns the result of the parser if it doesn't fail. Otherwise, throws a parser exception.
+     */
     private fun <T> expect(parser: () -> T?): T {
         parser().let {
             when (it) {
@@ -40,6 +64,16 @@ class Parser {
                 else -> return it
             }
         }
+    }
+
+    /**
+     * Parses the input source and returns a first-order theory.
+     */
+    fun parse(source: String): Theory? {
+        this.tokens = tokenize(source)
+        val theory = parseTheory()
+        consume(TokenType.END)
+        return theory
     }
 
     private fun <T> commaSeparated(parser: () -> T?): T? {
@@ -52,13 +86,6 @@ class Parser {
         }
 
         return null
-    }
-
-    fun parse(source: String): Theory? {
-        this.tokens = tokenize(source)
-        val theory = parseTheory()
-        consume(TokenType.END)
-        return theory
     }
 
     private fun parseTheory(): Theory? = Theory(many { parseFormula() })
