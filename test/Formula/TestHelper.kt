@@ -21,3 +21,12 @@ val S = Rel("S")
 
 
 fun assertTheoriesEqual(vararg expected: Formula, actual: Theory?) = assertEquals(Theory(expected.toList()), actual)
+
+fun <T> assertFailure(errorMessage: String, parseFunc: () -> T) {
+    return try {
+        parseFunc()
+        assert(false, { "exception expected!" })
+    } catch (e: Exception) {
+        assertEquals(errorMessage, e.message)
+    }
+}

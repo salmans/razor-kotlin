@@ -11,6 +11,8 @@ internal class ParserTest {
                 , actual = "FALSE".parseTheory())
         assertTheoriesEqual(TRUE
                 , actual = "((((TRUE))))".parseTheory())
+        assertTheoriesEqual(P()
+                , actual = "P()".parseTheory())
         assertTheoriesEqual(P(x)
                 , actual = "P(x)".parseTheory())
         assertTheoriesEqual(P(x, y)
@@ -27,6 +29,8 @@ internal class ParserTest {
                 , actual = "P(f(x, g(y)), g(f(g(y))))".parseTheory())
         assertTheoriesEqual(x equals x
                 , actual = "x = x".parseTheory())
+        assertTheoriesEqual(f() equals x
+                , actual = "f() = x".parseTheory())
         assertTheoriesEqual(f(x) equals x
                 , actual = "f(x) = x".parseTheory())
         assertTheoriesEqual(f(x) equals g(h(g(f(x)), y))
@@ -79,6 +83,10 @@ internal class ParserTest {
                 , actual = "P(x) or exists y . Q(y)".parseTheory())
         assertTheoriesEqual(exists(x) { P(x) or exists(y) { Q(y) } }
                 , actual = "exists x . P(x) or exists y . Q(y)".parseTheory())
+        assertTheoriesEqual(P(x) or forall(y) { Q(y) }
+                , actual = "P(x) or forall y . Q(y)".parseTheory())
+        assertTheoriesEqual(exists(x) { P(x) or forall(y) { Q(y) } }
+                , actual = "exists x . P(x) or forall y . Q(y)".parseTheory())
         assertTheoriesEqual((P(x) and Q(y)) or R(z)
                 , actual = "P(x) and Q(y) or R(z)".parseTheory())
         assertTheoriesEqual(P(x) and (Q(y) or R(z))
@@ -95,8 +103,14 @@ internal class ParserTest {
                 , actual = "P(x) and exists y . Q(y)".parseTheory())
         assertTheoriesEqual(exists(x) { P(x) and exists(y) { Q(y) } }
                 , actual = "exists x . P(x) and exists y . Q(y)".parseTheory())
+        assertTheoriesEqual(P(x) and forall(y) { Q(y) }
+                , actual = "P(x) and forall y . Q(y)".parseTheory())
+        assertTheoriesEqual(exists(x) { P(x) and forall(y) { Q(y) } }
+                , actual = "exists x . P(x) and forall y . Q(y)".parseTheory())
         assertTheoriesEqual((!TRUE) implies FALSE
                 , actual = "not TRUE -> FALSE".parseTheory())
+        assertTheoriesEqual(!(x equals y)
+                , actual = "~x=y".parseTheory())
         assertTheoriesEqual(TRUE implies (!FALSE)
                 , actual = "TRUE -> not FALSE".parseTheory())
         assertTheoriesEqual((!P(x, y)) or Q(z)
@@ -129,5 +143,24 @@ internal class ParserTest {
                 "x = y & y = z -> x = z").parseTheory())
         assertTheoriesEqual("∀ x. (∃ y. (((x = y) ∧ ¬P(y)) ∨ (Q(x) → R(y))))".parseTheory()!!.formulas.first()
                 , actual = "forall x . exists y . (x = y and not P(y)) or (Q(x) implies R(y))".parseTheory())
+    }
+
+    @Test
+    fun parseError() {
+        assertFailure("Parse error at (1, 2): expecting '(' but '<End of Input>' is found.", { "T".parseTheory() })
+        assertFailure("Parse error at (1, 8): expecting '<Lowercase Identifier>' but '.' is found.", { "forall . P(x)".parseTheory() })
+        assertFailure("Parse error at (1, 10): expecting '.' but 'P' is found.", { "forall x P(x)".parseTheory() })
+        assertFailure("Parse error at (1, 10): expecting '<Lowercase Identifier>' but '.' is found.", { "forall x,. P(x)".parseTheory() })
+        assertFailure("Parse error at (1, 15): expecting '.' but 'Q' is found.", { "P(x) forall x Q(x)".parseTheory() })
+        assertFailure("Parse error at (1, 9): expecting '=' but '<End of Input>' is found.", { "P(x) | x".parseTheory() })
+        assertFailure("Parse error at (1, 3): expecting '=' but '|' is found.", { "x | P(x)".parseTheory() })
+        assertFailure("Parse error at (1, 9): expecting '(' but '<End of Input>' is found.", { "P(x) | Q".parseTheory() })
+        assertFailure("Parse error at (1, 2): expecting '(' but '|' is found.", { "Q|P(x)".parseTheory() })
+        assertFailure("Parse error at (1, 3): expecting '=' but '<End of Input>' is found.", { "~x".parseTheory() })
+        assertFailure("Parse error at (1, 3): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but '<End of Input>' is found.", { "~(".parseTheory() })
+        assertFailure("Parse error at (1, 2): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but ')' is found.", { "()".parseTheory() })
+        assertFailure("Parse error at (1, 1): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but ')' is found.", { ")".parseTheory() })
+        assertFailure("Parse error at (1, 3): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but 'or' is found.", { "~ or".parseTheory() })
+        assertFailure("Parse error at (1, 3): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but '|' is found.", { "~ |".parseTheory() })
     }
 }

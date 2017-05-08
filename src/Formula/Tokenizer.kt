@@ -7,56 +7,56 @@ import java.util.regex.Pattern
  * Token Type
  */
 enum class TokenType(vararg regex: String) {
-    COMMA(","){
+    COMMA(",") {
         override fun toString(): String = ","
     },
-    DOT("\\."){
+    DOT("\\.") {
         override fun toString(): String = "."
     },
-    LPAREN("\\("){
+    LPAREN("\\(") {
         override fun toString(): String = "("
     },
-    RPAREN("\\)"){
+    RPAREN("\\)") {
         override fun toString(): String = ")"
     },
-    EQUALS("\\="){
+    EQUALS("\\=") {
         override fun toString(): String = "="
     },
-    TRUE("TRUE", "⊤"){
+    TRUE("TRUE", "⊤") {
         override fun toString(): String = "⊤"
     },
-    FALSE("FALSE", "⟘"){
+    FALSE("FALSE", "⟘") {
         override fun toString(): String = "⟘"
     },
-    NOT("not", "\\~", "¬"){
+    NOT("not", "\\~", "¬") {
         override fun toString(): String = "¬"
     },
-    AND("and", "\\&", "∧"){
+    AND("and", "\\&", "∧") {
         override fun toString(): String = "∧"
     },
-    OR("or", "\\|", "∨"){
+    OR("or", "\\|", "∨") {
         override fun toString(): String = "∨"
     },
-    IMPLIES("implies", "->", "→"){
+    IMPLIES("implies", "->", "→") {
         override fun toString(): String = "→"
     },
-    FORALL("forall", "∀"){
+    FORALL("forall", "∀") {
         override fun toString(): String = "∀"
     },
-    EXISTS("exists", "∃"){
+    EXISTS("exists", "∃") {
         override fun toString(): String = "∃"
     },
-    LOWER("[a-z_][a-zA-Z0-9_]*"){
-        override fun toString(): String = "Lowercase Identifier"
+    LOWER("[a-z_][a-zA-Z0-9_]*") {
+        override fun toString(): String = "<Lowercase Identifier>"
     },
-    UPPER("[A-Z][a-zA-Z0-9_]*"){
-        override fun toString(): String = "Uppercase Identifier"
+    UPPER("[A-Z][a-zA-Z0-9_]*") {
+        override fun toString(): String = "<Uppercase Identifier>"
     },
-    END("^$"){
-        override fun toString(): String = "End of Input"
+    END("^$") {
+        override fun toString(): String = "<End of Input>"
     },
-    INVALID("[^\\s]+"){
-        override fun toString(): String = "Invalid Token"
+    INVALID("[^\\s]+") {
+        override fun toString(): String = "<Invalid Token>"
     };
 
     /**
@@ -147,7 +147,9 @@ fun tokenize(source: String): List<Token> {
             if (m.find()) {
                 match = true
                 isEnd = type == TokenType.END
-                val tok = m.group()
+                val tok = if (isEnd) {
+                    "<End of Input>"
+                } else m.group()
                 tokens.add(Token(type, tok.trim(), Token.Location(line, column)))
                 column += tok.length
                 src = m.replaceFirst("")
