@@ -20,31 +20,40 @@ class Parser {
      */
     var index = 0
 
+    /**
+     * A stack of list of expected tokens. When parsing an optional string using {@code maybe()}, a new list
+     * is pushed into the stack. A list is popped from the stack when the current string is parsed successfully.
+     */
     val expectedTokenStack = Stack<List<TokenType>>()
 
+    /**
+     * Adds a list of expected token types to the current level of the stack.
+     */
     private fun addExpectedToken(types: List<TokenType>) {
-        var list = if (expectedTokenStack.empty()) {
-            emptyList()
-        } else {
-            expectedTokenStack.pop()
-        }
+        var list = expectedTokenStack.pop()
         list += types
         expectedTokenStack.push(list.distinct())
     }
 
     /**
-     * Returns the next token without consuming it. It returns null if the token is missing.
+     * Return the next token (if exists).
      */
-    fun peek(type: TokenType, vararg types: TokenType): Token? {
-        tokens[index].let {
-            return when (it.type) {
-                type -> it
-                else -> if (types.contains(it.type)) {
-                    it
-                } else {
-                    addExpectedToken(listOf(type) + types)
+    fun peek(): Token {
+        return tokens[index]
+    }
+
+    /**
+     * Returns the next token without consuming it, if the next token is of one of the expected types;
+     * it returns null if the next token is not of the input expected types.
+     */
+    fun match(type: TokenType, vararg types: TokenType): Token? {
+        peek().let {
+            return when {
+                it.type == type || types.contains(it.type) -> it
+                else -> {
+                    addExpectedToken(listOf(type) + types) // add the expected tokens to the current level of the stack
                     null
-                } // TODO improve this
+                }
             }
         }
     }
@@ -53,8 +62,7 @@ class Parser {
      * Consumes a token of the given type.
      */
     fun consume(type: TokenType): Token {
-        // If the parser is correct, consume is always called when a token is left; thus, the result of {@code peek()} is nonnull.
-        tokens[index].let {
+        peek().let {
             if (it.type != type) {
                 throw ParserException("Parse error at ${it.location}: expecting '$type' but '${it.token}' is found.")
             }
@@ -63,15 +71,19 @@ class Parser {
         }
     }
 
+    /**
+     * Expects a parser to successfully run on the input tokens. A parse error is generated if the parser fails.
+     */
     private fun <T> expect(parser: () -> T?): T {
         parser().let {
             if (it != null) {
-                // reset the expected tokens at this level:
+                // the parser succeeds: reset the expected tokens at the *current level*
                 expectedTokenStack.pop()
                 expectedTokenStack.push(emptyList())
                 return it
             } else {
-                tokens[index].let {
+                // generate a parser error
+                peek().let {
                     throw ParserException("Parse error at ${it.location}: " +
                             "expecting ${expectedTokenStack.pop().joinToString { "'$it'" }} but '${it.token}' is found.")
                 }
@@ -79,8 +91,12 @@ class Parser {
         }
     }
 
+    /**
+     * Runs an optional parser that may fail. This function pushes a new level to the stack of expected tokens that is
+     * popped after the input parser runs.
+     */
     private fun <T> maybe(parser: () -> T?): T? {
-        expectedTokenStack.push(listOf())
+        expectedTokenStack.push(emptyList())
         val result = parser()
         expectedTokenStack.pop()
         return result
@@ -98,15 +114,18 @@ class Parser {
         return result
     }
 
+    /**
+     * For a given parser `parser`, parses `(, parser)*` until no more commas follow.
+     */
     private fun <T> commaSeparated(parser: () -> T?): T? {
-        when (peek(TokenType.COMMA)?.type) {
+        return when (match(TokenType.COMMA)?.type) {
             TokenType.COMMA -> {
                 consume(TokenType.COMMA)
-                return expect { parser() }
+                expect { parser() }
             }
-            else -> return null
+            else -> null
         }
-    } // FIXME should this be expected?
+    }
 
     /**
      * Parses the input source and returns a first-order theory.
@@ -118,21 +137,21 @@ class Parser {
         return theory
     }
 
-    private fun parseTheory(): Theory? = Theory(many {
-        val token1: Token? = tokens[index]
-        if (token1!!.type != TokenType.END) {
-            return@many expect { parseFormula() }
+    private fun parseTheory(): Theory? {
+        val formulas = many {
+            return@many when (peek().type) {
+                TokenType.END -> null
+                else -> expect { parseFormula() }
+            }
         }
-        return@many null
-
-        // TODO create a list of formulas until parseFormula fails.
-    })
+        return formulas.let { Theory(formulas) }
+    }
 
     private fun parseFormula(): Formula? {
         val formula = expect { parseQuantified() }
         val formulas = // TODO maybe {
                 many {
-                    when (peek(TokenType.IMPLIES)?.type) {
+                    when (match(TokenType.IMPLIES)?.type) {
                         TokenType.IMPLIES -> {
                             return@many expect {
                                 consume(TokenType.IMPLIES)
@@ -143,12 +162,11 @@ class Parser {
                     }
                 }
         // }
-        //return formulas?.fold(formula, ::Implies) ?: formula
         return formulas.fold(formula, ::Implies)
     }
 
     private fun parseQuantified(): Formula? {
-        when (peek(TokenType.EXISTS, TokenType.FORALL)?.type) {
+        when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
             TokenType.EXISTS -> return expect {
                 consume(TokenType.EXISTS)
                 val vs = parseVars()
@@ -170,7 +188,7 @@ class Parser {
     }
 
     private fun parseVar(): Var? {
-        peek(TokenType.LOWER).let {
+        match(TokenType.LOWER).let {
             when (it?.type) {
                 TokenType.LOWER -> return expect {
                     consume(TokenType.LOWER)
@@ -184,10 +202,10 @@ class Parser {
     private fun parseOr(): Formula? {
         val formula = parseAnd()!!
         val formulas = many {
-            when (peek(TokenType.OR)?.type) {
+            when (match(TokenType.OR)?.type) {
                 TokenType.OR -> return@many expect {
                     consume(TokenType.OR)
-                    when (peek(TokenType.EXISTS, TokenType.FORALL)?.type) {
+                    when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
                         TokenType.EXISTS -> expect { parseQuantified() }
                         TokenType.FORALL -> expect { parseQuantified() }
                         else -> expect { parseAnd() }
@@ -202,10 +220,10 @@ class Parser {
     private fun parseAnd(): Formula? {
         val formula = parseNot()!!
         val formulas = many {
-            when (peek(TokenType.AND)?.type) {
+            when (match(TokenType.AND)?.type) {
                 TokenType.AND -> return@many expect {
                     consume(TokenType.AND)
-                    when (peek(TokenType.EXISTS, TokenType.FORALL)?.type) {
+                    when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
                         TokenType.EXISTS -> expect { parseQuantified() }
                         TokenType.FORALL -> expect { parseQuantified() }
                         else -> expect { parseNot() }
@@ -218,10 +236,10 @@ class Parser {
     }
 
     private fun parseNot(): Formula? {
-        when (peek(TokenType.NOT)?.type) {
+        when (match(TokenType.NOT)?.type) {
             TokenType.NOT -> return expect {
                 consume(TokenType.NOT)
-                when (peek(TokenType.EXISTS, TokenType.FORALL)?.type) {
+                when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
                     TokenType.EXISTS -> Not(expect { parseQuantified() })
                     TokenType.FORALL -> Not(expect { parseQuantified() })
                     else -> Not(expect { parseNot() })
@@ -232,7 +250,7 @@ class Parser {
     }
 
     private fun parseAtom(): Formula? {
-        val token = peek(TokenType.TRUE, TokenType.FALSE, TokenType.LOWER, TokenType.UPPER, TokenType.LPAREN)
+        val token = match(TokenType.TRUE, TokenType.FALSE, TokenType.LOWER, TokenType.UPPER, TokenType.LPAREN)
         return when (token?.type) {
             TokenType.TRUE -> expect {
                 consume(TokenType.TRUE)
@@ -271,10 +289,10 @@ class Parser {
     }
 
     private fun parseTerm(): Term? {
-        return when (peek(TokenType.LOWER)?.type) {
+        return when (match(TokenType.LOWER)?.type) {
             TokenType.LOWER -> {
                 val firstToken = consume(TokenType.LOWER)
-                when (peek(TokenType.LPAREN)?.type) {
+                when (match(TokenType.LPAREN)?.type) {
                     TokenType.LPAREN -> {
                         consume(TokenType.LPAREN)
                         val terms = parseTerms()
