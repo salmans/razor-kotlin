@@ -137,6 +137,10 @@ class Parser {
         return theory
     }
 
+    /**
+     * Parse a theory
+     * Theory = Formula* END
+     */
     private fun parseTheory(): Theory? {
         val formulas = many {
             return@many when (peek().type) {
@@ -147,24 +151,32 @@ class Parser {
         return formulas.let { Theory(formulas) }
     }
 
+    /**
+     * Parse a formula
+     * Formula = Quantified (IMPLIES Quantified)*
+     */
     private fun parseFormula(): Formula? {
         val formula = expect { parseQuantified() }
-        val formulas = // TODO maybe {
-                many {
-                    when (match(TokenType.IMPLIES)?.type) {
-                        TokenType.IMPLIES -> {
-                            return@many expect {
-                                consume(TokenType.IMPLIES)
-                                parseQuantified()
-                            }
-                        }
-                        else -> return@many null
+        val formulas = many {
+            when (match(TokenType.IMPLIES)?.type) {
+                TokenType.IMPLIES -> {
+                    return@many expect {
+                        consume(TokenType.IMPLIES)
+                        parseQuantified()
                     }
                 }
-        // }
+                else -> return@many null
+            }
+        }
         return formulas.fold(formula, ::Implies)
     }
 
+    /**
+     * Parse a quantified formula
+     * Quantified = EXISTS Variables DOT Quantified
+     * Quantified = FORALL Variables DOT Quantified
+     * Quantified = Or
+     */
     private fun parseQuantified(): Formula? {
         when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
             TokenType.EXISTS -> return expect {
@@ -183,10 +195,18 @@ class Parser {
         }
     }
 
+    /**
+     * Parse a list of variables
+     * Variables = Variable (COMMA Variable)*
+     */
     private fun parseVars(): List<Var> {
         return expect { parseVar() }.let { listOf(it) + many { commaSeparated { parseVar() } } }
     }
 
+    /**
+     * Parse a variable
+     * Variable = LOWER
+     */
     private fun parseVar(): Var? {
         match(TokenType.LOWER).let {
             when (it?.type) {
@@ -199,8 +219,14 @@ class Parser {
         }
     }
 
+    /**
+     * Parse a disjunction
+     * Or = And OR Quantified
+     * Or = And OR And
+     * Or = And
+     */
     private fun parseOr(): Formula? {
-        val formula = parseAnd()!!
+        val formula = expect { parseAnd() }
         val formulas = many {
             when (match(TokenType.OR)?.type) {
                 TokenType.OR -> return@many expect {
@@ -217,8 +243,14 @@ class Parser {
         return formulas.fold(formula, ::Or)
     }
 
+    /**
+     * Parse a conjunction
+     * And = Not AND Quantified
+     * And = Not AND Not
+     * And = Not
+     */
     private fun parseAnd(): Formula? {
-        val formula = parseNot()!!
+        val formula = expect { parseNot() }
         val formulas = many {
             when (match(TokenType.AND)?.type) {
                 TokenType.AND -> return@many expect {
@@ -235,6 +267,11 @@ class Parser {
         return formulas.fold(formula, ::And)
     }
 
+    /**
+     * Parse a negation
+     * Not = NOT Quantified
+     * Not = Atom
+     */
     private fun parseNot(): Formula? {
         when (match(TokenType.NOT)?.type) {
             TokenType.NOT -> return expect {
@@ -249,6 +286,14 @@ class Parser {
         }
     }
 
+    /**
+     * Parse an atomic formula
+     * Atom = TRUE
+     * Atom = FALSE
+     * Atom = Term EQUALS Term
+     * Atom = UPPER LPAREN Terms RPAREN
+     * Atom = LPAREN Formula RPAREN
+     */
     private fun parseAtom(): Formula? {
         val token = match(TokenType.TRUE, TokenType.FALSE, TokenType.LOWER, TokenType.UPPER, TokenType.LPAREN)
         return when (token?.type) {
@@ -284,10 +329,19 @@ class Parser {
         }
     }
 
+    /**
+     * Parse a list of terms
+     * Terms = Term*
+     */
     private fun parseTerms(): List<Term> {
         return parseTerm()?.let { listOf(it) + many { commaSeparated { parseTerm() } } } ?: emptyList()
     }
 
+    /**
+     * Parse a term
+     * Term = Variable
+     * Term = LOWER LPAREN Terms RPAREN
+     */
     private fun parseTerm(): Term? {
         return when (match(TokenType.LOWER)?.type) {
             TokenType.LOWER -> {
