@@ -162,5 +162,11 @@ internal class ParserTest {
         assertFailure("Parse error at (1, 1): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but ')' is found.", { ")".parseTheory() })
         assertFailure("Parse error at (1, 3): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but 'or' is found.", { "~ or".parseTheory() })
         assertFailure("Parse error at (1, 3): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but '|' is found.", { "~ |".parseTheory() })
+        assertFailure("Parse error at (1, 9): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but '<End of Input>' is found.", { "P(x) or ".parseTheory() })
+        assertFailure("Parse error at (1, 10): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but '<End of Input>' is found.", { "P(x) and ".parseTheory() })
+        assertFailure("Parse error at (1, 5): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but '<End of Input>' is found.", { "not ".parseTheory() })
+        assertFailure("Parse error at (1, 2): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', '<Uppercase Identifier>', '(' but 'and' is found.", { " and Q(x)".parseTheory() })
+        assertFailure("Parse error at (1, 12): expecting '<Lowercase Identifier>' but '=' is found.", { "f(x, g(y), = h(x)".parseTheory() })
+        assertFailure("Parse error at (1, 11): expecting ')' but '=' is found.", { "f(x, g(y) = h(x)".parseTheory() })
     }
 }
