@@ -9,7 +9,7 @@ fun Term.substitute(substitutions: (Var) -> Term): Term {
     return when (this) {
         is Var -> substitutions(this)
         is App -> App(this.function, this.terms.map { it.substitute(substitutions) })
-        else -> throw RuntimeException("Internal Error: Unknown Term")
+        else -> throw RuntimeException("Internal Error: Invalid Term")
     }
 }
 
@@ -28,7 +28,7 @@ fun Formula.substitute(substitutions: (Var) -> Term): Formula {
         is Implies -> Implies(this.left.substitute(substitutions), this.right.substitute(substitutions))
         is Exists -> Exists(this.variables, this.formula.substitute(substitutions))
         is Forall -> Forall(this.variables, this.formula.substitute(substitutions))
-        else -> throw RuntimeException("Internal Error: Unknown Formula")
+        else -> throw RuntimeException("Internal Error: Invalid Formula")
     }
 }
 
@@ -39,7 +39,7 @@ fun Term.renameVar(renaming: (Var) -> Var): Term {
     return when (this) {
         is Var -> renaming(this)
         is App -> App(this.function, this.terms.map { it.substitute(renaming) })
-        else -> throw RuntimeException("Internal Error: Unknown Term")
+        else -> throw RuntimeException("Internal Error: Invalid Term")
     }
 }
 
@@ -58,6 +58,6 @@ fun Formula.renameVar(renaming: (Var) -> Var): Formula {
         is Implies -> Implies(this.left.renameVar(renaming), this.right.renameVar(renaming))
         is Exists -> Exists(this.variables.map(renaming), this.formula.renameVar(renaming))
         is Forall -> Forall(this.variables.map(renaming), this.formula.renameVar(renaming))
-        else -> throw RuntimeException("Internal Error: Unknown Formula")
+        else -> throw RuntimeException("Internal Error: Invalid Formula")
     }
 }

@@ -47,6 +47,11 @@ internal class TransformTest {
                 else -> it
             }
         })
+        assertEquals("Internal Error: Invalid Term", try {
+            INVALID_TERM.renameVar { it }
+        } catch (e: Exception){
+            e.message
+        })
     }
 
     @Test
@@ -140,6 +145,11 @@ internal class TransformTest {
                     }
                 })
 
+        assertEquals("Internal Error: Invalid Formula", try {
+            INVALID_FORMULA.renameVar { it }
+        } catch (e: Exception){
+            e.message
+        })
     }
 
     @Test
@@ -194,6 +204,11 @@ internal class TransformTest {
                 y -> z
                 else -> it
             }
+        })
+        assertEquals("Internal Error: Invalid Term", try {
+            INVALID_TERM.substitute { it }
+        } catch (e: Exception){
+            e.message
         })
     }
 
@@ -287,5 +302,10 @@ internal class TransformTest {
                         else -> it
                     }
                 })
+        assertEquals("Internal Error: Invalid Formula", try {
+            INVALID_FORMULA.substitute { it }
+        } catch (e: Exception){
+            e.message
+        })
     }
 }
