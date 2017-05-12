@@ -15,7 +15,12 @@ private fun <T : Syntax> List<T>.print(separator: String = ", "): String = joinT
 /**
  * Terms
  */
-abstract class Term : Syntax
+abstract class Term : Syntax {
+    /**
+     * Returns a set of variables in this term.
+     */
+    abstract val freeVars: Set<Var>
+}
 
 /**
  * Functions
@@ -29,6 +34,8 @@ data class Func(val name: String) : Syntax {
  * e.g., x
  */
 data class Var(val name: String) : Term() {
+    override val freeVars by lazy { setOf(this) }
+
     override fun print(): String = name
 }
 
@@ -39,18 +46,25 @@ data class Var(val name: String) : Term() {
  * Note: constants are functions of arity zero
  */
 data class App(val function: Func, val terms: List<Term> = emptyList()) : Term() {
+    override val freeVars by lazy { this.terms.flatMap(Term::freeVars).toSet() }
+
     override fun print(): String = "${function.print()}(${terms.print()})"
 }
 
 /**
  * Formulas
  */
-abstract class Formula : Syntax
+abstract class Formula : Syntax {
+    /**
+     * Returns a set of free variables in this formula.
+     */
+    abstract val freeVars: Set<Var>
+}
 
 /**
  * Prints parenthesis around non atomic formulas.
  */
-fun Formula.printParens() = when(this) {
+fun Formula.printParens() = when (this) {
     is Atom -> print()
     else -> "(${print()})"
 }
@@ -66,7 +80,7 @@ data class Rel(val name: String) : Syntax {
 /**
  * Theory
  */
-data class Theory(val formulas: List<Formula>): Syntax {
+data class Theory(val formulas: List<Formula>) : Syntax {
     override fun print() = formulas.print("\n")
 }
 
@@ -75,6 +89,8 @@ data class Theory(val formulas: List<Formula>): Syntax {
  * Top (Truth)
  */
 object Top : Formula() {
+    override val freeVars = emptySet<Var>()
+
     override fun print() = "⊤"
 }
 
@@ -82,6 +98,8 @@ object Top : Formula() {
  * Bottom (Falsehood)
  */
 object Bottom : Formula() {
+    override val freeVars = emptySet<Var>()
+
     override fun print() = "⟘"
 }
 
@@ -90,7 +108,9 @@ object Bottom : Formula() {
  * e.g. R(x, f(x))
  */
 data class Atom(val relation: Rel, val terms: List<Term> = emptyList()) : Formula() {
-    override fun print(): String = "${relation.print()}(${terms.print()})"
+    override val freeVars by lazy { terms.flatMap(Term::freeVars).toSet() }
+
+    override fun print(): String = "${relation.print()}(${this.terms.print()})"
 }
 
 /**
@@ -98,6 +118,8 @@ data class Atom(val relation: Rel, val terms: List<Term> = emptyList()) : Formul
  * e.g. f(x) = y
  */
 data class Equals(val left: Term, val right: Term) : Formula() {
+    override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
+
     override fun print(): String = "${left.print()} = ${right.print()}"
 }
 
@@ -106,6 +128,8 @@ data class Equals(val left: Term, val right: Term) : Formula() {
  * e.g. ¬R(x)
  */
 data class Not(val formula: Formula) : Formula() {
+    override val freeVars by lazy { this.formula.freeVars }
+
     override fun print(): String = "¬${formula.printParens()}"
 }
 
@@ -114,6 +138,8 @@ data class Not(val formula: Formula) : Formula() {
  * e.g. R(x) ∧ Q(y)
  */
 data class And(val left: Formula, val right: Formula) : Formula() {
+    override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
+
     override fun print(): String = "${left.printParens()} ∧ ${right.printParens()}"
 }
 
@@ -122,6 +148,8 @@ data class And(val left: Formula, val right: Formula) : Formula() {
  * e.g. R(x) ∨ Q(y)
  */
 data class Or(val left: Formula, val right: Formula) : Formula() {
+    override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
+
     override fun print(): String = "${left.printParens()} ∨ ${right.printParens()}"
 }
 
@@ -130,6 +158,8 @@ data class Or(val left: Formula, val right: Formula) : Formula() {
  * e.g. P(x) → Q(x)
  */
 data class Implies(val left: Formula, val right: Formula) : Formula() {
+    override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
+
     override fun print(): String = "${left.printParens()} → ${right.printParens()}"
 }
 
@@ -138,6 +168,8 @@ data class Implies(val left: Formula, val right: Formula) : Formula() {
  * e.g. ∃ x.P(x)
  */
 data class Exists(val variables: List<Var>, val formula: Formula) : Formula() {
+    override val freeVars by lazy { this.formula.freeVars - variables }
+
     override fun print(): String = "∃ ${variables.print()}. ${formula.printParens()}"
 }
 
@@ -146,6 +178,8 @@ data class Exists(val variables: List<Var>, val formula: Formula) : Formula() {
  * e.g. ∀ x.P(x)
  */
 data class Forall(val variables: List<Var>, val formula: Formula) : Formula() {
+    override val freeVars by lazy { this.formula.freeVars - variables }
+
     override fun print(): String = "∀ ${variables.print()}. ${formula.printParens()}"
 }
 
