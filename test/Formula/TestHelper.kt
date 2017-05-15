@@ -9,8 +9,35 @@ val h = Func("h")
 
 // Variables
 val x = Var("x")
+val x1 = Var("x1")
+val x2 = Var("x2")
+val x3 = Var("x3")
+val x4 = Var("x4")
+val x_1 = Var("x'")
+val x_2 = Var("x''")
+val x_3 = Var("x'''")
+val x_4 = Var("x''''")
 val y = Var("y")
+val y1 = Var("y1")
+val y2 = Var("y2")
+val y3 = Var("y3")
+val y4 = Var("y4")
+val y_1 = Var("y'")
+val y_2 = Var("y''")
+val y_3 = Var("y'''")
+val y_4 = Var("y''''")
 val z = Var("z")
+val z1 = Var("z1")
+val z2 = Var("z2")
+val z3 = Var("z3")
+val z4 = Var("z4")
+val z_1 = Var("z'")
+val z_2 = Var("z''")
+val z_3 = Var("z'''")
+val z_4 = Var("z''''")
+
+
+
 
 // Relations
 val E = Rel("E")
