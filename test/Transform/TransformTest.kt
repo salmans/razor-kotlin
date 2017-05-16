@@ -321,7 +321,7 @@ internal class TransformTest {
         assertEquals(P(x) implies Q(y), (P(x) implies Q(y)).prenex())
         assertEquals(exists(x) { P(x) and !Q(y) or R(z) }, exists(x) { P(x) and !Q(y) or R(z) }.prenex())
         assertEquals(forall(x) { P(x) and !Q(y) or R(z) }, forall(x) { P(x) and !Q(y) or R(z) }.prenex())
-
+        // basic sanity checking
         assertEquals(forall(x) { !P(x) }, (!exists(x) { P(x) }).prenex())
         assertEquals(forall(x) { P(x) and Q(y) }, (forall(x) { P(x) } and Q(y)).prenex())
         assertEquals(exists(x) { P(x) and Q(y) }, (exists(x) { P(x) } and Q(y)).prenex())
@@ -353,7 +353,7 @@ internal class TransformTest {
         assertEquals(forall(x_1) { Q(x) implies P(x_1) }, (Q(x) implies forall(x) { P(x) }).prenex())
         assertEquals(exists(x_1) { Q(x) implies P(x_1) }, (Q(x) implies exists(x) { P(x) }).prenex())
         assertEquals(exists(x_1, y_1) { Q(x, y) implies P(x_1, y_1) }, (Q(x, y) implies exists(x, y) { P(x, y) }).prenex())
-//        //renaming tests
+        //renaming tests
         assertEquals(forall(x_2, x_1) { P(x_2) and Q(x) }, (forall(x, x_1) { P(x) } and Q(x)).prenex())
         assertEquals(exists(x_2, x_1) { P(x_2) and Q(x) }, (exists(x, x_1) { P(x) } and Q(x)).prenex())
         assertEquals(exists(x_2) { P(x_2) and Q(x, x_1) }, (exists(x) { P(x) } and Q(x, x_1)).prenex())
@@ -378,9 +378,24 @@ internal class TransformTest {
         assertEquals(exists(x_2, x_1) { Q(x) implies P(x_2) }, (Q(x) implies exists(x, x_1) { P(x) }).prenex())
         assertEquals(exists(x_2) { Q(x, x_1) implies P(x_2) }, (Q(x, x_1) implies exists(x) { P(x) }).prenex())
         assertEquals(exists(x_2) { Q(x) implies P(x_2, x_1) }, (Q(x) implies exists(x) { P(x, x_1) }).prenex())
-
+        // multiple steps
+        assertEquals(exists(x) { !!P(x) }, (!(!exists(x) { P(x) })).prenex())
+        assertEquals(forall(x) { !!P(x) }, (!(!forall(x) { P(x) })).prenex())
+        assertEquals(forall(x_1) { P(x) and (Q(x_1) and R(x)) }, (P(x) and (forall(x) { Q(x) } and R(x))).prenex())
+        assertEquals(exists(x_1) { P(x) and (Q(x_1) and R(x)) }, (P(x) and (exists(x) { Q(x) } and R(x))).prenex())
+        assertEquals(forall(x_1) { P(x) or (Q(x_1) or R(x)) }, (P(x) or (forall(x) { Q(x) } or R(x))).prenex())
+        assertEquals(exists(x_1) { P(x) or (Q(x_1) or R(x)) }, (P(x) or (exists(x) { Q(x) } or R(x))).prenex())
+        assertEquals(exists(x_1) { P(x) implies (Q(x_1) implies R(x)) }, (P(x) implies (forall(x) { Q(x) } implies R(x))).prenex())
+        assertEquals(forall(x_1) { P(x) implies (Q(x_1) implies R(x)) }, (P(x) implies (exists(x) { Q(x) } implies R(x))).prenex())
+        // random formulas
+        assertEquals(forall(x) { exists(y) { P(x) implies (P(y) and Q(x, y)) } }, (forall(x) { P(x) implies exists(y) { P(y) and Q(x, y) } }).prenex())
+        assertEquals(exists(x) { forall(y) { P(x) and (P(y) implies Q(x, y)) } }, exists(x) { P(x) and forall(y) { P(y) implies Q(x, y) } }.prenex())
+        assertEquals(forall(x) { exists(y) { P(x) implies !(P(y) implies Q(x, y)) } }, forall(x) { P(x) implies !forall(y) { P(y) implies Q(x, y) } }.prenex())
+        assertEquals(exists(x) { exists(y_1) { P(y_1) implies (P(x) implies Q(x, y)) } }, exists(x) { forall(y) { P(y) } implies (P(x) implies Q(x, y)) }.prenex())
         assertEquals(forall(z) { forall(x) { (P() or Q(x)) implies R(z) } }, ((P() or exists(x) { Q(x) }) implies forall(z) { R(z) }).prenex())
-        //assertEquals("", ((P() or exists(y) { Q(y) }) implies forall(z) { R(z) }).prenex().print())
+        assertEquals(forall(x) { exists(y) { forall(z) { forall(x_1) { forall(w) { (Q(x) and !R(x_1)) or ((!Q(y) implies R(y))) } } } } }
+                , (forall(x) { exists(y) { (forall(z) { Q(x) and !exists(x) { R(x) } }) or (!Q(y) implies forall(w) { R(y) }) } }).prenex())
+        assertEquals(forall(x) { exists(y) { exists(y_1) { P(y, x) implies Q(x, y_1) } } }, forall(x) { forall(y) { P(y, x) } implies exists(y) { Q(x, y) } }.prenex())
 
         assertEquals("Internal Error: Invalid Formula", try {
             INVALID_FORMULA.prenex()
