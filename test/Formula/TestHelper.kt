@@ -8,6 +8,11 @@ val g = Func("g")
 val h = Func("h")
 
 // Variables
+val w = Var("w")
+val w1 = Var("w1")
+val w2 = Var("w2")
+val w3 = Var("w3")
+val w4 = Var("w4")
 val x = Var("x")
 val x1 = Var("x1")
 val x2 = Var("x2")
