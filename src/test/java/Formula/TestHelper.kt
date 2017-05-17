@@ -1,6 +1,7 @@
 package Formula
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.Assert.assertEquals
+
 
 // Functions
 val f = Func("f")
