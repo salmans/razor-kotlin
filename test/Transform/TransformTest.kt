@@ -403,4 +403,20 @@ internal class TransformTest {
             e.message
         })
     }
+
+    private fun Formula.skolemAfterReset(): Formula {
+        resetSkolemIndex()
+        return this.skolem()
+    }
+
+    @Test
+    fun skolem() {
+        assertEquals(P(sk_0()), exists(x) { P(x) }.skolemAfterReset())
+        assertEquals(forall(x) { P(x, sk_0(x)) }, forall(x) { exists(y) { P(x, y) } }.skolemAfterReset())
+        // random formulas
+        assertEquals(forall(x) { forall(z) { P(x, sk_0(x), z) } }, forall(x) { exists(y) { forall(z) { P(x, y, z) } } }.skolemAfterReset())
+        assertEquals(forall(x) { R(g(x)) or R(x, sk_0(x)) }, forall(x) { R(g(x)) or exists(y) { R(x, y) } }.skolemAfterReset())
+        assertEquals(forall(y) { forall(z) { forall(v) { P(sk_0(), y, z, sk_1(y, z), v, sk_2(y, z, v)) } } },
+                exists(x) { forall(y) { forall(z) { exists(u) { forall(v) { exists(w) { P(x, y, z, u, v, w) } } } } } }.skolemAfterReset())
+    }
 }

@@ -69,9 +69,9 @@ fun Formula.renameVar(renaming: (Var) -> Var): Formula {
  * Converts a formula to a prenex normal form.
  */
 fun Formula.prenex(): Formula {
-    fun renameVar(variable: Var, noColisionVariableList: Set<Var>): Var {
+    fun renameVar(variable: Var, noCollisionVariableList: Set<Var>): Var {
         var name = variable.name
-        val names = noColisionVariableList.map(Var::name)
+        val names = noCollisionVariableList.map(Var::name)
         while (name in names) {
             name += "'"
         }
@@ -94,6 +94,7 @@ fun Formula.prenex(): Formula {
         is And -> {
             val l = left.prenex()
             val r = right.prenex()
+
             if (l is Forall) {
                 val sharedVariables = l.variables.intersect(r.freeVars)
                 val allVariables = (l.variables + freeVars).toSet()
@@ -170,4 +171,30 @@ fun Formula.prenex(): Formula {
         is Exists -> Exists(variables, formula.prenex())
         else -> throw RuntimeException("Internal Error: Invalid Formula")
     }
+}
+
+// The index of Skolem functions being generated
+private var skolemIndex = 0
+
+fun resetSkolemIndex() {
+    skolemIndex = 0
+}
+
+fun Formula.skolem(): Formula {
+    val prenex = this.prenex()
+
+    fun skolemHelper(formula: Formula, skolemVariables: List<Var>): Formula {
+        return when (formula) {
+            is Forall -> {
+                Forall(formula.variables, skolemHelper(formula.formula, skolemVariables + formula.variables))
+            }
+            is Exists -> {
+                val substitutionMap = formula.variables.map { Pair(it, App(Func("sk#${skolemIndex++}"), skolemVariables)) }.toMap()
+                return skolemHelper(formula.formula.substitute { substitutionMap[it] ?: it }, skolemVariables)
+            }
+            else -> formula
+        }
+    }
+
+    return skolemHelper(prenex, emptyList())
 }
