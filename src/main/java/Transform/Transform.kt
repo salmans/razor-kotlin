@@ -69,6 +69,7 @@ fun Formula.renameVar(renaming: (Var) -> Var): Formula {
  * Converts a formula to a prenex normal form.
  */
 fun Formula.prenex(): Formula {
+    // renames the input variable until it's not in the list of input variables.
     fun renameVar(variable: Var, noCollisionVariableList: Set<Var>): Var {
         var name = variable.name
         val names = noCollisionVariableList.map(Var::name)
@@ -173,14 +174,18 @@ fun Formula.prenex(): Formula {
     }
 }
 
-// The index of Skolem functions being generated
-private var skolemIndex = 0
 
-fun resetSkolemIndex() {
-    skolemIndex = 0
+class SkolemGenerator(private val prefix: String = "sk#") {
+    /**
+    An index used to generate Skolem functions during Skolemization. This index is global and will not be reset automatically
+    after Skolemizing a formula.
+     */
+    private var skolemIndex = 0
+
+    fun nextFunction() = "$prefix${skolemIndex++}"
 }
 
-fun Formula.skolem(): Formula {
+fun Formula.skolem(generator: SkolemGenerator = SkolemGenerator()): Formula {
     val prenex = this.prenex()
 
     fun skolemHelper(formula: Formula, skolemVariables: List<Var>): Formula {
@@ -189,7 +194,7 @@ fun Formula.skolem(): Formula {
                 Forall(formula.variables, skolemHelper(formula.formula, skolemVariables + formula.variables))
             }
             is Exists -> {
-                val substitutionMap = formula.variables.map { Pair(it, App(Func("sk#${skolemIndex++}"), skolemVariables)) }.toMap()
+                val substitutionMap = formula.variables.map { Pair(it, App(Func(generator.nextFunction()), skolemVariables)) }.toMap()
                 return skolemHelper(formula.formula.substitute { substitutionMap[it] ?: it }, skolemVariables)
             }
             else -> formula

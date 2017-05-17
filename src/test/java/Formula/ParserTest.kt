@@ -1,6 +1,7 @@
 package Formula
 
-import org.junit.jupiter.api.Test
+import org.junit.Test
+
 
 internal class ParserTest {
     @Test
