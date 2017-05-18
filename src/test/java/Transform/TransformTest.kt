@@ -379,19 +379,19 @@ internal class TransformTest {
         assertEquals(exists(x_2) { Q(x, x_1) implies P(x_2) }, (Q(x, x_1) implies exists(x) { P(x) }).pnf())
         assertEquals(exists(x_2) { Q(x) implies P(x_2, x_1) }, (Q(x) implies exists(x) { P(x, x_1) }).pnf())
         // both sides of binary formulas
-        assertEquals(forall(x){forall(x_1){P(x) and Q(x_1)}}, (forall(x) { P(x) } and forall(x) { Q(x) }).pnf())
-        assertEquals(forall(x){exists(x_1){P(x) and Q(x_1)}}, (forall(x) { P(x) } and exists(x) { Q(x) }).pnf())
-        assertEquals(exists(x){forall(x_1){P(x) and Q(x_1)}}, (exists(x) { P(x) } and forall(x) { Q(x) }).pnf())
-        assertEquals(exists(x){exists(x_1){P(x) and Q(x_1)}}, (exists(x) { P(x) } and exists(x) { Q(x) }).pnf())
-        assertEquals(forall(x){forall(x_1){P(x) or Q(x_1)}}, (forall(x) { P(x) } or forall(x) { Q(x) }).pnf())
-        assertEquals(forall(x){exists(x_1){P(x) or Q(x_1)}}, (forall(x) { P(x) } or exists(x) { Q(x) }).pnf())
-        assertEquals(exists(x){forall(x_1){P(x) or Q(x_1)}}, (exists(x) { P(x) } or forall(x) { Q(x) }).pnf())
-        assertEquals(exists(x){exists(x_1){P(x) or Q(x_1)}}, (exists(x) { P(x) } or exists(x) { Q(x) }).pnf())
-        assertEquals(exists(x){forall(x_1){P(x) implies Q(x_1)}}, (forall(x) { P(x) } implies forall(x) { Q(x) }).pnf())
-        assertEquals(exists(x){exists(x_1){P(x) implies Q(x_1)}}, (forall(x) { P(x) } implies exists(x) { Q(x) }).pnf())
-        assertEquals(forall(x){forall(x_1){P(x) implies Q(x_1)}}, (exists(x) { P(x) } implies forall(x) { Q(x) }).pnf())
-        assertEquals(forall(x){exists(x_1){P(x) implies Q(x_1)}}, (exists(x) { P(x) } implies exists(x) { Q(x) }).pnf())
-        
+        assertEquals(forall(x) { forall(x_1) { P(x) and Q(x_1) } }, (forall(x) { P(x) } and forall(x) { Q(x) }).pnf())
+        assertEquals(forall(x) { exists(x_1) { P(x) and Q(x_1) } }, (forall(x) { P(x) } and exists(x) { Q(x) }).pnf())
+        assertEquals(exists(x) { forall(x_1) { P(x) and Q(x_1) } }, (exists(x) { P(x) } and forall(x) { Q(x) }).pnf())
+        assertEquals(exists(x) { exists(x_1) { P(x) and Q(x_1) } }, (exists(x) { P(x) } and exists(x) { Q(x) }).pnf())
+        assertEquals(forall(x) { forall(x_1) { P(x) or Q(x_1) } }, (forall(x) { P(x) } or forall(x) { Q(x) }).pnf())
+        assertEquals(forall(x) { exists(x_1) { P(x) or Q(x_1) } }, (forall(x) { P(x) } or exists(x) { Q(x) }).pnf())
+        assertEquals(exists(x) { forall(x_1) { P(x) or Q(x_1) } }, (exists(x) { P(x) } or forall(x) { Q(x) }).pnf())
+        assertEquals(exists(x) { exists(x_1) { P(x) or Q(x_1) } }, (exists(x) { P(x) } or exists(x) { Q(x) }).pnf())
+        assertEquals(exists(x) { forall(x_1) { P(x) implies Q(x_1) } }, (forall(x) { P(x) } implies forall(x) { Q(x) }).pnf())
+        assertEquals(exists(x) { exists(x_1) { P(x) implies Q(x_1) } }, (forall(x) { P(x) } implies exists(x) { Q(x) }).pnf())
+        assertEquals(forall(x) { forall(x_1) { P(x) implies Q(x_1) } }, (exists(x) { P(x) } implies forall(x) { Q(x) }).pnf())
+        assertEquals(forall(x) { exists(x_1) { P(x) implies Q(x_1) } }, (exists(x) { P(x) } implies exists(x) { Q(x) }).pnf())
+
         // multiple steps
         assertEquals(exists(x) { !!P(x) }, (!(!exists(x) { P(x) })).pnf())
         assertEquals(forall(x) { !!P(x) }, (!(!forall(x) { P(x) })).pnf())
@@ -433,5 +433,45 @@ internal class TransformTest {
             listOf(exists(x) { P(x) }.skolem(generator), exists(x) { Q(x) }.skolem(generator)
             )
         }.invoke())
+    }
+
+    @Test
+    fun nnf() {
+        // non-changing formulas
+        assertEquals(Top, Top.nnf())
+        assertEquals(Bottom, Bottom.nnf())
+        assertEquals(P(x), P(x).nnf())
+        assertEquals(x equals y, (x equals y).nnf())
+        assertEquals(!P(x), (!P(x)).nnf())
+        assertEquals(P(x) and Q(y), (P(x) and Q(y)).nnf())
+        assertEquals(P(x) or Q(y), (P(x) or Q(y)).nnf())
+        assertEquals(!P(x) or Q(y), (P(x) implies Q(y)).nnf())
+        assertEquals(exists(x) { P(x) }, exists(x) { P(x) }.nnf())
+        assertEquals(forall(x) { P(x) }, forall(x) { P(x) }.nnf())
+        // basic sanity checking
+        assertEquals(Bottom, (!Top).nnf())
+        assertEquals(Top, (!Bottom).nnf())
+        assertEquals(P(x), (!!P(x)).nnf())
+        assertEquals(x equals y, (!!(x equals y)).nnf())
+        assertEquals(!P(x) or !Q(y), (!(P(x) and Q(y))).nnf())
+        assertEquals(!P(x) and !Q(y), (!(P(x) or Q(y))).nnf())
+        assertEquals(P(x) and !Q(y), (!(P(x) implies Q(y))).nnf())
+        assertEquals(forall(x) { !P(x) }, (!exists(x) { P(x) }).nnf())
+        assertEquals(exists(x) { !P(x) }, (!forall(x) { P(x) }).nnf())
+        // recursive application
+        assertEquals(P(x) and Q(y), (!!P(x) and !!Q(y)).nnf())
+        assertEquals(P(x) or Q(y), (!!P(x) or !!Q(y)).nnf())
+        assertEquals(!P(x) or Q(y), (!!P(x) implies !!Q(y)).nnf())
+        assertEquals(exists(x) { P(x) }, (exists(x) { !!P(x) }).nnf())
+        assertEquals(forall(x) { P(x) }, (forall(x) { !!P(x) }).nnf())
+        assertEquals(!P(x), (!!!P(x)).nnf())
+        assertEquals(P(x) or Q(y), (!(!P(x) and !Q(y))).nnf())
+        assertEquals(P(x) and Q(y), (!(!P(x) or !Q(y))).nnf())
+        assertEquals(!P(x) and Q(y), (!(!P(x) implies !Q(y))).nnf())
+        assertEquals((P(x) and Q(x)) or (P(y) and Q(y)), (!(!(P(x) and Q(x)) and !(P(y) and Q(y)))).nnf())
+        assertEquals((P(x) and Q(x)) and (P(y) and Q(y)), (!(!(P(x) and Q(x)) or !(P(y) and Q(y)))).nnf())
+        assertEquals((!P(x) or !Q(x)) and (P(y) and Q(y)), (!(!(P(x) and Q(x)) implies !(P(y) and Q(y)))).nnf())
+        assertEquals(forall(x) { exists(y) { P(x) and !Q(y) } }, (!exists(x) { forall(y) { P(x) implies Q(y) } }).nnf())
+        assertEquals((forall(x) { !P(x) }) or (exists(y) { !Q(y) }), (!((exists(x) { P(x) }) and (forall(y) { Q(y) }))).nnf())
     }
 }
