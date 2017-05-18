@@ -2,16 +2,13 @@ package Transform
 
 import Formula.*
 
-private val INVALID_TERM_EXCEPTION = "Internal Error: Invalid Term"
-private val INVALID_FORMULA_EXCEPTION = "Internal Error: Invalid Formula"
-
 /**
  * Applies a substitution function on the term.
  */
 fun Term.substitute(substitutions: (Var) -> Term): Term {
     return when (this) {
         is Var -> substitutions(this)
-        is App -> App(this.function, this.terms.map { it.substitute(substitutions) })
+        is App -> this.copy(terms = this.terms.map { it.substitute(substitutions) })
         else -> throw RuntimeException(INVALID_TERM_EXCEPTION)
     }
 }
@@ -21,16 +18,15 @@ fun Term.substitute(substitutions: (Var) -> Term): Term {
  */
 fun Formula.substitute(substitutions: (Var) -> Term): Formula {
     return when (this) {
-        is Top -> Top
-        is Bottom -> Bottom
-        is Atom -> Atom(this.relation, terms.map { it.substitute(substitutions) })
-        is Equals -> Equals(this.left.substitute(substitutions), this.right.substitute(substitutions))
-        is Not -> Not(this.formula.substitute(substitutions))
-        is And -> And(this.left.substitute(substitutions), this.right.substitute(substitutions))
-        is Or -> Or(this.left.substitute(substitutions), this.right.substitute(substitutions))
-        is Implies -> Implies(this.left.substitute(substitutions), this.right.substitute(substitutions))
-        is Exists -> Exists(this.variables, this.formula.substitute(substitutions))
-        is Forall -> Forall(this.variables, this.formula.substitute(substitutions))
+        is Top, is Bottom -> this
+        is Atom -> this.copy(terms = this.terms.map { it.substitute(substitutions) })
+        is Equals -> this.copy(left = this.left.substitute(substitutions), right = this.right.substitute(substitutions))
+        is Not -> this.copy(formula = this.formula.substitute(substitutions))
+        is And -> this.copy(left = this.left.substitute(substitutions), right = this.right.substitute(substitutions))
+        is Or -> this.copy(left = this.left.substitute(substitutions), right = this.right.substitute(substitutions))
+        is Implies -> this.copy(left = this.left.substitute(substitutions), right = this.right.substitute(substitutions))
+        is Exists -> this.copy(variables = this.variables, formula = this.formula.substitute(substitutions))
+        is Forall -> this.copy(variables = this.variables, formula = this.formula.substitute(substitutions))
         else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
     }
 }
@@ -41,7 +37,7 @@ fun Formula.substitute(substitutions: (Var) -> Term): Formula {
 fun Term.renameVar(renaming: (Var) -> Var): Term {
     return when (this) {
         is Var -> renaming(this)
-        is App -> App(this.function, this.terms.map { it.substitute(renaming) })
+        is App -> this.copy(terms = this.terms.map { it.substitute(renaming) })
         else -> throw RuntimeException(INVALID_TERM_EXCEPTION)
     }
 }
@@ -51,22 +47,21 @@ fun Term.renameVar(renaming: (Var) -> Var): Term {
  */
 fun Formula.renameVar(renaming: (Var) -> Var): Formula {
     return when (this) {
-        is Top -> Top
-        is Bottom -> Bottom
-        is Atom -> Atom(this.relation, terms.map { it.renameVar(renaming) })
-        is Equals -> Equals(this.left.renameVar(renaming), this.right.renameVar(renaming))
-        is Not -> Not(this.formula.renameVar(renaming))
-        is And -> And(this.left.renameVar(renaming), this.right.renameVar(renaming))
-        is Or -> Or(this.left.renameVar(renaming), this.right.renameVar(renaming))
-        is Implies -> Implies(this.left.renameVar(renaming), this.right.renameVar(renaming))
-        is Exists -> Exists(this.variables.map(renaming), this.formula.renameVar(renaming))
-        is Forall -> Forall(this.variables.map(renaming), this.formula.renameVar(renaming))
+        is Top, is Bottom -> this
+        is Atom -> this.copy(terms = terms.map { it.renameVar(renaming) })
+        is Equals -> this.copy(left = this.left.renameVar(renaming), right = this.right.renameVar(renaming))
+        is Not -> this.copy(formula = this.formula.renameVar(renaming))
+        is And -> this.copy(left = this.left.renameVar(renaming), right = this.right.renameVar(renaming))
+        is Or -> this.copy(left = this.left.renameVar(renaming), right = this.right.renameVar(renaming))
+        is Implies -> this.copy(left = this.left.renameVar(renaming), right = this.right.renameVar(renaming))
+        is Exists -> this.copy(variables = this.variables.map(renaming), formula = this.formula.renameVar(renaming))
+        is Forall -> this.copy(variables = this.variables.map(renaming), formula = this.formula.renameVar(renaming))
         else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
     }
 }
 
 /**
- * Converts a formula to a prenex normal form.
+ * Converts the formula to a prenex normal form.
  */
 fun Formula.pnf(): Formula {
     /**
@@ -97,10 +92,7 @@ fun Formula.pnf(): Formula {
     }
 
     return when (this) {
-        is Top -> Top
-        is Bottom -> Bottom
-        is Atom -> this
-        is Equals -> this
+        is Top, is Bottom, is Atom, is Equals -> this
     // e.g. ~(Qx. P(x)) -> Q' x. ~P(x)
         is Not -> {
             val f = formula.pnf()
@@ -153,8 +145,8 @@ fun Formula.pnf(): Formula {
                 else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
             }
         }
-        is Forall -> Forall(variables, formula.pnf())
-        is Exists -> Exists(variables, formula.pnf())
+        is Forall -> this.copy(formula = formula.pnf())
+        is Exists -> this.copy(formula = formula.pnf())
         else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
     }
 }
@@ -197,4 +189,31 @@ fun Formula.skolem(generator: SkolemGenerator = SkolemGenerator()): Formula {
     }
 
     return skolemHelper(prenex, emptyList())
+}
+
+/**
+ * Converts the formula to a negation normal form.
+ */
+fun Formula.nnf(): Formula {
+    return when (this) {
+        is Top, is Bottom, is Atom, is Equals -> this
+        is Not -> when (this.formula) {
+            is Top -> Bottom
+            is Bottom -> Top
+            is Atom, is Equals -> this
+            is Not -> this.formula.formula
+            is And -> Or(Not(this.formula.left).nnf(), Not(this.formula.right).nnf())
+            is Or -> And(Not(this.formula.left).nnf(), Not(this.formula.right).nnf())
+            is Implies -> And(this.formula.left.nnf(), Not(this.formula.right).nnf())
+            is Exists -> Forall(this.formula.variables, Not(this.formula.formula).nnf())
+            is Forall -> Exists(this.formula.variables, Not(this.formula.formula).nnf())
+            else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
+        }
+        is And -> this.copy(left = this.left.nnf(), right = this.right.nnf())
+        is Or -> this.copy(left = this.left.nnf(), right = this.right.nnf())
+        is Implies -> Or(Not(this.left.nnf()), this.right.nnf())
+        is Exists -> this.copy(variables = this.variables, formula = this.formula.nnf())
+        is Forall -> this.copy(variables = this.variables, formula = this.formula.nnf())
+        else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
+    }
 }

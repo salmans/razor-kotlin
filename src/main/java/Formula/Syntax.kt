@@ -136,7 +136,7 @@ data class Not(val formula: Formula) : Formula() {
 /**
  * Superclass for binary formulas: {@code And}, {@code Or}, {@code Implies}
  */
-abstract class BinaryFormula(open val left: Formula, open val right: Formula): Formula()
+abstract class BinaryFormula(open val left: Formula, open val right: Formula) : Formula()
 
 /**
  * Conjunction
@@ -171,7 +171,7 @@ data class Implies(override val left: Formula, override val right: Formula) : Bi
 /**
  * Superclass for quantified formulas: {@code Forall} and {@code Exists}
  */
-abstract class QuantifiedFormula(open val variables: List<Var>, open val formula: Formula): Formula()
+abstract class QuantifiedFormula(open val variables: List<Var>, open val formula: Formula) : Formula()
 
 /**
  * Exists
