@@ -68,7 +68,7 @@ fun Formula.renameVar(renaming: (Var) -> Var): Formula {
 /**
  * Converts a formula to a prenex normal form.
  */
-fun Formula.prenex(): Formula {
+fun Formula.pnf(): Formula {
     /**
      * Renames the input variable until it's not in the list of input variables.
      */
@@ -103,58 +103,58 @@ fun Formula.prenex(): Formula {
         is Equals -> this
     // e.g. ~(Qx. P(x)) -> Q' x. ~P(x)
         is Not -> {
-            val f = formula.prenex()
+            val f = formula.pnf()
             when (f) {
-                is Forall -> Exists(f.variables, Not(f.formula).prenex())
-                is Exists -> Forall(f.variables, Not(f.formula).prenex())
+                is Forall -> Exists(f.variables, Not(f.formula).pnf())
+                is Exists -> Forall(f.variables, Not(f.formula).pnf())
                 else -> Not(f)
             }
         }
         is BinaryFormula -> {
-            val l = left.prenex()
-            val r = right.prenex()
+            val l = left.pnf()
+            val r = right.pnf()
             when (this) {
             // e.g. (Q x. F(x)) & G(y)) => Q x'. F(x') & G(y) or F(x) & (Q y. G(y)) => Q y'. F(x) & G(y')
                 is And -> {
                     if (l is Forall) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, And(q.formula, f).prenex()) })
+                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, And(q.formula, f).pnf()) })
                     } else if (l is Exists) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, And(q.formula, f).prenex()) })
+                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, And(q.formula, f).pnf()) })
                     } else if (r is Forall) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, And(f, q.formula).prenex()) })
+                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, And(f, q.formula).pnf()) })
                     } else if (r is Exists) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, And(f, q.formula).prenex()) })
+                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, And(f, q.formula).pnf()) })
                     } else And(l, r)
                 }
             // e.g. (Q x. F(x)) | G(y)) => Q x'. F(x') | G(y) or F(x) | (Q y. G(y)) => Q y'. F(x) | G(y')
                 is Or -> {
                     if (l is Forall) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, Or(q.formula, f).prenex()) })
+                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, Or(q.formula, f).pnf()) })
                     } else if (l is Exists) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, Or(q.formula, f).prenex()) })
+                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, Or(q.formula, f).pnf()) })
                     } else if (r is Forall) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, Or(f, q.formula).prenex()) })
+                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, Or(f, q.formula).pnf()) })
                     } else if (r is Exists) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, Or(f, q.formula).prenex()) })
+                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, Or(f, q.formula).pnf()) })
                     } else Or(l, r)
                 }
             // e.g. (Q x. F(x)) -> G(y)) => Q' x'. F(x') -> G(y) or F(x) -> (Q y. G(y)) => Q' y'. F(x) -> G(y')
                 is Implies -> {
                     if (l is Forall) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, Implies(q.formula, f).prenex()) })
+                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, Implies(q.formula, f).pnf()) })
                     } else if (l is Exists) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, Implies(q.formula, f).prenex()) })
+                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, Implies(q.formula, f).pnf()) })
                     } else if (r is Forall) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, Implies(f, q.formula).prenex()) })
+                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, Implies(f, q.formula).pnf()) })
                     } else if (r is Exists) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, Implies(f, q.formula).prenex()) })
+                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, Implies(f, q.formula).pnf()) })
                     } else Implies(l, r)
                 }
                 else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
             }
         }
-        is Forall -> Forall(variables, formula.prenex())
-        is Exists -> Exists(variables, formula.prenex())
+        is Forall -> Forall(variables, formula.pnf())
+        is Exists -> Exists(variables, formula.pnf())
         else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
     }
 }
@@ -177,7 +177,7 @@ class SkolemGenerator(private val prefix: String = "sk#") {
 }
 
 fun Formula.skolem(generator: SkolemGenerator = SkolemGenerator()): Formula {
-    val prenex = this.prenex()  // Skolemization for formulas that are not in PNF doesn't make sense!
+    val prenex = this.pnf()  // Skolemization for formulas that are not in PNF doesn't make sense!
 
     // {@code skolemHelper} helper to apply skolemization process recursively. The main purpose of
     // introducing this helper is to keep track of the universally quantified variables when generating
