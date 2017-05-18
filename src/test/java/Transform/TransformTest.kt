@@ -378,6 +378,20 @@ internal class TransformTest {
         assertEquals(exists(x_2, x_1) { Q(x) implies P(x_2) }, (Q(x) implies exists(x, x_1) { P(x) }).prenex())
         assertEquals(exists(x_2) { Q(x, x_1) implies P(x_2) }, (Q(x, x_1) implies exists(x) { P(x) }).prenex())
         assertEquals(exists(x_2) { Q(x) implies P(x_2, x_1) }, (Q(x) implies exists(x) { P(x, x_1) }).prenex())
+        // both sides of binary formulas
+        assertEquals(forall(x){forall(x_1){P(x) and Q(x_1)}}, (forall(x) { P(x) } and forall(x) { Q(x) }).prenex())
+        assertEquals(forall(x){exists(x_1){P(x) and Q(x_1)}}, (forall(x) { P(x) } and exists(x) { Q(x) }).prenex())
+        assertEquals(exists(x){forall(x_1){P(x) and Q(x_1)}}, (exists(x) { P(x) } and forall(x) { Q(x) }).prenex())
+        assertEquals(exists(x){exists(x_1){P(x) and Q(x_1)}}, (exists(x) { P(x) } and exists(x) { Q(x) }).prenex())
+        assertEquals(forall(x){forall(x_1){P(x) or Q(x_1)}}, (forall(x) { P(x) } or forall(x) { Q(x) }).prenex())
+        assertEquals(forall(x){exists(x_1){P(x) or Q(x_1)}}, (forall(x) { P(x) } or exists(x) { Q(x) }).prenex())
+        assertEquals(exists(x){forall(x_1){P(x) or Q(x_1)}}, (exists(x) { P(x) } or forall(x) { Q(x) }).prenex())
+        assertEquals(exists(x){exists(x_1){P(x) or Q(x_1)}}, (exists(x) { P(x) } or exists(x) { Q(x) }).prenex())
+        assertEquals(exists(x){forall(x_1){P(x) implies Q(x_1)}}, (forall(x) { P(x) } implies forall(x) { Q(x) }).prenex())
+        assertEquals(exists(x){exists(x_1){P(x) implies Q(x_1)}}, (forall(x) { P(x) } implies exists(x) { Q(x) }).prenex())
+        assertEquals(forall(x){forall(x_1){P(x) implies Q(x_1)}}, (exists(x) { P(x) } implies forall(x) { Q(x) }).prenex())
+        assertEquals(forall(x){exists(x_1){P(x) implies Q(x_1)}}, (exists(x) { P(x) } implies exists(x) { Q(x) }).prenex())
+        
         // multiple steps
         assertEquals(exists(x) { !!P(x) }, (!(!exists(x) { P(x) })).prenex())
         assertEquals(forall(x) { !!P(x) }, (!(!forall(x) { P(x) })).prenex())
@@ -392,7 +406,7 @@ internal class TransformTest {
         assertEquals(exists(x) { forall(y) { P(x) and (P(y) implies Q(x, y)) } }, exists(x) { P(x) and forall(y) { P(y) implies Q(x, y) } }.prenex())
         assertEquals(forall(x) { exists(y) { P(x) implies !(P(y) implies Q(x, y)) } }, forall(x) { P(x) implies !forall(y) { P(y) implies Q(x, y) } }.prenex())
         assertEquals(exists(x) { exists(y_1) { P(y_1) implies (P(x) implies Q(x, y)) } }, exists(x) { forall(y) { P(y) } implies (P(x) implies Q(x, y)) }.prenex())
-        assertEquals(forall(z) { forall(x) { (P() or Q(x)) implies R(z) } }, ((P() or exists(x) { Q(x) }) implies forall(z) { R(z) }).prenex())
+        assertEquals(forall(x) { forall(z) { (P() or Q(x)) implies R(z) } }, ((P() or exists(x) { Q(x) }) implies forall(z) { R(z) }).prenex())
         assertEquals(forall(x) { exists(y) { forall(z) { forall(x_1) { forall(w) { (Q(x) and !R(x_1)) or ((!Q(y) implies R(y))) } } } } }
                 , (forall(x) { exists(y) { (forall(z) { Q(x) and !exists(x) { R(x) } }) or (!Q(y) implies forall(w) { R(y) }) } }).prenex())
         assertEquals(forall(x) { exists(y) { exists(y_1) { P(y, x) implies Q(x, y_1) } } }, forall(x) { forall(y) { P(y, x) } implies exists(y) { Q(x, y) } }.prenex())
@@ -416,7 +430,7 @@ internal class TransformTest {
         // test generator across multiple Skolem calls
         assertEquals(listOf(P(sk_0()), Q(sk_1())), {
             val generator = SkolemGenerator()
-            listOf(exists(x){P(x)}.skolem(generator), exists(x){Q(x)}.skolem(generator)
+            listOf(exists(x) { P(x) }.skolem(generator), exists(x) { Q(x) }.skolem(generator)
             )
         }.invoke())
     }
