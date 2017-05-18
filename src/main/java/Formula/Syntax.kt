@@ -134,10 +134,15 @@ data class Not(val formula: Formula) : Formula() {
 }
 
 /**
+ * Superclass for binary formulas: {@code And}, {@code Or}, {@code Implies}
+ */
+abstract class BinaryFormula(open val left: Formula, open val right: Formula): Formula()
+
+/**
  * Conjunction
  * e.g. R(x) ∧ Q(y)
  */
-data class And(val left: Formula, val right: Formula) : Formula() {
+data class And(override val left: Formula, override val right: Formula) : BinaryFormula(left, right) {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
     override fun print(): String = "${left.printParens()} ∧ ${right.printParens()}"
@@ -147,7 +152,7 @@ data class And(val left: Formula, val right: Formula) : Formula() {
  * Disjunction
  * e.g. R(x) ∨ Q(y)
  */
-data class Or(val left: Formula, val right: Formula) : Formula() {
+data class Or(override val left: Formula, override val right: Formula) : BinaryFormula(left, right) {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
     override fun print(): String = "${left.printParens()} ∨ ${right.printParens()}"
@@ -157,17 +162,22 @@ data class Or(val left: Formula, val right: Formula) : Formula() {
  * Implication
  * e.g. P(x) → Q(x)
  */
-data class Implies(val left: Formula, val right: Formula) : Formula() {
+data class Implies(override val left: Formula, override val right: Formula) : BinaryFormula(left, right) {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
     override fun print(): String = "${left.printParens()} → ${right.printParens()}"
 }
 
 /**
+ * Superclass for quantified formulas: {@code Forall} and {@code Exists}
+ */
+abstract class QuantifiedFormula(open val variables: List<Var>, open val formula: Formula): Formula()
+
+/**
  * Exists
  * e.g. ∃ x.P(x)
  */
-data class Exists(val variables: List<Var>, val formula: Formula) : Formula() {
+data class Exists(override val variables: List<Var>, override val formula: Formula) : QuantifiedFormula(variables, formula) {
     override val freeVars by lazy { this.formula.freeVars - variables }
 
     override fun print(): String = "∃ ${variables.print()}. ${formula.printParens()}"
@@ -177,7 +187,7 @@ data class Exists(val variables: List<Var>, val formula: Formula) : Formula() {
  * Forall
  * e.g. ∀ x.P(x)
  */
-data class Forall(val variables: List<Var>, val formula: Formula) : Formula() {
+data class Forall(override val variables: List<Var>, override val formula: Formula) : QuantifiedFormula(variables, formula) {
     override val freeVars by lazy { this.formula.freeVars - variables }
 
     override fun print(): String = "∀ ${variables.print()}. ${formula.printParens()}"
