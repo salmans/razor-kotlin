@@ -20,16 +20,28 @@ val u1 = Var("u1")
 val u2 = Var("u2")
 val u3 = Var("u3")
 val u4 = Var("u4")
+val u_1 = Var("u'")
+val u_2 = Var("u''")
+val u_3 = Var("u'''")
+val u_4 = Var("u''''")
 val v = Var("v")
 val v1 = Var("v1")
 val v2 = Var("v2")
 val v3 = Var("v3")
 val v4 = Var("v4")
+val v_1 = Var("v'")
+val v_2 = Var("v''")
+val v_3 = Var("v'''")
+val v_4 = Var("v''''")
 val w = Var("w")
 val w1 = Var("w1")
 val w2 = Var("w2")
 val w3 = Var("w3")
 val w4 = Var("w4")
+val w_1 = Var("w'")
+val w_2 = Var("w''")
+val w_3 = Var("w'''")
+val w_4 = Var("w''''")
 val x = Var("x")
 val x1 = Var("x1")
 val x2 = Var("x2")
@@ -58,9 +70,6 @@ val z_2 = Var("z''")
 val z_3 = Var("z'''")
 val z_4 = Var("z''''")
 
-
-
-
 // Relations
 val E = Rel("E")
 val P = Rel("P")
@@ -80,7 +89,7 @@ fun <T> assertFailure(errorMessage: String, parseFunc: () -> T) {
     }
 }
 
-val INVALID_TERM = object: Term(){
+val BAD_TERM = object: Term(){
     override fun print() = throw RuntimeException("Invalid Term")
 
     override val freeVars
@@ -88,7 +97,7 @@ val INVALID_TERM = object: Term(){
 
 }
 
-val INVALID_FORMULA = object: Formula(){
+val BAD_FORMULA = object: Formula(){
     override fun print() = throw RuntimeException("Invalid Term")
 
     override val freeVars

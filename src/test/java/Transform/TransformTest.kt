@@ -47,8 +47,8 @@ internal class TransformTest {
                 else -> it
             }
         })
-        assertEquals("Internal Error: Invalid Term", try {
-            INVALID_TERM.renameVar { it }
+        assertEquals(INVALID_TERM, try {
+            BAD_TERM.renameVar { it }
         } catch (e: Exception) {
             e.message
         })
@@ -145,8 +145,8 @@ internal class TransformTest {
                     }
                 })
 
-        assertEquals("Internal Error: Invalid Formula", try {
-            INVALID_FORMULA.renameVar { it }
+        assertEquals(INVALID_FORMULA, try {
+            BAD_FORMULA.renameVar { it }
         } catch (e: Exception) {
             e.message
         })
@@ -205,8 +205,8 @@ internal class TransformTest {
                 else -> it
             }
         })
-        assertEquals("Internal Error: Invalid Term", try {
-            INVALID_TERM.substitute { it }
+        assertEquals(INVALID_TERM, try {
+            BAD_TERM.substitute { it }
         } catch (e: Exception) {
             e.message
         })
@@ -302,8 +302,8 @@ internal class TransformTest {
                         else -> it
                     }
                 })
-        assertEquals("Internal Error: Invalid Formula", try {
-            INVALID_FORMULA.substitute { it }
+        assertEquals(INVALID_FORMULA, try {
+            BAD_FORMULA.substitute { it }
         } catch (e: Exception) {
             e.message
         })
@@ -321,7 +321,7 @@ internal class TransformTest {
         assertEquals(P(x) implies Q(y), (P(x) implies Q(y)).pnf())
         assertEquals(exists(x) { P(x) and !Q(y) or R(z) }, exists(x) { P(x) and !Q(y) or R(z) }.pnf())
         assertEquals(forall(x) { P(x) and !Q(y) or R(z) }, forall(x) { P(x) and !Q(y) or R(z) }.pnf())
-        // basic sanity checking
+        // sanity checking
         assertEquals(forall(x) { !P(x) }, (!exists(x) { P(x) }).pnf())
         assertEquals(forall(x) { P(x) and Q(y) }, (forall(x) { P(x) } and Q(y)).pnf())
         assertEquals(exists(x) { P(x) and Q(y) }, (exists(x) { P(x) } and Q(y)).pnf())
@@ -391,7 +391,6 @@ internal class TransformTest {
         assertEquals(exists(x) { exists(x_1) { P(x) implies Q(x_1) } }, (forall(x) { P(x) } implies exists(x) { Q(x) }).pnf())
         assertEquals(forall(x) { forall(x_1) { P(x) implies Q(x_1) } }, (exists(x) { P(x) } implies forall(x) { Q(x) }).pnf())
         assertEquals(forall(x) { exists(x_1) { P(x) implies Q(x_1) } }, (exists(x) { P(x) } implies exists(x) { Q(x) }).pnf())
-
         // multiple steps
         assertEquals(exists(x) { !!P(x) }, (!(!exists(x) { P(x) })).pnf())
         assertEquals(forall(x) { !!P(x) }, (!(!forall(x) { P(x) })).pnf())
@@ -411,8 +410,8 @@ internal class TransformTest {
                 , (forall(x) { exists(y) { (forall(z) { Q(x) and !exists(x) { R(x) } }) or (!Q(y) implies forall(w) { R(y) }) } }).pnf())
         assertEquals(forall(x) { exists(y) { exists(y_1) { P(y, x) implies Q(x, y_1) } } }, forall(x) { forall(y) { P(y, x) } implies exists(y) { Q(x, y) } }.pnf())
 
-        assertEquals("Internal Error: Invalid Formula", try {
-            INVALID_FORMULA.pnf()
+        assertEquals(INVALID_FORMULA, try {
+            BAD_FORMULA.pnf()
         } catch (e: Exception) {
             e.message
         })
@@ -420,17 +419,20 @@ internal class TransformTest {
 
     @Test
     fun skolem() {
-        assertEquals(P(sk_0()), exists(x) { P(x) }.skolem())
-        assertEquals(forall(x) { P(x, sk_0(x)) }, forall(x) { exists(y) { P(x, y) } }.skolem())
+        assertEquals(P(sk_0()), exists(x) { P(x) }.snf())
+        assertEquals(forall(x) { P(x, sk_0(x)) }, forall(x) { exists(y) { P(x, y) } }.snf())
+        assertEquals(forall(x) { P(x, f(g(sk_0(x)), h(sk_0(x)))) }, forall(x) { exists(y) { P(x, f(g(y), h(y))) } }.snf())
+        assertEquals((sk_0() equals sk_1()) and (sk_1() equals sk_2()), exists(x, y, z) { (x equals y) and (y equals z) }.snf())
+        assertEquals(forall(y) { Q(sk_0(), y) or P(sk_1(y), y, sk_2(y)) }, exists(x) { forall(y) { Q(x, y) or exists(x, z) { P(x, y, z) } } }.snf())
         // random formulas
-        assertEquals(forall(x) { forall(z) { P(x, sk_0(x), z) } }, forall(x) { exists(y) { forall(z) { P(x, y, z) } } }.skolem())
-        assertEquals(forall(x) { R(g(x)) or R(x, sk_0(x)) }, forall(x) { R(g(x)) or exists(y) { R(x, y) } }.skolem())
+        assertEquals(forall(x) { forall(z) { P(x, sk_0(x), z) } }, forall(x) { exists(y) { forall(z) { P(x, y, z) } } }.snf())
+        assertEquals(forall(x) { R(g(x)) or R(x, sk_0(x)) }, forall(x) { R(g(x)) or exists(y) { R(x, y) } }.snf())
         assertEquals(forall(y) { forall(z) { forall(v) { P(sk_0(), y, z, sk_1(y, z), v, sk_2(y, z, v)) } } },
-                exists(x) { forall(y) { forall(z) { exists(u) { forall(v) { exists(w) { P(x, y, z, u, v, w) } } } } } }.skolem())
+                exists(x) { forall(y) { forall(z) { exists(u) { forall(v) { exists(w) { P(x, y, z, u, v, w) } } } } } }.snf())
         // test generator across multiple Skolem calls
         assertEquals(listOf(P(sk_0()), Q(sk_1())), {
             val generator = SkolemGenerator()
-            listOf(exists(x) { P(x) }.skolem(generator), exists(x) { Q(x) }.skolem(generator)
+            listOf(exists(x) { P(x) }.snf(generator), exists(x) { Q(x) }.snf(generator)
             )
         }.invoke())
     }
@@ -448,7 +450,7 @@ internal class TransformTest {
         assertEquals(!P(x) or Q(y), (P(x) implies Q(y)).nnf())
         assertEquals(exists(x) { P(x) }, exists(x) { P(x) }.nnf())
         assertEquals(forall(x) { P(x) }, forall(x) { P(x) }.nnf())
-        // basic sanity checking
+        // sanity checking
         assertEquals(Bottom, (!Top).nnf())
         assertEquals(Top, (!Bottom).nnf())
         assertEquals(P(x), (!!P(x)).nnf())
@@ -456,6 +458,7 @@ internal class TransformTest {
         assertEquals(!P(x) or !Q(y), (!(P(x) and Q(y))).nnf())
         assertEquals(!P(x) and !Q(y), (!(P(x) or Q(y))).nnf())
         assertEquals(P(x) and !Q(y), (!(P(x) implies Q(y))).nnf())
+        assertEquals((!P(x) and !Q(y)) or R(z), ((P(x) or Q(y)) implies R(z)).nnf())
         assertEquals(forall(x) { !P(x) }, (!exists(x) { P(x) }).nnf())
         assertEquals(exists(x) { !P(x) }, (!forall(x) { P(x) }).nnf())
         // recursive application
@@ -473,5 +476,41 @@ internal class TransformTest {
         assertEquals((!P(x) or !Q(x)) and (P(y) and Q(y)), (!(!(P(x) and Q(x)) implies !(P(y) and Q(y)))).nnf())
         assertEquals(forall(x) { exists(y) { P(x) and !Q(y) } }, (!exists(x) { forall(y) { P(x) implies Q(y) } }).nnf())
         assertEquals((forall(x) { !P(x) }) or (exists(y) { !Q(y) }), (!((exists(x) { P(x) }) and (forall(y) { Q(y) }))).nnf())
+    }
+
+    @Test
+    fun cnf() {
+        // sanity checking
+        assertEquals(Top, Top.cnf())
+        assertEquals(Bottom, Bottom.cnf())
+        assertEquals(P(f(), g(f(), f())), P(f(), g(f(), f())).cnf())
+        assertEquals(P(x), P(x).cnf())
+        assertEquals(x equals y, (x equals y).cnf())
+        assertEquals(P(x) and Q(y), (P(x) and Q(y)).cnf())
+        assertEquals(P(x) or Q(y), (P(x) or Q(y)).cnf())
+        assertEquals(!P(x) or Q(y), (P(x) implies Q(y)).cnf())
+        assertEquals(P(x), forall(x) { P(x) }.cnf())
+        assertEquals(P(f(), g(f(), x)), forall(x) { P(f(), g(f(), x)) }.cnf())
+        // quantifier-free formulas
+        assertEquals((!P(x1) or !Q(y)) and (!P(x2) or !Q(y)), (!((P(x1) or P(x2)) and Q(y))).cnf())
+        assertEquals((P(x) or Q(x)) and (P(x) or !Q(y)), (P(x) or !(Q(x) implies Q(y))).cnf())
+        assertEquals((!P(x) or R(z)) and (!Q(y) or R(z)), ((P(x) or Q(y)) implies R(z)).cnf())
+        assertEquals((P(x) or (Q(x) or R(y))) and (P(x) or (Q(x) or R(z))), (P(x) or (Q(x) or (R(y) and R(z)))).cnf())
+        assertEquals(((Q(x) or R(y)) or P(x)) and ((Q(x) or R(z)) or P(x)), ((Q(x) or (R(y) and R(z))) or P(x)).cnf())
+        assertEquals(((P(x1) or Q(x1)) and (P(x1) or Q(x2))) and ((P(x2) or Q(x1)) and (P(x2) or Q(x2))), ((P(x1) and P(x2)) or (Q(x1) and Q(x2))).cnf())
+        // random formulas
+        assertEquals(P(sk_0()), exists(x) { P(x) }.cnf())
+        assertEquals(P(sk_0()) and Q(f(), sk_0()), exists(x) { P(x) and Q(f(), x) }.cnf())
+        assertEquals(!P(y) or !Q(x, y) or R(x), forall(x) { exists(y) { P(y) and Q(x, y) } implies R(x) }.cnf())
+        assertEquals(!P(x) or (!Q(y) or !R(x, y)), forall(x) { P(x) implies forall(y) { Q(y) implies !R(x, y) } }.cnf())
+        assertEquals((!P(y, sk_0(y)) or Q(y)) and (!Q(sk_0(y)) or Q(y)), forall(y) { forall(x) { P(y, x) or Q(x) } implies Q(y) }.cnf())
+        assertEquals(P(sk_0(), sk_1()), exists(x) { exists(y) { P(x, y) } }.cnf())
+        assertEquals(P(sk_0(), sk_1()), exists(x, y) { P(x, y) }.cnf())
+        assertEquals(P(x, sk_0(x)), forall(x) { exists(y) { P(x, y) } }.cnf())
+        assertEquals(((!R(z)) or P(sk_0(), x)) and (((!R(z)) or (!Q(u_1, x_1, y))) and ((!R(z)) or (!(w equals f(u_1))))),
+                (R(z) implies exists(u) { forall(x, y) { P(u, x) and !exists(u, x, w) { Q(u, x, y) or (w equals f(u)) } } }).cnf())
+        assertEquals((P(sk_0(x)) or Q(sk_1(x), x)) and (!Q(x, sk_0(x)) or Q(sk_1(x), x)), (forall(x) { forall(y) { P(y) implies Q(x, y) } implies exists(y) { Q(y, x) } }).cnf())
+        assertEquals(P(sk_0()) and (!Q(sk_0(), y) or (y equals z) or !Q(sk_0(), z)), exists(x) { forall(y, z) { P(x) and ((Q(x, y) and !(y equals z)) implies !Q(x, z)) } }.cnf())
+        assertEquals((!P(x) or (!P(y) or P(f(x, y)))) and ((!P(x) or Q(x, sk_0(x, y))) and (!P(x) or !P(sk_0(x, y)))), forall(x) { P(x) implies (forall(y) { P(y) implies P(f(x, y)) } and !forall(y) { Q(x, y) implies P(y) }) }.cnf())
     }
 }

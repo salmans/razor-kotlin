@@ -9,7 +9,7 @@ fun Term.substitute(substitutions: (Var) -> Term): Term {
     return when (this) {
         is Var -> substitutions(this)
         is App -> this.copy(terms = this.terms.map { it.substitute(substitutions) })
-        else -> throw RuntimeException(INVALID_TERM_EXCEPTION)
+        else -> throw INVALID_TERM.internalError()
     }
 }
 
@@ -27,7 +27,7 @@ fun Formula.substitute(substitutions: (Var) -> Term): Formula {
         is Implies -> this.copy(left = this.left.substitute(substitutions), right = this.right.substitute(substitutions))
         is Exists -> this.copy(variables = this.variables, formula = this.formula.substitute(substitutions))
         is Forall -> this.copy(variables = this.variables, formula = this.formula.substitute(substitutions))
-        else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
+        else -> throw INVALID_FORMULA.internalError()
     }
 }
 
@@ -38,7 +38,7 @@ fun Term.renameVar(renaming: (Var) -> Var): Term {
     return when (this) {
         is Var -> renaming(this)
         is App -> this.copy(terms = this.terms.map { it.substitute(renaming) })
-        else -> throw RuntimeException(INVALID_TERM_EXCEPTION)
+        else -> throw INVALID_TERM.internalError()
     }
 }
 
@@ -56,7 +56,7 @@ fun Formula.renameVar(renaming: (Var) -> Var): Formula {
         is Implies -> this.copy(left = this.left.renameVar(renaming), right = this.right.renameVar(renaming))
         is Exists -> this.copy(variables = this.variables.map(renaming), formula = this.formula.renameVar(renaming))
         is Forall -> this.copy(variables = this.variables.map(renaming), formula = this.formula.renameVar(renaming))
-        else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
+        else -> throw INVALID_FORMULA.internalError()
     }
 }
 
@@ -142,12 +142,12 @@ fun Formula.pnf(): Formula {
                         pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, Implies(f, q.formula).pnf()) })
                     } else Implies(l, r)
                 }
-                else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
+                else -> throw INVALID_FORMULA.internalError()
             }
         }
         is Forall -> this.copy(formula = formula.pnf())
         is Exists -> this.copy(formula = formula.pnf())
-        else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
+        else -> throw INVALID_FORMULA.internalError()
     }
 }
 
@@ -168,7 +168,11 @@ class SkolemGenerator(private val prefix: String = "sk#") {
     fun nextFunction() = "$prefix${skolemIndex++}"
 }
 
-fun Formula.skolem(generator: SkolemGenerator = SkolemGenerator()): Formula {
+/**
+ * Puts the formula into Skolem normal form.
+ * @param generator is an instance of {@code SkolemGenerator} that is used for generating Skolem function names.
+ */
+fun Formula.snf(generator: SkolemGenerator = SkolemGenerator()): Formula {
     val prenex = this.pnf()  // Skolemization for formulas that are not in PNF doesn't make sense!
 
     // {@code skolemHelper} helper to apply skolemization process recursively. The main purpose of
@@ -192,7 +196,7 @@ fun Formula.skolem(generator: SkolemGenerator = SkolemGenerator()): Formula {
 }
 
 /**
- * Converts the formula to a negation normal form.
+ * Converts the formula to a negation normal form. This includes transforming implications to disjunctions.
  */
 fun Formula.nnf(): Formula {
     return when (this) {
@@ -207,13 +211,61 @@ fun Formula.nnf(): Formula {
             is Implies -> And(this.formula.left.nnf(), Not(this.formula.right).nnf())
             is Exists -> Forall(this.formula.variables, Not(this.formula.formula).nnf())
             is Forall -> Exists(this.formula.variables, Not(this.formula.formula).nnf())
-            else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
+            else -> throw INVALID_FORMULA.internalError()
         }
         is And -> this.copy(left = this.left.nnf(), right = this.right.nnf())
         is Or -> this.copy(left = this.left.nnf(), right = this.right.nnf())
-        is Implies -> Or(Not(this.left.nnf()), this.right.nnf())
+        is Implies -> Or(Not(this.left).nnf(), this.right.nnf())
         is Exists -> this.copy(variables = this.variables, formula = this.formula.nnf())
         is Forall -> this.copy(variables = this.variables, formula = this.formula.nnf())
-        else -> throw RuntimeException(INVALID_FORMULA_EXCEPTION)
+        else -> throw INVALID_FORMULA.internalError()
     }
+}
+
+/**
+ * Converts the formula to a conjunctive normal form where variables are assumed to be universally quantified.
+ * @param generator is an instance of {@code SkolemGenerator} that is used to generate Skolem functions during the transformation.
+ */
+fun Formula.cnf(generator: SkolemGenerator = SkolemGenerator()): Formula {
+    // Skolemization (after PNF) -> Negation Normal Form -> Distribute Conjunction -> Drop Universal Quantifiers
+    val nnf = this.snf(generator).nnf()
+
+    // Distribute Conjunction
+    fun pushOr(formula: Formula): Formula {
+        return when (formula) {
+            is Top, is Bottom, is Atom, is Equals, is Not -> formula // because already NNF
+            is And -> formula.copy(left = pushOr(formula.left), right = pushOr(formula.right))
+            is Or -> {
+                val left = pushOr(formula.left)
+                val right = pushOr(formula.right)
+                if (left is And) {
+                    val l = pushOr(Or(left.left, right))
+                    val r = pushOr(Or(left.right, right))
+                    And(l, r)
+                } else if (right is And) {
+                    val l = pushOr(Or(left, right.left))
+                    val r = pushOr(Or(left, right.right))
+                    And(l, r)
+                } else {
+                    Or(left, right)
+                }
+            }
+            is Forall -> formula.copy(formula = pushOr(formula.formula))
+            is Implies -> throw EXPECTED_NNF_FORMULA.internalError() // because already NNF
+            is Exists -> throw EXPECTED_NNF_FORMULA.internalError()  // because already SNF
+            else -> throw INVALID_FORMULA.internalError()
+        }
+    }
+
+    /**
+     * Removes all universal quantifiers (assuming already PNF, SNF and conjunction distributed).
+     */
+    fun removeForall(formula: Formula): Formula {
+        return when (formula) {
+            is Forall -> removeForall(formula.formula)
+            else -> formula // because already PNF
+        }
+    }
+    
+    return removeForall(pushOr(nnf))
 }
