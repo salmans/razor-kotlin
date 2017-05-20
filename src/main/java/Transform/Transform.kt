@@ -266,6 +266,74 @@ fun Formula.cnf(generator: SkolemGenerator = SkolemGenerator()): Formula {
             else -> formula // because already PNF
         }
     }
-    
+
     return removeForall(pushOr(nnf))
+}
+
+/**
+ * Applies basic syntactic simplification on the formula.
+ */
+fun Formula.simplify(): Formula {
+    return when (this) {
+        is Top, is Bottom, is Atom, is Equals -> this
+        is Not -> {
+            val formula = formula.simplify()
+            when (formula) {
+                is Top -> Bottom
+                is Bottom -> Top
+                is Not -> formula.formula.simplify()
+                else -> this.copy(formula = formula)
+            }
+        }
+        is And -> {
+            val left = left.simplify()
+            val right = right.simplify()
+            if (left is Bottom || right is Bottom) {
+                Bottom
+            } else if (right is Top) {
+                left
+            } else if (left is Top) {
+                right
+            } else {
+                this.copy(left = left, right = right)
+            }
+        }
+        is Or -> {
+            val left = left.simplify()
+            val right = right.simplify()
+            if (left is Top || right is Top) {
+                Top
+            } else if (right is Bottom) {
+                left
+            } else if (left is Bottom) {
+                right
+            } else {
+                this.copy(left = left, right = right)
+            }
+        }
+        is Implies -> {
+            val left = left.simplify()
+            val right = right.simplify()
+            if (left is Bottom || right is Top) {
+                Top
+            } else if (left is Top) {
+                right
+            } else if (right is Bottom) {
+                Not(left).simplify()
+            } else {
+                this.copy(left = left, right = right)
+            }
+        }
+        is Exists -> {
+            val formula = formula.simplify()
+            val vs = variables.intersect(formula.freeVars)
+            if (!vs.isEmpty()) this.copy(variables = vs.toList(), formula = formula) else formula
+        }
+        is Forall -> {
+            val formula = formula.simplify()
+            val vs = variables.intersect(formula.freeVars)
+            if (!vs.isEmpty()) this.copy(variables = vs.toList(), formula = formula) else formula
+        }
+        else -> throw INVALID_FORMULA.internalError()
+    }
 }
