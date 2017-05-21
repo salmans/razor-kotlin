@@ -13,6 +13,9 @@ enum class TokenType(vararg regex: String) {
     DOT("\\.") {
         override fun toString(): String = "."
     },
+    APOSTROPHE("\\'"){
+        override fun toString(): String = "'"
+    },
     LPAREN("\\(") {
         override fun toString(): String = "("
     },

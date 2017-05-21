@@ -7,12 +7,30 @@ import org.junit.Assert.assertEquals
 val f = Func("f")
 val g = Func("g")
 val h = Func("h")
+
 // Skolem functions
 val sk_0 = Func("sk#0")
 val sk_1 = Func("sk#1")
 val sk_2 = Func("sk#2")
 val sk_3 = Func("sk#3")
 val sk_4 = Func("sk#4")
+
+// Variables
+val a = Const("a")
+val a1 = Const("a1")
+val a2 = Const("a2")
+val a3 = Const("a3")
+val a4 = Const("a4")
+val b = Const("b")
+val b1 = Const("b1")
+val b2 = Const("b2")
+val b3 = Const("b3")
+val b4 = Const("b4")
+val c = Const("c")
+val c1 = Const("c1")
+val c2 = Const("c2")
+val c3 = Const("c3")
+val c4 = Const("c4")
 
 // Variables
 val u = Var("u")

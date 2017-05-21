@@ -22,6 +22,17 @@ internal class SyntaxTest {
     }
 
     @Test
+    fun printConst() {
+        assertEquals("'a", a.print())
+        assertEquals("'b", b.print())
+    }
+
+    @Test
+    fun freeVarConst() {
+        assertEquals(emptySet<Var>(), a.freeVars)
+    }
+
+    @Test
     fun printApp() {
         assertEquals("f()", f().print())
         assertEquals("f(x, y)", f(x, y).print())
