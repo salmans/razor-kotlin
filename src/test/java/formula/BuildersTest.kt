@@ -8,17 +8,23 @@ internal class BuildersTest {
     @Test
     fun func_invoke() {
         assertEquals(App(f), f())
+        assertEquals(App(f, listOf(a)), f(a))
         assertEquals(App(f, listOf(x)), f(x))
+        assertEquals(App(f, listOf(a, y)), f(a, y))
         assertEquals(App(f, listOf(x, y)), f(x, y))
         assertEquals(App(f, listOf(x, App(g, listOf(y)))), f(x, g(y)))
+        assertEquals(App(f, listOf(a, App(g, listOf(b)))), f(a, g(b)))
     }
 
     @Test
     fun rel_invoke() {
         assertEquals(Atom(R), R())
+        assertEquals(Atom(R, listOf(a)), R(a))
         assertEquals(Atom(R, listOf(x)), R(x))
+        assertEquals(Atom(R, listOf(a, y)), R(a, y))
         assertEquals(Atom(R, listOf(x, y)), R(x, y))
         assertEquals(Atom(R, listOf(x, App(g, listOf(y)))), R(x, g(y)))
+        assertEquals(Atom(R, listOf(a, App(g, listOf(b)))), R(a, g(b)))
     }
 
     @Test

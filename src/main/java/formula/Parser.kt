@@ -343,7 +343,12 @@ class Parser {
      * Term = LOWER LPAREN Terms RPAREN
      */
     private fun parseTerm(): Term? {
-        return when (match(TokenType.LOWER)?.type) {
+        return when (match(TokenType.APOSTROPHE, TokenType.LOWER)?.type) {
+            TokenType.APOSTROPHE -> {
+                consume(TokenType.APOSTROPHE)
+                val token = consume(TokenType.LOWER)
+                Const(token.token)
+            }
             TokenType.LOWER -> {
                 val firstToken = consume(TokenType.LOWER)
                 when (match(TokenType.LPAREN)?.type) {

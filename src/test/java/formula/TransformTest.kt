@@ -154,9 +154,21 @@ internal class TransformTest {
     @Test
     fun substituteTerm() {
         assertEquals(x, x.substitute { it })
+        assertEquals(a, a.substitute {
+            when (it) {
+                x -> y
+                else -> it
+            }
+        })
         assertEquals(y, x.substitute {
             when (it) {
                 x -> y
+                else -> it
+            }
+        })
+        assertEquals(a, x.substitute {
+            when (it) {
+                x -> a
                 else -> it
             }
         })
@@ -200,6 +212,13 @@ internal class TransformTest {
         assertEquals(f(f(f()), g(f(f()), h(z))), f(x, g(x, h(y))).substitute {
             when (it) {
                 x -> f(f())
+                y -> z
+                else -> it
+            }
+        })
+        assertEquals(f(f(a), g(f(a), h(z))), f(x, g(x, h(y))).substitute {
+            when (it) {
+                x -> f(a)
                 y -> z
                 else -> it
             }
@@ -276,6 +295,13 @@ internal class TransformTest {
             when (it) {
                 x -> f()
                 y -> g()
+                else -> it
+            }
+        })
+        assertEquals(P(a) implies Q(b), (P(x) implies Q(y)).substitute {
+            when (it) {
+                x -> a
+                y -> b
                 else -> it
             }
         })

@@ -5,6 +5,7 @@ package formula
  */
 fun Term.substitute(substitutions: (Var) -> Term): Term {
     return when (this) {
+        is Const -> this
         is Var -> substitutions(this)
         is App -> this.copy(terms = this.terms.map { it.substitute(substitutions) })
         else -> throw INVALID_TERM.internalError()
@@ -34,6 +35,7 @@ fun Formula.substitute(substitutions: (Var) -> Term): Formula {
  */
 fun Term.renameVar(renaming: (Var) -> Var): Term {
     return when (this) {
+        is Const -> this
         is Var -> renaming(this)
         is App -> this.copy(terms = this.terms.map { it.substitute(renaming) })
         else -> throw INVALID_TERM.internalError()

@@ -30,7 +30,7 @@ data class Func(val name: String) : Syntax {
 }
 
 /**
- * Variables
+ * Variable
  * e.g., x
  */
 data class Var(val name: String) : Term() {
@@ -40,10 +40,20 @@ data class Var(val name: String) : Term() {
 }
 
 /**
+ * Constant
+ * e.g., 'c
+ */
+data class Const(val name: String) : Term() {
+    override val freeVars: Set<Var> = emptySet()
+
+    override fun print(): String = "'$name"
+}
+
+/**
  * Function Application
  * e.g., f(x, y)
  *
- * Note: constants are functions of arity zero
+ * Note: although constants are technically zero arity functions, we distinguish constants and functions syntactically.
  */
 data class App(val function: Func, val terms: List<Term> = emptyList()) : Term() {
     override val freeVars by lazy { this.terms.flatMap(Term::freeVars).toSet() }
