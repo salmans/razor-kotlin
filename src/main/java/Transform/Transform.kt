@@ -337,3 +337,40 @@ fun Formula.simplify(): Formula {
         else -> throw INVALID_FORMULA.internalError()
     }
 }
+
+/**
+ * Transforms the formula to a set of formulas in geometric form.
+ */
+fun Formula.geometric(generator: SkolemGenerator = SkolemGenerator()): Set<Formula> {
+    // For any disjunct of the formula in CNF, the negative literals form the body of the geometric form
+    // and the positive literals form the head of the formula:
+    fun splitSides(disjunct: Formula): Pair<Set<Formula>, Set<Formula>> {
+        return when (disjunct) {
+            is Or -> {
+                val (leftBody, leftHead) = splitSides(disjunct.left)
+                val (rightBody, rightHead) = splitSides(disjunct.right)
+                Pair(leftBody + rightBody, leftHead + rightHead)
+            }
+            is Not -> Pair(setOf(disjunct.formula), emptySet())
+            else -> Pair(emptySet(), setOf(disjunct))
+        }
+    }
+
+    // Convert any disjunct of the formula in CNF to an implication. These implications are geometric sequents.
+    fun toImplication(disjunct: Formula): Formula {
+        val (bodies, heads) = splitSides(disjunct)
+        val body = bodies.fold(Top as Formula, {x, y -> And(x, y)}).simplify() // simplify to get rid of the potentially redundant initial Top
+        val head = heads.fold(Bottom as Formula, {x, y -> Or(x, y)}).simplify() // simplify to get rid of the potentially redundant initial Bottom
+        return Implies(body, head)
+    }
+
+    // Split the CNF form of the formula to a set of disjuncts.
+    fun getDisjuncts(cnf: Formula): Set<Formula> {
+        return when (cnf) {
+            is And -> getDisjuncts(cnf.left) + getDisjuncts(cnf.right)
+            else -> setOf(cnf)
+        }
+    }
+
+    return getDisjuncts(this.cnf(generator)).map { toImplication(it) }.toSet() // convert the CNF form of the formula to geometric
+}
