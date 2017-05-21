@@ -1,4 +1,4 @@
-package Formula
+package formula
 
 interface Syntax {
     /**

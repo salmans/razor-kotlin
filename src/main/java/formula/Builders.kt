@@ -1,4 +1,4 @@
-package Formula
+package formula
 
 val TRUE = Top
 val FALSE = Bottom

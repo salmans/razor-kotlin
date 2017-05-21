@@ -1,6 +1,5 @@
-package Transform
+package formula
 
-import Formula.*
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
