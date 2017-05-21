@@ -1,6 +1,4 @@
-package Transform
-
-import Formula.*
+package formula
 
 /**
  * Applies a substitution function on the term.
@@ -359,8 +357,8 @@ fun Formula.geometric(generator: SkolemGenerator = SkolemGenerator()): Set<Formu
     // Convert any disjunct of the formula in CNF to an implication. These implications are geometric sequents.
     fun toImplication(disjunct: Formula): Formula {
         val (bodies, heads) = splitSides(disjunct)
-        val body = bodies.fold(Top as Formula, {x, y -> And(x, y)}).simplify() // simplify to get rid of the potentially redundant initial Top
-        val head = heads.fold(Bottom as Formula, {x, y -> Or(x, y)}).simplify() // simplify to get rid of the potentially redundant initial Bottom
+        val body = bodies.fold(Top as Formula, { x, y -> And(x, y) }).simplify() // simplify to get rid of the potentially redundant initial Top
+        val head = heads.fold(Bottom as Formula, { x, y -> Or(x, y) }).simplify() // simplify to get rid of the potentially redundant initial Bottom
         return Implies(body, head)
     }
 
