@@ -566,4 +566,62 @@ internal class TransformTest {
         assertEquals(TRUE, ((P(x) or FALSE) or (P(x) or TRUE)).simplify())
         assertEquals(FALSE, ((P(x) and FALSE) and (P(x) and TRUE)).simplify())
     }
+
+    @Test
+    fun geometric() {
+        // sanity checking
+        assertEquals(setOf(TRUE implies TRUE), (TRUE).geometric())
+        assertEquals(setOf(TRUE implies FALSE), (FALSE).geometric())
+        assertEquals(setOf(TRUE implies P(x)), (P(x)).geometric())
+        assertEquals(setOf(TRUE implies (x equals y)), (x equals y).geometric())
+        assertEquals(setOf(P(x) implies FALSE), (!P(x)).geometric())
+        assertEquals(setOf(P(x) implies Q(x)), (P(x) implies Q(x)).geometric())
+        assertEquals(setOf(
+                TRUE implies P(x),
+                TRUE implies Q(x)
+        ), (P(x) and Q(x)).geometric())
+        assertEquals(setOf(
+                TRUE implies (P(x) or Q(x))
+        ), (P(x) or Q(x)).geometric())
+        assertEquals(setOf(
+                TRUE implies P(x)
+        ), (forall(x) { P(x) }).geometric())
+        assertEquals(setOf(
+                TRUE implies P(sk_0())
+        ), (exists(x) { P(x) }).geometric())
+
+        assertEquals(setOf(
+                P(x) and Q(x) implies (P(y) or Q(y))
+        ), (P(x) and Q(x) implies (P(y) or Q(y))).geometric())
+        assertEquals(setOf(
+                P(x) implies P(y),
+                P(x) implies Q(y),
+                Q(x) implies P(y),
+                Q(x) implies Q(y)
+        ), (P(x) or Q(x) implies (P(y) and Q(y))).geometric())
+        assertEquals(setOf(
+                P(x) implies P(y),
+                P(x) implies Q(y),
+                Q(x) implies P(y),
+                Q(x) implies Q(y)
+        ), (P(x) or Q(x) implies (P(y) and Q(y))).geometric())
+        assertEquals(setOf(
+                P(x) implies Q(x, sk_0(x))
+        ), (forall(x) { P(x) implies (exists(y) { Q(x, y) }) }).geometric())
+        assertEquals(setOf(
+                P(x) implies (Q(sk_0(x)) or P(sk_1(x))),
+                P(x) implies (Q(sk_0(x)) or S(x, sk_1(x))),
+                P(x) implies (R(x, sk_0(x)) or S(x, sk_1(x))),
+                P(x) implies (R(x, sk_0(x)) or P(sk_1(x)))
+        ), (forall(x) { P(x) implies (exists(y) { Q(y) and R(x, y) } or exists(y) { P(y) and S(x, y) }) }).geometric())
+        assertEquals(setOf(
+                ((P(x) and Q(y)) and R(x, y)) implies S(x, y)
+        ), (forall(x, y) { (P(x) and Q(y)) implies (R(x, y) implies S(x, y)) }).geometric())
+        assertEquals(setOf(
+                P(x_1) implies Q(x)
+        ), (exists(x) { P(x) } implies Q(x)).geometric())
+        assertEquals(setOf(
+                P(sk_0()) implies Q(sk_0())
+        ), (exists(x) { P(x) implies Q(x) }).geometric())
+    }
 }
