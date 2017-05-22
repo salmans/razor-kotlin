@@ -312,12 +312,12 @@ class Parser {
                 Equals(term1, term2)
             }
             TokenType.UPPER -> expect {
-                val relation = Rel(token.token)
+                val pred = Pred(token.token)
                 consume(TokenType.UPPER)
                 consume(TokenType.LPAREN)
                 val terms = parseTerms()
                 consume(TokenType.RPAREN)
-                Atom(relation, terms)
+                Atom(pred, terms)
             }
             TokenType.LPAREN -> expect {
                 consume(TokenType.LPAREN)

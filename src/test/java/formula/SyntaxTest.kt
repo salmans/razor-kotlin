@@ -51,7 +51,7 @@ internal class SyntaxTest {
     }
 
     @Test
-    fun printRel() {
+    fun printPred() {
         assertEquals("P", P.print())
         assertEquals("Q", Q.print())
     }
