@@ -80,9 +80,9 @@ fun Formula.printParens() = when (this) {
 }
 
 /**
- * Relations
+ * Predicate
  */
-data class Rel(val name: String) : Syntax {
+data class Pred(val name: String) : Syntax {
     override fun print(): String = name
 }
 
@@ -117,10 +117,10 @@ object Bottom : Formula() {
  * Atom
  * e.g. R(x, f(x))
  */
-data class Atom(val relation: Rel, val terms: List<Term> = emptyList()) : Formula() {
+data class Atom(val pred: Pred, val terms: List<Term> = emptyList()) : Formula() {
     override val freeVars by lazy { terms.flatMap(Term::freeVars).toSet() }
 
-    override fun print(): String = "${relation.print()}(${this.terms.print()})"
+    override fun print(): String = "${pred.print()}(${this.terms.print()})"
 }
 
 /**

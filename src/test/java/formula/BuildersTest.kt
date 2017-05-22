@@ -17,7 +17,7 @@ internal class BuildersTest {
     }
 
     @Test
-    fun rel_invoke() {
+    fun pred_invoke() {
         assertEquals(Atom(R), R())
         assertEquals(Atom(R, listOf(a)), R(a))
         assertEquals(Atom(R, listOf(x)), R(x))

@@ -4,7 +4,7 @@ val TRUE = Top
 val FALSE = Bottom
 
 operator fun Func.invoke(vararg terms: Term) = App(this, terms.toList())
-operator fun Rel.invoke(vararg terms: Term) = Atom(this, terms.toList())
+operator fun Pred.invoke(vararg terms: Term) = Atom(this, terms.toList())
 infix fun Term.equals(right: Term) = Equals(this, right)
 
 operator fun Formula.not() = Not(this)

@@ -15,7 +15,7 @@ val sk_2 = Func("sk#2")
 val sk_3 = Func("sk#3")
 val sk_4 = Func("sk#4")
 
-// Variables
+// Constants
 val a = Const("a")
 val a1 = Const("a1")
 val a2 = Const("a2")
@@ -31,6 +31,11 @@ val c1 = Const("c1")
 val c2 = Const("c2")
 val c3 = Const("c3")
 val c4 = Const("c4")
+val d = Const("d")
+val d1 = Const("d1")
+val d2 = Const("d2")
+val d3 = Const("d3")
+val d4 = Const("d4")
 
 // Variables
 val u = Var("u")
@@ -88,12 +93,12 @@ val z_2 = Var("z''")
 val z_3 = Var("z'''")
 val z_4 = Var("z''''")
 
-// Relations
-val E = Rel("E")
-val P = Rel("P")
-val Q = Rel("Q")
-val R = Rel("R")
-val S = Rel("S")
+// Predicates
+val E = Pred("E")
+val P = Pred("P")
+val Q = Pred("Q")
+val R = Pred("R")
+val S = Pred("S")
 
 
 fun assertTheoriesEqual(vararg expected: Formula, actual: Theory?) = assertEquals(Theory(expected.toList()), actual)
