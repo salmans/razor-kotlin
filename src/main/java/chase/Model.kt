@@ -32,6 +32,10 @@ data class Rel(val name: String) {
     override fun toString(): String = this.name
 }
 
+data class Observation(val relation: Rel, val terms: List<WitnessTerm>) {
+    override fun toString(): String = "${this.relation}${this.terms.joinToString (prefix = "<", postfix = ">"){ it.toString() }}"
+}
+
 data class Fact(val relation: Rel, val elements: List<Element>) {
     override fun toString(): String = "<${this.relation}${if(elements.isEmpty()) "" else ":"}${this.elements.joinToString { it.toString() }}>"
 }
@@ -40,4 +44,5 @@ interface Model {
     fun getDomain(): Set<Element>
     fun getFacts(): Set<Fact>
     fun getWitnesses(element: Element): Set<WitnessTerm>
+    fun addFacts(facts: Set<Fact>)
 }
