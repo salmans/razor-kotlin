@@ -44,5 +44,5 @@ interface Model {
     fun getDomain(): Set<Element>
     fun getFacts(): Set<Fact>
     fun getWitnesses(element: Element): Set<WitnessTerm>
-    fun addFacts(facts: Set<Fact>)
+    fun addObservations(observations: Set<Observation>)
 }
