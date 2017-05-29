@@ -111,19 +111,3 @@ fun <T> assertFailure(errorMessage: String, parseFunc: () -> T) {
         assertEquals(errorMessage, e.message)
     }
 }
-
-val BAD_TERM = object: Term(){
-    override fun print() = throw RuntimeException("Invalid Term")
-
-    override val freeVars
-        get() = throw RuntimeException("Invalid Term")
-
-}
-
-val BAD_FORMULA = object: Formula(){
-    override fun print() = throw RuntimeException("Invalid Term")
-
-    override val freeVars
-        get() = throw RuntimeException("Invalid Term")
-
-}

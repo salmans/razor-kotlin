@@ -46,11 +46,6 @@ internal class TransformTest {
                 else -> it
             }
         })
-        assertEquals(INVALID_TERM, try {
-            BAD_TERM.renameVar { it }
-        } catch (e: Exception) {
-            e.message
-        })
     }
 
     @Test
@@ -143,12 +138,6 @@ internal class TransformTest {
                         else -> it
                     }
                 })
-
-        assertEquals(INVALID_FORMULA, try {
-            BAD_FORMULA.renameVar { it }
-        } catch (e: Exception) {
-            e.message
-        })
     }
 
     @Test
@@ -222,11 +211,6 @@ internal class TransformTest {
                 y -> z
                 else -> it
             }
-        })
-        assertEquals(INVALID_TERM, try {
-            BAD_TERM.substitute { it }
-        } catch (e: Exception) {
-            e.message
         })
     }
 
@@ -327,11 +311,6 @@ internal class TransformTest {
                         else -> it
                     }
                 })
-        assertEquals(INVALID_FORMULA, try {
-            BAD_FORMULA.substitute { it }
-        } catch (e: Exception) {
-            e.message
-        })
     }
 
     @Test
@@ -434,12 +413,6 @@ internal class TransformTest {
         assertEquals(forall(x) { exists(y) { forall(z) { forall(x_1) { forall(w) { (Q(x) and !R(x_1)) or ((!Q(y) implies R(y))) } } } } }
                 , (forall(x) { exists(y) { (forall(z) { Q(x) and !exists(x) { R(x) } }) or (!Q(y) implies forall(w) { R(y) }) } }).pnf())
         assertEquals(forall(x) { exists(y) { exists(y_1) { P(y, x) implies Q(x, y_1) } } }, forall(x) { forall(y) { P(y, x) } implies exists(y) { Q(x, y) } }.pnf())
-
-        assertEquals(INVALID_FORMULA, try {
-            BAD_FORMULA.pnf()
-        } catch (e: Exception) {
-            e.message
-        })
     }
 
     @Test

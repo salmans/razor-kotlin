@@ -15,7 +15,7 @@ private fun <T : Syntax> List<T>.print(separator: String = ", "): String = joinT
 /**
  * Terms
  */
-abstract class Term : Syntax {
+sealed class Term : Syntax {
     /**
      * Returns a set of variables in this term.
      */
@@ -64,7 +64,7 @@ data class App(val function: Func, val terms: List<Term> = emptyList()) : Term()
 /**
  * Formulas
  */
-abstract class Formula : Syntax {
+sealed class Formula : Syntax {
     /**
      * Returns a set of free variables in this formula.
      */
@@ -144,15 +144,10 @@ data class Not(val formula: Formula) : Formula() {
 }
 
 /**
- * Superclass for binary formulas: {@code And}, {@code Or}, {@code Implies}
- */
-abstract class BinaryFormula(open val left: Formula, open val right: Formula) : Formula()
-
-/**
  * Conjunction
  * e.g. R(x) ∧ Q(y)
  */
-data class And(override val left: Formula, override val right: Formula) : BinaryFormula(left, right) {
+data class And(val left: Formula, val right: Formula) : Formula() {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
     override fun print(): String = "${left.printParens()} ∧ ${right.printParens()}"
@@ -162,7 +157,7 @@ data class And(override val left: Formula, override val right: Formula) : Binary
  * Disjunction
  * e.g. R(x) ∨ Q(y)
  */
-data class Or(override val left: Formula, override val right: Formula) : BinaryFormula(left, right) {
+data class Or(val left: Formula, val right: Formula) : Formula() {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
     override fun print(): String = "${left.printParens()} ∨ ${right.printParens()}"
@@ -172,22 +167,17 @@ data class Or(override val left: Formula, override val right: Formula) : BinaryF
  * Implication
  * e.g. P(x) → Q(x)
  */
-data class Implies(override val left: Formula, override val right: Formula) : BinaryFormula(left, right) {
+data class Implies(val left: Formula, val right: Formula) : Formula() {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
     override fun print(): String = "${left.printParens()} → ${right.printParens()}"
 }
 
 /**
- * Superclass for quantified formulas: {@code Forall} and {@code Exists}
- */
-abstract class QuantifiedFormula(open val variables: List<Var>, open val formula: Formula) : Formula()
-
-/**
  * Exists
  * e.g. ∃ x.P(x)
  */
-data class Exists(override val variables: List<Var>, override val formula: Formula) : QuantifiedFormula(variables, formula) {
+data class Exists(val variables: List<Var>, val formula: Formula) : Formula() {
     override val freeVars by lazy { this.formula.freeVars - variables }
 
     override fun print(): String = "∃ ${variables.print()}. ${formula.printParens()}"
@@ -197,7 +187,7 @@ data class Exists(override val variables: List<Var>, override val formula: Formu
  * Forall
  * e.g. ∀ x.P(x)
  */
-data class Forall(override val variables: List<Var>, override val formula: Formula) : QuantifiedFormula(variables, formula) {
+data class Forall(val variables: List<Var>, val formula: Formula) : Formula() {
     override val freeVars by lazy { this.formula.freeVars - variables }
 
     override fun print(): String = "∀ ${variables.print()}. ${formula.printParens()}"
