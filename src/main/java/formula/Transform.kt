@@ -194,7 +194,7 @@ fun Formula.snf(generator: SkolemGenerator = SkolemGenerator()): Formula {
     // {@code skolemHelper} helper to apply skolemization process recursively. The main purpose of
     // introducing this helper is to keep track of the universally quantified variables when generating
     // Skolem terms.
-    fun skolemHelper(formula: Formula, skolemVariables: List<Var>): Formula {
+    fun skolemHelper(formula: Formula, skolemVariables: Vars): Formula {
         return when (formula) {
             is Forall -> {
                 Forall(formula.variables, skolemHelper(formula.formula, skolemVariables + formula.variables))
