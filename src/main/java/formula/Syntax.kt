@@ -23,6 +23,11 @@ sealed class Term : Syntax {
 }
 
 /**
+ * A list of {@code Term}.
+ */
+typealias Terms = List<Term>
+
+/**
  * Functions
  */
 data class Func(val name: String) : Syntax {
@@ -40,6 +45,11 @@ data class Var(val name: String) : Term() {
 }
 
 /**
+ * A list of {@code Var}.
+ */
+typealias Vars = List<Var>
+
+/**
  * Constant
  * e.g., 'c
  */
@@ -55,7 +65,7 @@ data class Const(val name: String) : Term() {
  *
  * Note: although constants are technically zero arity functions, we distinguish constants and functions syntactically.
  */
-data class App(val function: Func, val terms: List<Term> = emptyList()) : Term() {
+data class App(val function: Func, val terms: Terms = emptyList()) : Term() {
     override val freeVars by lazy { this.terms.flatMap(Term::freeVars).toSet() }
 
     override fun print(): String = "${function.print()}(${terms.print()})"
@@ -117,7 +127,7 @@ object Bottom : Formula() {
  * Atom
  * e.g. R(x, f(x))
  */
-data class Atom(val pred: Pred, val terms: List<Term> = emptyList()) : Formula() {
+data class Atom(val pred: Pred, val terms: Terms = emptyList()) : Formula() {
     override val freeVars by lazy { terms.flatMap(Term::freeVars).toSet() }
 
     override fun print(): String = "${pred.print()}(${this.terms.print()})"
@@ -177,7 +187,7 @@ data class Implies(val left: Formula, val right: Formula) : Formula() {
  * Exists
  * e.g. ∃ x.P(x)
  */
-data class Exists(val variables: List<Var>, val formula: Formula) : Formula() {
+data class Exists(val variables: Vars, val formula: Formula) : Formula() {
     override val freeVars by lazy { this.formula.freeVars - variables }
 
     override fun print(): String = "∃ ${variables.print()}. ${formula.printParens()}"
@@ -187,7 +197,7 @@ data class Exists(val variables: List<Var>, val formula: Formula) : Formula() {
  * Forall
  * e.g. ∀ x.P(x)
  */
-data class Forall(val variables: List<Var>, val formula: Formula) : Formula() {
+data class Forall(val variables: Vars, val formula: Formula) : Formula() {
     override val freeVars by lazy { this.formula.freeVars - variables }
 
     override fun print(): String = "∀ ${variables.print()}. ${formula.printParens()}"

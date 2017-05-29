@@ -199,7 +199,7 @@ class Parser {
      * Parse a list of variables
      * Variables = Variable (COMMA Variable)*
      */
-    private fun parseVars(): List<Var> {
+    private fun parseVars(): Vars {
         return expect { parseVar() }.let { listOf(it) + many { commaSeparated { parseVar() } } }
     }
 
@@ -333,7 +333,7 @@ class Parser {
      * Parse a list of terms
      * Terms = Term*
      */
-    private fun parseTerms(): List<Term> {
+    private fun parseTerms(): Terms {
         return parseTerm()?.let { listOf(it) + many { commaSeparated { parseTerm() } } } ?: emptyList()
     }
 
