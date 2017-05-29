@@ -8,7 +8,6 @@ fun Term.substitute(substitutions: (Var) -> Term): Term {
         is Const -> this
         is Var -> substitutions(this)
         is App -> this.copy(terms = this.terms.map { it.substitute(substitutions) })
-        else -> throw INVALID_TERM.internalError()
     }
 }
 
@@ -26,7 +25,6 @@ fun Formula.substitute(substitutions: (Var) -> Term): Formula {
         is Implies -> this.copy(left = this.left.substitute(substitutions), right = this.right.substitute(substitutions))
         is Exists -> this.copy(variables = this.variables, formula = this.formula.substitute(substitutions))
         is Forall -> this.copy(variables = this.variables, formula = this.formula.substitute(substitutions))
-        else -> throw INVALID_FORMULA.internalError()
     }
 }
 
@@ -38,7 +36,6 @@ fun Term.renameVar(renaming: (Var) -> Var): Term {
         is Const -> this
         is Var -> renaming(this)
         is App -> this.copy(terms = this.terms.map { it.substitute(renaming) })
-        else -> throw INVALID_TERM.internalError()
     }
 }
 
@@ -56,7 +53,6 @@ fun Formula.renameVar(renaming: (Var) -> Var): Formula {
         is Implies -> this.copy(left = this.left.renameVar(renaming), right = this.right.renameVar(renaming))
         is Exists -> this.copy(variables = this.variables.map(renaming), formula = this.formula.renameVar(renaming))
         is Forall -> this.copy(variables = this.variables.map(renaming), formula = this.formula.renameVar(renaming))
-        else -> throw INVALID_FORMULA.internalError()
     }
 }
 
@@ -76,21 +72,6 @@ fun Formula.pnf(): Formula {
         return Var(name)
     }
 
-    /**
-     * Pulls a quantifier out of a side of binary formula. The function is primarily responsible to rename the quantified variables of
-     * {@code quantified}.
-     * @param quantified is the side of binary formula that is quantified.
-     * @param other is the other side of binary formula.
-     * @param quantifierFunction is the function that constructs the final quantified formula.
-     */
-    fun pullBinaryFormulaQuantifier(quantified: QuantifiedFormula, other: Formula,
-                                    quantifierFunction: (QuantifiedFormula, Formula) -> QuantifiedFormula): QuantifiedFormula {
-        val sharedVariables = quantified.variables.intersect(other.freeVars)
-        val allVariables = (quantified.variables + freeVars).toSet()
-        val renamed = quantified.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
-        return quantifierFunction(renamed as QuantifiedFormula, other)
-    }
-
     return when (this) {
         is Top, is Bottom, is Atom, is Equals -> this
     // e.g. ~(Qx. P(x)) -> Q' x. ~P(x)
@@ -102,52 +83,87 @@ fun Formula.pnf(): Formula {
                 else -> Not(f)
             }
         }
-        is BinaryFormula -> {
+
+    // e.g. (Q x. F(x)) & G(y)) => Q x'. F(x') & G(y) or F(x) & (Q y. G(y)) => Q y'. F(x) & G(y')
+        is And -> {
             val l = left.pnf()
             val r = right.pnf()
-            when (this) {
-            // e.g. (Q x. F(x)) & G(y)) => Q x'. F(x') & G(y) or F(x) & (Q y. G(y)) => Q y'. F(x) & G(y')
-                is And -> {
-                    if (l is Forall) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, And(q.formula, f).pnf()) })
-                    } else if (l is Exists) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, And(q.formula, f).pnf()) })
-                    } else if (r is Forall) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, And(f, q.formula).pnf()) })
-                    } else if (r is Exists) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, And(f, q.formula).pnf()) })
-                    } else And(l, r)
-                }
-            // e.g. (Q x. F(x)) | G(y)) => Q x'. F(x') | G(y) or F(x) | (Q y. G(y)) => Q y'. F(x) | G(y')
-                is Or -> {
-                    if (l is Forall) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, Or(q.formula, f).pnf()) })
-                    } else if (l is Exists) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, Or(q.formula, f).pnf()) })
-                    } else if (r is Forall) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, Or(f, q.formula).pnf()) })
-                    } else if (r is Exists) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, Or(f, q.formula).pnf()) })
-                    } else Or(l, r)
-                }
-            // e.g. (Q x. F(x)) -> G(y)) => Q' x'. F(x') -> G(y) or F(x) -> (Q y. G(y)) => Q' y'. F(x) -> G(y')
-                is Implies -> {
-                    if (l is Forall) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Exists(q.variables, Implies(q.formula, f).pnf()) })
-                    } else if (l is Exists) {
-                        pullBinaryFormulaQuantifier(l, r, { q, f -> Forall(q.variables, Implies(q.formula, f).pnf()) })
-                    } else if (r is Forall) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Forall(q.variables, Implies(f, q.formula).pnf()) })
-                    } else if (r is Exists) {
-                        pullBinaryFormulaQuantifier(r, l, { q, f -> Exists(q.variables, Implies(f, q.formula).pnf()) })
-                    } else Implies(l, r)
-                }
-                else -> throw INVALID_FORMULA.internalError()
-            }
+            if (l is Forall) {
+                val sharedVariables = l.variables.intersect(r.freeVars)
+                val allVariables = (l.variables + freeVars).toSet()
+                val renamed = l.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Forall((renamed as Forall).variables, And(renamed.formula, r).pnf())
+            } else if (l is Exists) {
+                val sharedVariables = l.variables.intersect(r.freeVars)
+                val allVariables = (l.variables + freeVars).toSet()
+                val renamed = l.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Exists((renamed as Exists).variables, And(renamed.formula, r).pnf())
+            } else if (r is Forall) {
+                val sharedVariables = r.variables.intersect(l.freeVars)
+                val allVariables = (r.variables + freeVars).toSet()
+                val renamed = r.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Forall((renamed as Forall).variables, And(l, renamed.formula).pnf())
+            } else if (r is Exists) {
+                val sharedVariables = r.variables.intersect(l.freeVars)
+                val allVariables = (r.variables + freeVars).toSet()
+                val renamed = r.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Exists((renamed as Exists).variables, And(l, renamed.formula).pnf())
+            } else And(l, r)
+        }
+    // e.g. (Q x. F(x)) | G(y)) => Q x'. F(x') | G(y) or F(x) | (Q y. G(y)) => Q y'. F(x) | G(y')
+        is Or -> {
+            val l = left.pnf()
+            val r = right.pnf()
+            if (l is Forall) {
+                val sharedVariables = l.variables.intersect(r.freeVars)
+                val allVariables = (l.variables + freeVars).toSet()
+                val renamed = l.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Forall((renamed as Forall).variables, Or(renamed.formula, r).pnf())
+            } else if (l is Exists) {
+                val sharedVariables = l.variables.intersect(r.freeVars)
+                val allVariables = (l.variables + freeVars).toSet()
+                val renamed = l.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Exists((renamed as Exists).variables, Or(renamed.formula, r).pnf())
+            } else if (r is Forall) {
+                val sharedVariables = r.variables.intersect(l.freeVars)
+                val allVariables = (r.variables + freeVars).toSet()
+                val renamed = r.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Forall((renamed as Forall).variables, Or(l, renamed.formula).pnf())
+            } else if (r is Exists) {
+                val sharedVariables = r.variables.intersect(l.freeVars)
+                val allVariables = (r.variables + freeVars).toSet()
+                val renamed = r.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Exists((renamed as Exists).variables, Or(l, renamed.formula).pnf())
+            } else Or(l, r)
+        }
+    // e.g. (Q x. F(x)) -> G(y)) => Q' x'. F(x') -> G(y) or F(x) -> (Q y. G(y)) => Q' y'. F(x) -> G(y')
+        is Implies -> {
+            val l = left.pnf()
+            val r = right.pnf()
+            if (l is Forall) {
+                val sharedVariables = l.variables.intersect(r.freeVars)
+                val allVariables = (l.variables + freeVars).toSet()
+                val renamed = l.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Exists((renamed as Forall).variables, Implies(renamed.formula, r).pnf())
+            } else if (l is Exists) {
+                val sharedVariables = l.variables.intersect(r.freeVars)
+                val allVariables = (l.variables + freeVars).toSet()
+                val renamed = l.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Forall((renamed as Exists).variables, Implies(renamed.formula, r).pnf())
+            } else if (r is Forall) {
+                val sharedVariables = r.variables.intersect(l.freeVars)
+                val allVariables = (r.variables + freeVars).toSet()
+                val renamed = r.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Forall((renamed as Forall).variables, Implies(l, renamed.formula).pnf())
+            } else if (r is Exists) {
+                val sharedVariables = r.variables.intersect(l.freeVars)
+                val allVariables = (r.variables + freeVars).toSet()
+                val renamed = r.renameVar { if (sharedVariables.contains(it)) renameVar(it, allVariables) else it }
+                Exists((renamed as Exists).variables, Implies(l, renamed.formula).pnf())
+            } else Implies(l, r)
         }
         is Forall -> this.copy(formula = formula.pnf())
         is Exists -> this.copy(formula = formula.pnf())
-        else -> throw INVALID_FORMULA.internalError()
     }
 }
 
@@ -211,14 +227,12 @@ fun Formula.nnf(): Formula {
             is Implies -> And(this.formula.left.nnf(), Not(this.formula.right).nnf())
             is Exists -> Forall(this.formula.variables, Not(this.formula.formula).nnf())
             is Forall -> Exists(this.formula.variables, Not(this.formula.formula).nnf())
-            else -> throw INVALID_FORMULA.internalError()
         }
         is And -> this.copy(left = this.left.nnf(), right = this.right.nnf())
         is Or -> this.copy(left = this.left.nnf(), right = this.right.nnf())
         is Implies -> Or(Not(this.left).nnf(), this.right.nnf())
         is Exists -> this.copy(variables = this.variables, formula = this.formula.nnf())
         is Forall -> this.copy(variables = this.variables, formula = this.formula.nnf())
-        else -> throw INVALID_FORMULA.internalError()
     }
 }
 
@@ -253,7 +267,6 @@ fun Formula.cnf(generator: SkolemGenerator = SkolemGenerator()): Formula {
             is Forall -> formula.copy(formula = pushOr(formula.formula))
             is Implies -> throw EXPECTED_NNF_FORMULA.internalError() // because already NNF
             is Exists -> throw EXPECTED_NNF_FORMULA.internalError()  // because already SNF
-            else -> throw INVALID_FORMULA.internalError()
         }
     }
 
@@ -334,7 +347,6 @@ fun Formula.simplify(): Formula {
             val vs = variables.intersect(formula.freeVars)
             if (!vs.isEmpty()) this.copy(variables = vs.toList(), formula = formula) else formula
         }
-        else -> throw INVALID_FORMULA.internalError()
     }
 }
 
