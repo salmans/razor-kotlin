@@ -1,5 +1,8 @@
 package chase
 
+import kotlin.test.assertEquals
+import kotlin.test.fail
+
 // Witness Functions
 val _f = WitnessFunc("f")
 val _g = WitnessFunc("g")
@@ -45,3 +48,12 @@ val _P = Rel("P")
 val _Q = Rel("Q")
 val _R = Rel("R")
 val _S = Rel("S")
+
+fun assertFailure (errorMessage: String, func: () -> Unit) {
+    try {
+        func()
+        fail("error expected!")
+    } catch (e: Exception) {
+        assertEquals(errorMessage, e.message)
+    }
+}

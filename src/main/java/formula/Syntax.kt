@@ -8,7 +8,7 @@ interface Syntax {
 }
 
 // print a list of syntactic elements
-private fun <T : Syntax> List<T>.print(separator: String = ", "): String = joinToString(separator = separator, transform = { it.print() })
+fun <T : Syntax> List<T>.print(separator: String = ", "): String = joinToString(separator = separator, transform = { it.print() })
 
 // Formulas ------------------------------------------------------------------------
 
