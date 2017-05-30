@@ -1,6 +1,7 @@
 package formula
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 
 
 // Functions
@@ -106,7 +107,7 @@ fun assertTheoriesEqual(vararg expected: Formula, actual: Theory?) = assertEqual
 fun <T> assertFailure(errorMessage: String, parseFunc: () -> T) {
     return try {
         parseFunc()
-        assert(false, { "exception expected!" })
+        fail("exception expected!" )
     } catch (e: Exception) {
         assertEquals(errorMessage, e.message)
     }
