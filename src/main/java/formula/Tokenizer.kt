@@ -151,7 +151,7 @@ fun tokenize(source: String): List<Token> {
                 match = true
                 isEnd = type == TokenType.END
                 val tok = if (isEnd) {
-                    "<End of Input>"
+                    TokenType.END.toString()
                 } else m.group()
                 tokens.add(Token(type, tok.trim(), Token.Location(line, column)))
                 column += tok.length
@@ -160,7 +160,7 @@ fun tokenize(source: String): List<Token> {
             }
         }
         // TODO use parser exception
-        if (!match) throw RuntimeException("Unexpected token at: $src")
+        if (!match) throw "Unexpected token at: $src".internalError()
     } while (!isEnd)
 
     return tokens
