@@ -39,19 +39,19 @@ sealed class Literal {
     }
 
     data class Atm(val pred: Pred, val terms: Terms) : Literal() {
-        override fun print(): String = "${pred.print()}(${this.terms.print()})"
+        override fun print(): String = "$pred(${this.terms.joinToString(", ")})"
     }
 
     data class Eql(val left: Term, val right: Term) : Literal() {
-        override fun print(): String = "${left.print()} = ${right.print()}"
+        override fun print(): String = "$left = $right"
     }
 
     data class Neg(val pred: Pred, val terms: Terms) : Literal() {
-        override fun print(): String = "¬${pred.print()}(${this.terms.print()})"
+        override fun print(): String = "¬$pred(${this.terms.joinToString(", ")})"
     }
 
     data class Neq(val left: Term, val right: Term) : Literal() {
-        override fun print(): String = "${left.print()} ≠ ${right.print()}"
+        override fun print(): String = "$left ≠ $right"
     }
 }
 
