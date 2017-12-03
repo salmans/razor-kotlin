@@ -1,14 +1,6 @@
 package formula
 
-interface Syntax {
-    /**
-     * Print the element in a human readable form.
-     */
-    fun print(): String
-}
-
-// print a list of syntactic elements
-fun <T : Syntax> List<T>.print(separator: String = ", "): String = joinToString(separator = separator, transform = { it.print() })
+interface Syntax
 
 // Formulas ------------------------------------------------------------------------
 
@@ -31,7 +23,7 @@ typealias Terms = List<Term>
  * Functions
  */
 data class Func(val name: String) : Syntax {
-    override fun print(): String = name
+    override fun toString(): String = name
 }
 
 /**
@@ -41,7 +33,7 @@ data class Func(val name: String) : Syntax {
 data class Var(val name: String) : Term() {
     override val freeVars by lazy { setOf(this) }
 
-    override fun print(): String = name
+    override fun toString(): String = name
 }
 
 /**
@@ -56,7 +48,7 @@ typealias Vars = List<Var>
 data class Const(val name: String) : Term() {
     override val freeVars: Set<Var> = emptySet()
 
-    override fun print(): String = "'$name"
+    override fun toString(): String = "'$name"
 }
 
 /**
@@ -68,7 +60,7 @@ data class Const(val name: String) : Term() {
 data class App(val function: Func, val terms: Terms = emptyList()) : Term() {
     override val freeVars by lazy { this.terms.flatMap(Term::freeVars).toSet() }
 
-    override fun print(): String = "${function.print()}(${terms.print()})"
+    override fun toString(): String = "$function(${terms.joinToString(", ")})"
 }
 
 /**
@@ -85,15 +77,15 @@ sealed class Formula : Syntax {
  * Prints parenthesis around non atomic formulas.
  */
 fun Formula.printParens() = when (this) {
-    is Atom -> print()
-    else -> "(${print()})"
+    is Atom -> toString()
+    else -> "($this)"
 }
 
 /**
  * Predicate
  */
 data class Pred(val name: String) : Syntax {
-    override fun print(): String = name
+    override fun toString(): String = name
 }
 
 // Theory ------------------------------------------------------------------------
@@ -101,7 +93,7 @@ data class Pred(val name: String) : Syntax {
  * Theory
  */
 data class Theory(val formulas: List<Formula>) : Syntax {
-    override fun print() = formulas.print("\n")
+    override fun toString() = formulas.joinToString("\n")
 }
 
 // Formulas ------------------------------------------------------------------------
@@ -111,7 +103,7 @@ data class Theory(val formulas: List<Formula>) : Syntax {
 object Top : Formula() {
     override val freeVars = emptySet<Var>()
 
-    override fun print() = "⊤"
+    override fun toString() = "⊤"
 }
 
 /**
@@ -120,7 +112,7 @@ object Top : Formula() {
 object Bottom : Formula() {
     override val freeVars = emptySet<Var>()
 
-    override fun print() = "⟘"
+    override fun toString() = "⟘"
 }
 
 /**
@@ -130,7 +122,7 @@ object Bottom : Formula() {
 data class Atom(val pred: Pred, val terms: Terms = emptyList()) : Formula() {
     override val freeVars by lazy { terms.flatMap(Term::freeVars).toSet() }
 
-    override fun print(): String = "${pred.print()}(${this.terms.print()})"
+    override fun toString(): String = "$pred(${this.terms.joinToString(", ")})"
 }
 
 /**
@@ -140,7 +132,7 @@ data class Atom(val pred: Pred, val terms: Terms = emptyList()) : Formula() {
 data class Equals(val left: Term, val right: Term) : Formula() {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
-    override fun print(): String = "${left.print()} = ${right.print()}"
+    override fun toString(): String = "$left = $right"
 }
 
 /**
@@ -150,7 +142,7 @@ data class Equals(val left: Term, val right: Term) : Formula() {
 data class Not(val formula: Formula) : Formula() {
     override val freeVars by lazy { this.formula.freeVars }
 
-    override fun print(): String = "¬${formula.printParens()}"
+    override fun toString(): String = "¬${formula.printParens()}"
 }
 
 /**
@@ -160,7 +152,7 @@ data class Not(val formula: Formula) : Formula() {
 data class And(val left: Formula, val right: Formula) : Formula() {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
-    override fun print(): String = "${left.printParens()} ∧ ${right.printParens()}"
+    override fun toString(): String = "${left.printParens()} ∧ ${right.printParens()}"
 }
 
 /**
@@ -170,7 +162,7 @@ data class And(val left: Formula, val right: Formula) : Formula() {
 data class Or(val left: Formula, val right: Formula) : Formula() {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
-    override fun print(): String = "${left.printParens()} ∨ ${right.printParens()}"
+    override fun toString(): String = "${left.printParens()} ∨ ${right.printParens()}"
 }
 
 /**
@@ -180,7 +172,7 @@ data class Or(val left: Formula, val right: Formula) : Formula() {
 data class Implies(val left: Formula, val right: Formula) : Formula() {
     override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
 
-    override fun print(): String = "${left.printParens()} → ${right.printParens()}"
+    override fun toString(): String = "${left.printParens()} → ${right.printParens()}"
 }
 
 /**
@@ -190,7 +182,7 @@ data class Implies(val left: Formula, val right: Formula) : Formula() {
 data class Exists(val variables: Vars, val formula: Formula) : Formula() {
     override val freeVars by lazy { this.formula.freeVars - variables }
 
-    override fun print(): String = "∃ ${variables.print()}. ${formula.printParens()}"
+    override fun toString(): String = "∃ ${variables.joinToString(", ")}. ${formula.printParens()}"
 }
 
 /**
@@ -200,6 +192,6 @@ data class Exists(val variables: Vars, val formula: Formula) : Formula() {
 data class Forall(val variables: Vars, val formula: Formula) : Formula() {
     override val freeVars by lazy { this.formula.freeVars - variables }
 
-    override fun print(): String = "∀ ${variables.print()}. ${formula.printParens()}"
+    override fun toString(): String = "∀ ${variables.joinToString(", ")}. ${formula.printParens()}"
 }
 
