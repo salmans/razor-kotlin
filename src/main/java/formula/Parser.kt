@@ -62,12 +62,12 @@ class Parser {
      * Consumes a token of the given type.
      */
     fun consume(type: TokenType): Token {
-        peek().let {
+        return peek().let {
             if (it.type != type) {
-                throw ParserException("Parse error at ${it.location}: expecting '$type' but '${it.token}' is found.")
+                throw "Parse error at ${it.location}: expecting '$type' but '${it.token}' is found.".parserException()
             }
             index++
-            return it
+            it
         }
     }
 
@@ -75,17 +75,16 @@ class Parser {
      * Expects a parser to successfully run on the input tokens. A parse error is generated if the parser fails.
      */
     private fun <T> expect(parser: () -> T?): T {
-        parser().let {
+        return parser().let {
             if (it != null) {
                 // the parser succeeds: reset the expected tokens at the *current level*
                 expectedTokenStack.pop()
                 expectedTokenStack.push(emptyList())
-                return it
+                it
             } else {
                 // generate a parser error
                 peek().let {
-                    throw ParserException("Parse error at ${it.location}: " +
-                            "expecting ${expectedTokenStack.pop().joinToString { "'$it'" }} but '${it.token}' is found.")
+                    throw "Parse error at ${it.location}: expecting ${expectedTokenStack.pop().joinToString { "'$it'" }} but '${it.token}' is found.".parserException()
                 }
             }
         }
@@ -143,7 +142,7 @@ class Parser {
      */
     private fun parseTheory(): Theory? {
         val formulas = many {
-            return@many when (peek().type) {
+            when (peek().type) {
                 TokenType.END -> null
                 else -> expect { parseFormula() }
             }
@@ -160,12 +159,12 @@ class Parser {
         val formulas = many {
             when (match(TokenType.IMPLIES)?.type) {
                 TokenType.IMPLIES -> {
-                    return@many expect {
+                    expect {
                         consume(TokenType.IMPLIES)
                         parseQuantified()
                     }
                 }
-                else -> return@many null
+                else -> null
             }
         }
         return formulas.fold(formula, ::Implies)
@@ -229,7 +228,7 @@ class Parser {
         val formula = expect { parseAnd() }
         val formulas = many {
             when (match(TokenType.OR)?.type) {
-                TokenType.OR -> return@many expect {
+                TokenType.OR -> expect {
                     consume(TokenType.OR)
                     when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
                         TokenType.EXISTS -> expect { parseQuantified() }
@@ -237,10 +236,15 @@ class Parser {
                         else -> expect { parseAnd() }
                     }
                 }
-                else -> return@many null
+                else -> null
             }
         }
-        return formulas.fold(formula, ::Or)
+
+        return if (formulas.isEmpty()) {
+            formula
+        } else {
+            Or(formula, formulas.dropLast(1).foldRight(formulas.last(), ::Or))
+        }
     }
 
     /**
@@ -253,7 +257,7 @@ class Parser {
         val formula = expect { parseNot() }
         val formulas = many {
             when (match(TokenType.AND)?.type) {
-                TokenType.AND -> return@many expect {
+                TokenType.AND -> expect {
                     consume(TokenType.AND)
                     when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
                         TokenType.EXISTS -> expect { parseQuantified() }
@@ -261,10 +265,15 @@ class Parser {
                         else -> expect { parseNot() }
                     }
                 }
-                else -> return@many null
+                else -> null
             }
         }
-        return formulas.fold(formula, ::And)
+
+        return if (formulas.isEmpty()) {
+            formula
+        } else {
+            And(formula, formulas.dropLast(1).foldRight(formulas.last(), ::And))
+        }
     }
 
     /**

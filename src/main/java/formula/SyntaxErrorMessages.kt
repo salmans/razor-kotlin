@@ -8,3 +8,4 @@ val INVALID_SEQUENT_FALSE_BODY: ErrorMessage = "Invalid Sequent: Unexpected fals
 
 
 fun ErrorMessage.internalError() = RuntimeException(this)
+fun ErrorMessage.parserException() = ParserException(this)

@@ -5,6 +5,10 @@ import org.junit.Test
 
 internal class ParserTest {
     @Test
+    fun tempTest() {
+    }
+
+    @Test
     fun parse() {
         assertTheoriesEqual(TRUE
                 , actual = "TRUE".parseTheory())
@@ -74,11 +78,11 @@ internal class ParserTest {
                 , actual = "forall x . exists y . P(x, y)".parseTheory())
         assertTheoriesEqual(P(x) or Q(y)
                 , actual = "P(x) or Q(y)".parseTheory())
-        assertTheoriesEqual((P(x) or Q(y)) or R(z)
+        assertTheoriesEqual(P(x) or (Q(y) or R(z))
                 , actual = "P(x) or Q(y) or R(z)".parseTheory())
         assertTheoriesEqual((P(x) or Q(y)) or R(z)
                 , actual = "(P(x) or Q(y)) or R(z)".parseTheory())
-        assertTheoriesEqual((P(x) or Q(y)) or (R(z) or S(z))
+        assertTheoriesEqual(P(x) or (Q(y) or (R(z) or S(z)))
                 , actual = "P(x) or Q(y) or (R(z) or S(z))".parseTheory())
         assertTheoriesEqual(P(x) implies (Q(x) or R(x))
                 , actual = "P(x) implies Q(x) or R(x)".parseTheory())
@@ -100,8 +104,10 @@ internal class ParserTest {
                 , actual = "P(x) and (Q(y) or R(z))".parseTheory())
         assertTheoriesEqual(P(x) or (Q(y) and R(z))
                 , actual = "P(x) or Q(y) and R(z)".parseTheory())
-        assertTheoriesEqual((P(x) and Q(y)) and R(z)
+        assertTheoriesEqual(P(x) and (Q(y) and R(z))
                 , actual = "P(x) and Q(y) and R(z)".parseTheory())
+        assertTheoriesEqual(P(w) and (Q(x) and (R(y) and S(z)))
+                , actual = "P(w) and Q(x) and R(y) and S(z)".parseTheory())
         assertTheoriesEqual((P(x) and Q(y)) and R(z)
                 , actual = "(P(x) and Q(y)) and R(z)".parseTheory())
         assertTheoriesEqual((P(x) and Q(y)) implies R(z)
