@@ -1,9 +1,14 @@
 package formula
 
 /**
+ * A Substitution is a function from variables to terms.
+ */
+typealias Substitution = (Var) -> Term
+
+/**
  * Applies a substitution function on the term.
  */
-fun Term.substitute(substitutions: (Var) -> Term): Term = when (this) {
+fun Term.substitute(substitutions: Substitution): Term = when (this) {
     is Const -> this
     is Var -> substitutions(this)
     is App -> this.copy(terms = this.terms.map { it.substitute(substitutions) })
@@ -12,7 +17,7 @@ fun Term.substitute(substitutions: (Var) -> Term): Term = when (this) {
 /**
  * Applies a substitution function on a formula.
  */
-fun Formula.substitute(substitutions: (Var) -> Term): Formula = when (this) {
+fun Formula.substitute(substitutions: Substitution): Formula = when (this) {
     is Top, is Bottom -> this
     is Atom -> this.copy(terms = this.terms.map { it.substitute(substitutions) })
     is Equals -> this.copy(left = this.left.substitute(substitutions), right = this.right.substitute(substitutions))
@@ -66,8 +71,7 @@ fun Formula.pnf(): Formula {
 
     return when (this) {
         is Top, is Bottom, is Atom, is Equals -> this
-    // e.g. ~(Qx. P(x)) -> Q' x. ~P(x)
-        is Not -> {
+        is Not -> { // e.g. ~(Qx. P(x)) -> Q' x. ~P(x)
             val f = formula.pnf()
             when (f) {
                 is Forall -> Exists(f.variables, Not(f.formula).pnf())
@@ -75,9 +79,7 @@ fun Formula.pnf(): Formula {
                 else -> Not(f)
             }
         }
-
-    // e.g. (Q x. F(x)) & G(y)) => Q x'. F(x') & G(y) or F(x) & (Q y. G(y)) => Q y'. F(x) & G(y')
-        is And -> {
+        is And -> { // e.g. (Q x. F(x)) & G(y)) => Q x'. F(x') & G(y) or F(x) & (Q y. G(y)) => Q y'. F(x) & G(y')
             val l = left.pnf()
             val r = right.pnf()
             if (l is Forall) {
@@ -102,8 +104,7 @@ fun Formula.pnf(): Formula {
                 Exists((renamed as Exists).variables, And(l, renamed.formula).pnf())
             } else And(l, r)
         }
-    // e.g. (Q x. F(x)) | G(y)) => Q x'. F(x') | G(y) or F(x) | (Q y. G(y)) => Q y'. F(x) | G(y')
-        is Or -> {
+        is Or -> { // e.g. (Q x. F(x)) | G(y)) => Q x'. F(x') | G(y) or F(x) | (Q y. G(y)) => Q y'. F(x) | G(y')
             val l = left.pnf()
             val r = right.pnf()
             if (l is Forall) {
@@ -128,8 +129,7 @@ fun Formula.pnf(): Formula {
                 Exists((renamed as Exists).variables, Or(l, renamed.formula).pnf())
             } else Or(l, r)
         }
-    // e.g. (Q x. F(x)) -> G(y)) => Q' x'. F(x') -> G(y) or F(x) -> (Q y. G(y)) => Q' y'. F(x) -> G(y')
-        is Implies -> {
+        is Implies -> { // e.g. (Q x. F(x)) -> G(y)) => Q' x'. F(x') -> G(y) or F(x) -> (Q y. G(y)) => Q' y'. F(x) -> G(y')
             val l = left.pnf()
             val r = right.pnf()
             if (l is Forall) {
@@ -190,7 +190,7 @@ fun Formula.snf(generator: SkolemGenerator = SkolemGenerator()): Formula {
         return when (formula) {
             is Forall -> Forall(formula.variables, skolemHelper(formula.formula, skolemVariables + formula.variables))
             is Exists -> {
-                // Notice that we don't apply all substitutions at the end but during the recursive call to account for shadowing variable names:
+                // Notice that it doesn't apply all substitutions at the end but during the recursive call to account for shadowing variable names:
                 val substitutionMap = formula.variables.map { Pair(it, App(Func(generator.nextFunction()), skolemVariables)) }.toMap()
                 return skolemHelper(formula.formula.substitute { substitutionMap[it] ?: it }, skolemVariables)
             }
