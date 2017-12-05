@@ -10,12 +10,12 @@ interface WitnessTerm
  * Functions
  */
 data class WitnessFunc(val name: String) {
-    constructor(function: Func): this(function.name)
+    constructor(function: Func): this(function.name) // create a witness function for an existing function
     override fun toString(): String = this.name
 }
 
 data class WitnessConst(val name: String) : WitnessTerm {
-    constructor(constant: Const): this(constant.name)
+    constructor(constant: Const): this(constant.name) // create a witness constant for an existing constant
     override fun toString(): String = "'${this.name}"
 }
 

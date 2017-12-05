@@ -368,3 +368,8 @@ fun Formula.geometric(generator: SkolemGenerator = SkolemGenerator()): Set<Formu
 
     return getDisjuncts(this.cnf(generator)).map { toImplication(it) }.toSet() // convert the CNF form of the formula to geometric
 }
+
+fun Theory.geometric(): Theory {
+    val generator = SkolemGenerator()
+    return Theory(this.formulas.flatMap { it.geometric(generator) })
+}

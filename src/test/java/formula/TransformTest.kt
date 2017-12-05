@@ -566,7 +566,7 @@ internal class TransformTest {
     }
 
     @Test
-    fun geometric() {
+    fun geometricFormula() {
         // sanity checking
         assertEquals(setOf(TRUE implies TRUE), (TRUE).geometric())
         assertEquals(setOf(TRUE implies FALSE), (FALSE).geometric())
@@ -621,5 +621,17 @@ internal class TransformTest {
         assertEquals(setOf(
                 P(sk_0()) implies Q(sk_0())
         ), (exists(x) { P(x) implies Q(x) }).geometric())
+    }
+
+    @Test
+    fun geometricTheory() {
+        assertEquals(Theory(listOf(TRUE implies P(sk_0()),
+                P(x) implies Q(f(x)),
+                Q(f(x)) implies R(sk_1()))),
+                Theory(listOf(
+                        exists(x) { P(x) },
+                        P(x) implies Q(f(x)),
+                        Q(f(x)) implies exists(y) { R(y) }
+                )).geometric())
     }
 }
