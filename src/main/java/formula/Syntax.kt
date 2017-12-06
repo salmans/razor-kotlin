@@ -12,6 +12,8 @@ sealed class Term : Syntax {
      * Returns a set of variables in this term.
      */
     abstract val freeVars: Set<Var>
+
+    abstract override fun toString(): String
 }
 
 /**
