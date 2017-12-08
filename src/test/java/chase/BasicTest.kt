@@ -9,55 +9,77 @@ class BasicTest {
     fun testEmptyBasic() {
         BasicModel().let {
             assertEquals(emptySet(), it.getDomain())
-            assertEquals(emptySet(), it.getFacts())
+            assertEquals(emptySet(), it.getObservations())
             assertEquals(emptySet(), it.getWitnesses(e_0))
+        }
+    }
+
+    @Test
+    fun testAddElement() {
+        BasicModel().let {
+            it.addElement(e_0)
+            assertEquals(setOf(e_0), it.getDomain())
+        }
+        BasicModel().let {
+            it.addElement(e_0)
+            it.addElement(e_0)
+            assertEquals(setOf(e_0), it.getDomain())
+        }
+        BasicModel().let {
+            it.addElement(e_0)
+            it.addElement(e_1)
+            it.addElement(e_2)
+            assertEquals(setOf(e_0, e_1, e_2), it.getDomain())
         }
     }
 
     @Test
     fun testAddObservations() {
         BasicModel().let {
-            it.addObservations(setOf(_R()))
-            assertEquals(emptySet(), it.getDomain())
-            assertEquals(setOf(_R.fact()), it.getFacts())
-            assertEquals(emptySet(), it.getWitnesses(e_0))
+            it.addObservation(_R())
+            assertEquals(setOf(_R.observe()), it.getObservations())
         }
         BasicModel().let {
-            it.addObservations(setOf(_R(_c)))
-            assertEquals(setOf(e_0), it.getDomain())
-            assertEquals(setOf(_R.fact(e_0)), it.getFacts())
-            assertEquals(setOf(_c), it.getWitnesses(e_0))
+            it.addObservation(_R(e_0))
+            assertEquals(setOf(_R.observe(e_0)), it.getObservations())
         }
         BasicModel().let {
-            it.addObservations(setOf(_R(_c, _f(_d))))
-            assertEquals(setOf(e_0, e_1), it.getDomain())
-            assertEquals(setOf(_R.fact(e_0, e_1)), it.getFacts())
-            assertEquals(setOf(_c), it.getWitnesses(e_0))
-            assertEquals(setOf(_f(_d)), it.getWitnesses(e_1))
+            it.addObservation(_R(e_0, e_1))
+            assertEquals(setOf(_R.observe(e_0, e_1)), it.getObservations())
         }
         BasicModel().let {
-            it.addObservations(setOf(_R(_c, _f(_d)), _S(_d, _g(_f(_a)))))
-            assertEquals(setOf(e_0, e_1, e_2, e_3), it.getDomain())
-            assertEquals(setOf(_R.fact(e_0, e_1), _S.fact(e_2, e_3)), it.getFacts())
-            assertEquals(setOf(_c), it.getWitnesses(e_0))
-            assertEquals(setOf(_f(_d)), it.getWitnesses(e_1))
-            assertEquals(setOf(_d), it.getWitnesses(e_2))
-            assertEquals(setOf(_g(_f(_a))), it.getWitnesses(e_3))
+            it.addObservation(_R(e_0, e_1))
+            it.addObservation(_S(e_2, e_3))
+            assertEquals(setOf(_R.observe(e_0, e_1), _S.observe(e_2, e_3)), it.getObservations())
         }
         BasicModel().let {
-            it.addObservations(setOf(_R(_a, _b), _S(_f(_a))))
-            it.addObservations(setOf(_R(_f(_c), _d), _S(_b)))
-            assertEquals(setOf(e_0, e_1, e_2, e_3, e_4, e_5), it.getDomain())
-            assertEquals(setOf(_R.fact(e_0, e_1), _S.fact(e_2), _R.fact(e_3, e_4), _S.fact(e_5)), it.getFacts())
-            assertEquals(setOf(_a), it.getWitnesses(e_0))
-            assertEquals(setOf(_b), it.getWitnesses(e_1))
-            assertEquals(setOf(_f(_a)), it.getWitnesses(e_2))
-            assertEquals(setOf(_f(_c)), it.getWitnesses(e_3))
-            assertEquals(setOf(_d), it.getWitnesses(e_4))
-            assertEquals(setOf(_b), it.getWitnesses(e_5))
+            it.addObservation(_R(e_0, e_1))
+            it.addObservation(_S(e_2))
+            it.addObservation(_R(e_3, e_4))
+            it.addObservation(_S(e_5))
+            assertEquals(setOf(_R.observe(e_0, e_1), _S.observe(e_2), _R.observe(e_3, e_4), _S.observe(e_5)), it.getObservations())
         }
     }
-    
+
+    @Test
+    fun testAddWitnesses() {
+        BasicModel().let {
+            it.addWitness(e_0, _a)
+            assertEquals(setOf(_a), it.getWitnesses(e_0))
+        }
+        BasicModel().let {
+            it.addWitness(e_0, _a)
+            it.addWitness(e_0, _b)
+            it.addWitness(e_0, _c)
+            it.addWitness(e_0, _a)
+            it.addWitness(e_0, _d)
+            assertEquals(setOf(_a, _b, _c, _d), it.getWitnesses(e_0))
+            it.addWitness(e_1, _f(_a))
+            assertEquals(setOf(_a, _b, _c, _d), it.getWitnesses(e_0))
+            assertEquals(setOf(_f(_a)), it.getWitnesses(e_1))
+        }
+    }
+
     @Test
     fun testLit() {
         assertEquals(Literal.Tru, Top.lit())

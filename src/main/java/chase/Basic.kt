@@ -3,28 +3,27 @@ package chase
 import formula.*
 
 class BasicModel : Model {
-    private var elementIndex: Int = 0
+    private var domain: HashSet<Element> = HashSet()
+    private var observations: HashSet<Observation> = HashSet()
+    private var witnesses: HashMap<Element, Set<WitnessTerm>> = HashMap()
 
-    private var _domain: HashSet<Element> = HashSet()
-    private var _facts: HashSet<Fact> = HashSet()
-    private var _witnesses: HashMap<Element, Set<WitnessTerm>> = HashMap()
-
-    override fun getDomain(): Set<Element> = _domain
-
-    override fun getFacts(): Set<Fact> = _facts
-
-    override fun getWitnesses(element: Element): Set<WitnessTerm> = _witnesses[element] ?: emptySet()
-
-    override fun addObservations(observations: Set<Observation>) {
-        observations.forEach {
-            val es = (elementIndex..(elementIndex + it.terms.size - 1)).map { Element(it) }
-            elementIndex += it.terms.size
-            val wits = es.zip(it.terms.map { setOf(it) })
-            _domain.addAll(es)
-            _facts.add(Fact(it.relation, es))
-            _witnesses.putAll(wits)
-        }
+    override fun addElement(element: Element) {
+        domain.add(element)
     }
+
+    override fun getDomain(): Set<Element> = domain
+
+    override fun addWitness(element: Element, witness: WitnessTerm) {
+        this.witnesses.put(element, this.witnesses[element].orEmpty().plus(witness))
+    }
+
+    override fun getWitnesses(element: Element): Set<WitnessTerm> = witnesses[element] ?: emptySet()
+
+    override fun addObservation(observation: Observation) {
+        this.observations.add(observation)
+    }
+
+    override fun getObservations(): Set<Observation> = observations
 }
 
 sealed class Literal {
@@ -119,7 +118,7 @@ class BasicSequent(formula: Formula) : Sequent<BasicModel> {
         head = if (formula is Implies) buildHead(formula.right) else buildHead(formula)
     }
 
-    override fun evaluate(model: BasicModel): Set<Fact> {
+    override fun evaluate(model: BasicModel): Set<Observation> {
         return emptySet()
     }
 }
