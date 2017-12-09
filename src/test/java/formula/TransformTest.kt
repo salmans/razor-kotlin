@@ -621,6 +621,9 @@ internal class TransformTest {
         assertEquals(setOf(
                 P(sk_0()) implies Q(sk_0())
         ), (exists(x) { P(x) implies Q(x) }).geometric())
+        assertEquals(setOf(
+                TRUE implies TRUE // always true!
+        ), (FALSE implies P(x)).geometric())
     }
 
     @Test

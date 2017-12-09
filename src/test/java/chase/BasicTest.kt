@@ -82,8 +82,6 @@ class BasicTest {
 
     @Test
     fun testLit() {
-        assertEquals(Literal.Tru, Top.lit())
-        assertEquals(Literal.Fls, Bottom.lit())
         assertEquals(Literal.Atm(P, listOf(x)), P(x).lit())
         assertEquals(Literal.Atm(P, listOf(x, f(y))), P(x, f(y)).lit())
         assertEquals(Literal.Eql(x, y), (x equals y).lit())
@@ -92,8 +90,6 @@ class BasicTest {
 
     @Test
     fun testNeg() {
-        assertEquals(Literal.Fls, Top.neg())
-        assertEquals(Literal.Tru, Bottom.neg())
         assertEquals(Literal.Neg(P, listOf(x)), P(x).neg())
         assertEquals(Literal.Neg(P, listOf(x, f(y))), P(x, f(y)).neg())
         assertEquals(Literal.Neq(x, y), (x equals y).neg())
@@ -102,14 +98,10 @@ class BasicTest {
 
     @Test
     fun printLit() {
-        assertEquals("⊤", Top.lit().print())
-        assertEquals("⟘", Bottom.lit().print())
         assertEquals("P(x)", P(x).lit().print())
         assertEquals("P(f(x), g(y))", P(f(x), g(y)).lit().print())
         assertEquals("x = y", (x equals  y).lit().print())
         assertEquals("f(x) = g(y)", (f(x) equals  g(y)).lit().print())
-        assertEquals("⟘", Top.neg().print())
-        assertEquals("⊤", Bottom.neg().print())
         assertEquals("¬P(x)", P(x).neg().print())
         assertEquals("¬P(f(x), g(y))", P(f(x), g(y)).neg().print())
         assertEquals("x ≠ y", (x equals  y).neg().print())
@@ -119,59 +111,67 @@ class BasicTest {
     @Test
     fun testBuildSequent() {
         BasicSequent(TRUE).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(emptySet(), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(emptyList()), it.head)
         }
         BasicSequent(FALSE).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(setOf(emptySet()), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(emptyList(), it.head)
         }
         BasicSequent(TRUE implies TRUE).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(emptySet(), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(emptyList()), it.head)
+        }
+        BasicSequent(TRUE implies !FALSE).let {
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(emptyList()), it.head)
         }
         BasicSequent(TRUE implies (TRUE and TRUE)).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(emptySet(), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(emptyList()), it.head)
         }
         BasicSequent(TRUE implies (TRUE or TRUE)).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(emptySet(), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(emptyList(), emptyList()), it.head)
         }
         BasicSequent(TRUE implies FALSE).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(setOf(emptySet()), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(emptyList(), it.head)
+        }
+        BasicSequent(TRUE implies !TRUE).let {
+            assertEquals(emptyList(), it.body)
+            assertEquals(emptyList(), it.head)
         }
         BasicSequent(TRUE implies (TRUE and FALSE)).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(setOf(emptySet()), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(emptyList()), it.head)
         }
         BasicSequent(TRUE implies (TRUE or FALSE)).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(setOf(emptySet()), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(emptyList()), it.head)
         }
         BasicSequent(P(x) implies Q(x)).let {
-            assertEquals(setOf(P(x).lit()), it.body)
-            assertEquals(setOf(setOf(Q(x).lit())), it.head)
+            assertEquals(listOf(P(x).lit()), it.body)
+            assertEquals(listOf(listOf(Q(x).lit())), it.head)
         }
         BasicSequent(!P(x) implies !Q(x)).let {
-            assertEquals(setOf(P(x).neg()), it.body)
-            assertEquals(setOf(setOf(Q(x).neg())), it.head)
+            assertEquals(listOf(P(x).neg()), it.body)
+            assertEquals(listOf(listOf(Q(x).neg())), it.head)
         }
         BasicSequent((P(x) and Q(x)) implies Q(y)).let {
-            assertEquals(setOf(P(x).lit(), Q(x).lit()), it.body)
-            assertEquals(setOf(setOf(Q(y).lit())), it.head)
+            assertEquals(listOf(P(x).lit(), Q(x).lit()), it.body)
+            assertEquals(listOf(listOf(Q(y).lit())), it.head)
         }
         BasicSequent((P(x) and Q(x)) implies (Q(x) or (R(z) and S(z)))).let {
-            assertEquals(setOf(P(x).lit(), Q(x).lit()), it.body)
-            assertEquals(setOf(setOf(Q(x).lit()), setOf(R(z).lit(), S(z).lit())), it.head)
+            assertEquals(listOf(P(x).lit(), Q(x).lit()), it.body)
+            assertEquals(listOf(listOf(Q(x).lit()), listOf(R(z).lit(), S(z).lit())), it.head)
         }
         BasicSequent(TRUE implies ((P(x) and Q(x)) or (P(y) and Q(y)) or (P(z) and Q(z)))).let {
-            assertEquals(emptySet(), it.body)
-            assertEquals(setOf(
-                    setOf(P(x).lit(), Q(x).lit())
-                    , setOf(P(y).lit(), Q(y).lit())
-                    , setOf(P(z).lit(), Q(z).lit())), it.head)
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(
+                    listOf(P(x).lit(), Q(x).lit())
+                    , listOf(P(y).lit(), Q(y).lit())
+                    , listOf(P(z).lit(), Q(z).lit())), it.head)
         }
         assertFailure(INVALID_SEQUENT_FALSE_BODY, { BasicSequent(FALSE implies TRUE) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent((P(x) or Q(x)) implies R(x)) })

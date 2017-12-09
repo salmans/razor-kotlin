@@ -29,94 +29,79 @@ class BasicModel : Model {
 sealed class Literal {
     abstract fun print(): String
 
-    object Tru : Literal() {
-        override fun print(): String = "⊤"
-    }
-
-    object Fls : Literal() {
-        override fun print(): String = "⟘"
-    }
-
-    data class Atm(val pred: Pred, val terms: Terms) : Literal() {
+    data class Atm(private val pred: Pred, private val terms: Terms) : Literal() {
         override fun print(): String = "$pred(${this.terms.joinToString(", ")})"
     }
 
-    data class Eql(val left: Term, val right: Term) : Literal() {
+    data class Eql(private val left: Term, private val right: Term) : Literal() {
         override fun print(): String = "$left = $right"
     }
 
-    data class Neg(val pred: Pred, val terms: Terms) : Literal() {
+    data class Neg(private val pred: Pred, private val terms: Terms) : Literal() {
         override fun print(): String = "¬$pred(${this.terms.joinToString(", ")})"
     }
 
-    data class Neq(val left: Term, val right: Term) : Literal() {
+    data class Neq(private val left: Term, private val right: Term) : Literal() {
         override fun print(): String = "$left ≠ $right"
     }
 }
 
-fun Top.lit() = Literal.Tru
-fun Top.neg() = Literal.Fls
-fun Bottom.lit() = Literal.Fls
-fun Bottom.neg() = Literal.Tru
+
 fun Atom.lit() = Literal.Atm(this.pred, this.terms)
 fun Atom.neg() = Literal.Neg(this.pred, this.terms)
 fun Equals.lit() = Literal.Eql(this.left, this.right)
 fun Equals.neg() = Literal.Neq(this.left, this.right)
 
-
-class BasicSequent(formula: Formula) : Sequent<BasicModel> {
-    val body: Set<Literal>
-    val head: Set<Set<Literal>>
-
-    init {
-        fun buildBody(formula: Formula): Set<Literal> = when (formula) {
-            is Top -> emptySet()
-            is Bottom -> throw INVALID_SEQUENT_FALSE_BODY.internalError()
-            is Atom -> setOf(formula.lit())
-            is Equals -> setOf(formula.lit())
-            is Not -> when (formula.formula) {
-                is Top -> throw INVALID_SEQUENT_FALSE_BODY.internalError()
-                is Bottom -> emptySet()
-                is Atom -> setOf(formula.formula.neg())
-                is Equals -> setOf(formula.formula.neg())
-                else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
-            }
-            is And -> buildBody(formula.left) + buildBody(formula.right)
-            else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
-        }
-
-        fun buildHead(formula: Formula): Set<Set<Literal>> = when (formula) {
-            is Top -> emptySet()
-            is Bottom -> setOf(emptySet())
-            is Atom -> setOf(setOf(formula.lit()))
-            is Equals -> setOf(setOf(formula.lit()))
-            is Not -> when (formula.formula) {
-                is Top -> setOf(emptySet())
-                is Bottom -> emptySet()
-                is Atom -> setOf(setOf(formula.formula.neg()))
-                is Equals -> setOf(setOf(formula.formula.neg()))
-                else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
-            }
-            is And -> {
-                val left = buildHead(formula.left)
-                val right = buildHead(formula.right)
-                if (left.isEmpty()) {
-                    right
-                } else if (right.isEmpty()) {
-                    left
-                } else if (left.size == 1 || right.size == 1) {
-                    setOf((left.firstOrNull() ?: emptySet()) + (right.firstOrNull() ?: emptySet()))
-                } else {
-                    throw EXPECTED_STANDARD_SEQUENT.internalError()
-                }
-            }
-            is Or -> buildHead(formula.left) + buildHead(formula.right)
-            else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
-        }
-
-        body = if (formula is Implies) buildBody(formula.left) else emptySet()
-        head = if (formula is Implies) buildHead(formula.right) else buildHead(formula)
+private fun buildBody(formula: Formula): List<Literal> = when (formula) {
+    is Top -> emptyList()
+    is Bottom -> throw INVALID_SEQUENT_FALSE_BODY.internalError()
+    is Atom -> listOf(formula.lit())
+    is Equals -> listOf(formula.lit())
+    is Not -> when (formula.formula) {
+        is Top -> throw INVALID_SEQUENT_FALSE_BODY.internalError()
+        is Bottom -> listOf()
+        is Atom -> listOf(formula.formula.neg())
+        is Equals -> listOf(formula.formula.neg())
+        else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
     }
+    is And -> buildBody(formula.left) + buildBody(formula.right)
+    else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
+}
+
+private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
+    is Top -> listOf(emptyList())
+    is Bottom -> emptyList()
+    is Atom -> listOf(listOf(formula.lit()))
+    is Equals -> listOf(listOf(formula.lit()))
+    is Not -> when (formula.formula) {
+        is Top -> emptyList()
+        is Bottom -> listOf(emptyList())
+        is Atom -> listOf(listOf(formula.formula.neg()))
+        is Equals -> listOf(listOf(formula.formula.neg()))
+        else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
+    }
+    is And -> {
+        val left = buildHead(formula.left)
+        val right = buildHead(formula.right)
+        if (left.isEmpty()) {
+            right
+        } else if (right.isEmpty()) {
+            left
+        } else if (left.size == 1 || right.size == 1) {
+            listOf((left.firstOrNull() ?: emptyList()) + (right.firstOrNull() ?: emptySet()))
+        } else {
+            throw EXPECTED_STANDARD_SEQUENT.internalError()
+        }
+    }
+    is Or -> buildHead(formula.left) + buildHead(formula.right)
+    else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
+}
+
+class BasicSequent(val body: List<Literal>, val head: List<List<Literal>>) : Sequent<BasicModel> {
+    constructor(formula: Formula) : this(
+            if (formula is Implies) buildBody(formula.left) else listOf(),
+            if (formula is Implies) buildHead(formula.right) else buildHead(formula)
+    )
 
     override fun evaluate(model: BasicModel): Set<Observation> {
         return emptySet()
