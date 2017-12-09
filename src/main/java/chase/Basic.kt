@@ -54,16 +54,8 @@ fun Equals.neg() = Literal.Neq(this.left, this.right)
 
 private fun buildBody(formula: Formula): List<Literal> = when (formula) {
     is Top -> emptyList()
-    is Bottom -> throw INVALID_SEQUENT_FALSE_BODY.internalError()
     is Atom -> listOf(formula.lit())
     is Equals -> listOf(formula.lit())
-    is Not -> when (formula.formula) {
-        is Top -> throw INVALID_SEQUENT_FALSE_BODY.internalError()
-        is Bottom -> listOf()
-        is Atom -> listOf(formula.formula.neg())
-        is Equals -> listOf(formula.formula.neg())
-        else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
-    }
     is And -> buildBody(formula.left) + buildBody(formula.right)
     else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
 }
@@ -73,13 +65,6 @@ private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
     is Bottom -> emptyList()
     is Atom -> listOf(listOf(formula.lit()))
     is Equals -> listOf(listOf(formula.lit()))
-    is Not -> when (formula.formula) {
-        is Top -> emptyList()
-        is Bottom -> listOf(emptyList())
-        is Atom -> listOf(listOf(formula.formula.neg()))
-        is Equals -> listOf(listOf(formula.formula.neg()))
-        else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
-    }
     is And -> {
         val left = buildHead(formula.left)
         val right = buildHead(formula.right)

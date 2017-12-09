@@ -122,10 +122,6 @@ class BasicTest {
             assertEquals(emptyList(), it.body)
             assertEquals(listOf(emptyList()), it.head)
         }
-        BasicSequent(TRUE implies !FALSE).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(listOf(emptyList()), it.head)
-        }
         BasicSequent(TRUE implies (TRUE and TRUE)).let {
             assertEquals(emptyList(), it.body)
             assertEquals(listOf(emptyList()), it.head)
@@ -135,10 +131,6 @@ class BasicTest {
             assertEquals(listOf(emptyList(), emptyList()), it.head)
         }
         BasicSequent(TRUE implies FALSE).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(emptyList(), it.head)
-        }
-        BasicSequent(TRUE implies !TRUE).let {
             assertEquals(emptyList(), it.body)
             assertEquals(emptyList(), it.head)
         }
@@ -153,10 +145,6 @@ class BasicTest {
         BasicSequent(P(x) implies Q(x)).let {
             assertEquals(listOf(P(x).lit()), it.body)
             assertEquals(listOf(listOf(Q(x).lit())), it.head)
-        }
-        BasicSequent(!P(x) implies !Q(x)).let {
-            assertEquals(listOf(P(x).neg()), it.body)
-            assertEquals(listOf(listOf(Q(x).neg())), it.head)
         }
         BasicSequent((P(x) and Q(x)) implies Q(y)).let {
             assertEquals(listOf(P(x).lit(), Q(x).lit()), it.body)
@@ -173,10 +161,13 @@ class BasicTest {
                     , listOf(P(y).lit(), Q(y).lit())
                     , listOf(P(z).lit(), Q(z).lit())), it.head)
         }
-        assertFailure(INVALID_SEQUENT_FALSE_BODY, { BasicSequent(FALSE implies TRUE) })
+        assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(FALSE implies TRUE) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent((P(x) or Q(x)) implies R(x)) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(P(x) implies R(x) and (Q(z) or R(z))) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(P(x) implies exists(x) { Q(x) }) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(exists(x) { Q(x) } implies P(x)) })
+        assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(TRUE implies !FALSE)})
+        assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(TRUE implies !TRUE)})
+        assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(!P(x) implies !Q(x))})
     }
 }
