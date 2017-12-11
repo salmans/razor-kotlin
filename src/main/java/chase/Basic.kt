@@ -2,10 +2,16 @@ package chase
 
 import formula.*
 
-class BasicModel : Model {
+class BasicModel() : Model<BasicModel> {
     private var domain: HashSet<Element> = HashSet()
-    private var observations: HashSet<Observation> = HashSet()
+    private var facts: HashSet<Observation.Fact> = HashSet()
     private var witnesses: HashMap<Element, Set<WitnessTerm>> = HashMap()
+
+    constructor(model: BasicModel): this() {
+        this.domain.addAll(model.domain)
+        this.facts.addAll(model.facts)
+        this.witnesses.putAll(model.witnesses)
+    }
 
     override fun addElement(element: Element) {
         domain.add(element)
@@ -20,10 +26,15 @@ class BasicModel : Model {
     override fun getWitnesses(element: Element): Set<WitnessTerm> = witnesses[element] ?: emptySet()
 
     override fun addObservation(observation: Observation) {
-        this.observations.add(observation)
+        when(observation){
+            is Observation.Fact -> this.facts.add(observation)
+            is Observation.Identity -> TODO()
+        }
     }
 
-    override fun getObservations(): Set<Observation> = observations
+    override fun getObservations(): Set<Observation> = facts
+
+    override fun clone(): BasicModel = BasicModel(this)
 }
 
 sealed class Literal {
@@ -82,13 +93,11 @@ private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
     else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
 }
 
-class BasicSequent(val body: List<Literal>, val head: List<List<Literal>>) : Sequent<BasicModel> {
-    constructor(formula: Formula) : this(
-            if (formula is Implies) buildBody(formula.left) else listOf(),
-            if (formula is Implies) buildHead(formula.right) else buildHead(formula)
-    )
+class BasicSequent(formula: Formula): Sequent<BasicModel> {
+    val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else listOf()
+    val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else buildHead(formula)
 
-    override fun evaluate(model: BasicModel): Set<Observation> {
-        return emptySet()
+    override fun evaluate(model: BasicModel, substitution: Substitution): List<List<Observation>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

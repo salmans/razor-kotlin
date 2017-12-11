@@ -52,8 +52,9 @@ class ModelTest {
 
     @Test
     fun toStringObservation() {
-        assertEquals("R<>", _R().toString())
-        assertEquals("R<e#0>", _R(e_0).toString())
-        assertEquals("R<e#0, e#1, e#2>", _R(e_0, e_1, e_2).toString())
+        assertEquals("<R()>", _R().toString())
+        assertEquals("<R(e#0)>", _R(e_0).toString())
+        assertEquals("<R(e#0, e#1, e#2)>", _R(e_0, e_1, e_2).toString())
+        assertEquals("<e#0 = e#1>", (e_0 equals e_1).toString())
     }
 }

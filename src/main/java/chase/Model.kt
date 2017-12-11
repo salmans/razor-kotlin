@@ -7,7 +7,7 @@ import formula.Pred
 /**
  * Elements of a model
  */
-data class Element(val index: Int) {
+data class Element(private val index: Int) {
     override fun toString(): String = "e#${this.index}"
 }
 
@@ -21,42 +21,57 @@ interface WitnessTerm {
 /**
  * Witness functions are used to create complex witness terms.
  */
-data class WitnessFunc(val name: String) {
-    constructor(function: Func): this(function.name) // create a witness function for an existing function
+data class WitnessFunc(private val name: String) {
+    constructor(function: Func) : this(function.name) // create a witness function for an existing function
+
     override fun toString(): String = this.name
 }
 
 /**
  * Witness constants
  */
-data class WitnessConst(val name: String) : WitnessTerm {
-    constructor(constant: Const): this(constant.name) // create a witness constant for an existing constant
+data class WitnessConst(private val name: String) : WitnessTerm {
+    constructor(constant: Const) : this(constant.name) // create a witness constant for an existing constant
+
     override fun toString(): String = "'${this.name}"
 }
 
-data class WitnessApp(val function: WitnessFunc, val terms: List<WitnessTerm> = emptyList()) : WitnessTerm{
-    override fun toString(): String = "${this.function}${this.terms.joinToString (prefix = "[", postfix = "]"){ it.toString() }}"
+data class WitnessApp(private val function: WitnessFunc, private val terms: List<WitnessTerm> = emptyList()) : WitnessTerm {
+    override fun toString(): String = "${this.function}${this.terms.joinToString(prefix = "[", postfix = "]") { it.toString() }}"
 }
 
 /**
  * Relations are used to construct observations. Relations are semantic counterparts of predicates.
  */
-data class Rel(val name: String) {
+data class Rel(private val name: String) {
     constructor(predicate: Pred) : this(predicate.name)
+
     override fun toString(): String = this.name
 }
 
 /**
  * Observations: observations are *positive* facts that are true in the model.
  */
-data class Observation(val relation: Rel, val elements: List<Element>) {
-    override fun toString(): String = "${this.relation}${this.elements.joinToString (prefix = "<", postfix = ">"){ it.toString() }}"
+sealed class Observation {
+
+    data class Fact(private val relation: Rel, private val elements: List<Element>) : Observation() {
+        override fun toString(): String = "<${this.relation}${this.elements.joinToString(prefix = "(", postfix = ")") { it.toString() }}>"
+    }
+
+    data class Identity(private val left: Element, private val right: Element) : Observation() {
+        override fun toString(): String = "<$left = $right>"
+    }
 }
 
 /**
  * Models
  */
-interface Model {
+interface Model<out M> {
+    /**
+     * Returns a copy of this model (for branching purposed)
+     */
+    fun clone(): M
+
     /**
      * Add an element to the model.
      */
