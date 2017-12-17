@@ -7,7 +7,7 @@ class BasicModel() : Model<BasicModel> {
     private var facts: HashSet<Observation.Fact> = HashSet()
     private var witnesses: HashMap<Element, Set<WitnessTerm>> = HashMap()
 
-    constructor(model: BasicModel): this() {
+    constructor(model: BasicModel) : this() {
         this.domain.addAll(model.domain)
         this.facts.addAll(model.facts)
         this.witnesses.putAll(model.witnesses)
@@ -26,7 +26,7 @@ class BasicModel() : Model<BasicModel> {
     override fun getWitnesses(element: Element): Set<WitnessTerm> = witnesses[element] ?: emptySet()
 
     override fun addObservation(observation: Observation) {
-        when(observation){
+        when (observation) {
             is Observation.Fact -> this.facts.add(observation)
             is Observation.Identity -> TODO()
         }
@@ -34,34 +34,24 @@ class BasicModel() : Model<BasicModel> {
 
     override fun getObservations(): Set<Observation> = facts
 
-    override fun clone(): BasicModel = BasicModel(this)
+    override fun duplicate(): BasicModel = BasicModel(this)
 }
 
 sealed class Literal {
     abstract fun print(): String
 
-    data class Atm(private val pred: Pred, private val terms: Terms) : Literal() {
+    data class Atm(private val pred: Pred, val terms: Terms) : Literal() {
         override fun print(): String = "$pred(${this.terms.joinToString(", ")})"
     }
 
-    data class Eql(private val left: Term, private val right: Term) : Literal() {
+    data class Eql(val left: Term, val right: Term) : Literal() {
         override fun print(): String = "$left = $right"
-    }
-
-    data class Neg(private val pred: Pred, private val terms: Terms) : Literal() {
-        override fun print(): String = "¬$pred(${this.terms.joinToString(", ")})"
-    }
-
-    data class Neq(private val left: Term, private val right: Term) : Literal() {
-        override fun print(): String = "$left ≠ $right"
     }
 }
 
-
 fun Atom.lit() = Literal.Atm(this.pred, this.terms)
-fun Atom.neg() = Literal.Neg(this.pred, this.terms)
 fun Equals.lit() = Literal.Eql(this.left, this.right)
-fun Equals.neg() = Literal.Neq(this.left, this.right)
+
 
 private fun buildBody(formula: Formula): List<Literal> = when (formula) {
     is Top -> emptyList()
@@ -93,9 +83,9 @@ private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
     else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
 }
 
-class BasicSequent(formula: Formula): Sequent<BasicModel> {
-    val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else listOf()
-    val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else buildHead(formula)
+class BasicSequent(formula: Formula) : Sequent<BasicModel> {
+    val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else throw EXPECTED_STANDARD_SEQUENT.internalError()
+    val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw EXPECTED_STANDARD_SEQUENT.internalError()
 
     override fun evaluate(model: BasicModel, substitution: Substitution): List<List<Observation>> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.

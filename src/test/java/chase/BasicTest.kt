@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 
 class BasicTest {
     @Test
-    fun testEmptyBasic() {
+    fun testEmptyBasicModel() {
         BasicModel().let {
             assertEquals(emptySet(), it.getDomain())
             assertEquals(emptySet(), it.getObservations())
@@ -81,6 +81,43 @@ class BasicTest {
     }
 
     @Test
+    fun testDuplicateModel() {
+        BasicModel().duplicate().let {
+            assertEquals(emptySet(), it.getDomain())
+            assertEquals(emptySet(), it.getObservations())
+            assertEquals(emptySet(), it.getWitnesses(e_0))
+        }
+        BasicModel().let {
+            it.addElement(e_0)
+            it.duplicate().let {
+                assertEquals(setOf(e_0), it.getDomain())
+            }
+        }
+        BasicModel().let {
+            it.addObservation(_R(e_0, e_1))
+            it.addObservation(_S(e_2))
+            it.addObservation(_R(e_3, e_4))
+            it.addObservation(_S(e_5))
+            it.duplicate().let {
+                assertEquals(setOf(_R(e_0, e_1), _S(e_2), _R(e_3, e_4), _S(e_5)), it.getObservations())
+            }
+        }
+        BasicModel().let {
+            it.addWitness(e_0, _a)
+            it.addWitness(e_0, _b)
+            it.addWitness(e_0, _c)
+            it.addWitness(e_0, _a)
+            it.addWitness(e_0, _d)
+            it.addWitness(e_1, _f(_a))
+            it.duplicate().let {
+                assertEquals(setOf(_a, _b, _c, _d), it.getWitnesses(e_0))
+                assertEquals(setOf(_a, _b, _c, _d), it.getWitnesses(e_0))
+                assertEquals(setOf(_f(_a)), it.getWitnesses(e_1))
+            }
+        }
+    }
+
+    @Test
     fun testLit() {
         assertEquals(Literal.Atm(P, listOf(x)), P(x).lit())
         assertEquals(Literal.Atm(P, listOf(x, f(y))), P(x, f(y)).lit())
@@ -89,35 +126,15 @@ class BasicTest {
     }
 
     @Test
-    fun testNeg() {
-        assertEquals(Literal.Neg(P, listOf(x)), P(x).neg())
-        assertEquals(Literal.Neg(P, listOf(x, f(y))), P(x, f(y)).neg())
-        assertEquals(Literal.Neq(x, y), (x equals y).neg())
-        assertEquals(Literal.Neq(g(x), f(y)), (g(x) equals f(y)).neg())
-    }
-
-    @Test
     fun printLit() {
         assertEquals("P(x)", P(x).lit().print())
         assertEquals("P(f(x), g(y))", P(f(x), g(y)).lit().print())
         assertEquals("x = y", (x equals  y).lit().print())
         assertEquals("f(x) = g(y)", (f(x) equals  g(y)).lit().print())
-        assertEquals("¬P(x)", P(x).neg().print())
-        assertEquals("¬P(f(x), g(y))", P(f(x), g(y)).neg().print())
-        assertEquals("x ≠ y", (x equals  y).neg().print())
-        assertEquals("f(x) ≠ g(y)", (f(x) equals  g(y)).neg().print())
     }
 
     @Test
     fun testBuildSequent() {
-        BasicSequent(TRUE).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(listOf(emptyList()), it.head)
-        }
-        BasicSequent(FALSE).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(emptyList(), it.head)
-        }
         BasicSequent(TRUE implies TRUE).let {
             assertEquals(emptyList(), it.body)
             assertEquals(listOf(emptyList()), it.head)
@@ -133,6 +150,10 @@ class BasicTest {
         BasicSequent(TRUE implies FALSE).let {
             assertEquals(emptyList(), it.body)
             assertEquals(emptyList(), it.head)
+        }
+        BasicSequent(TRUE implies (FALSE and TRUE)).let {
+            assertEquals(emptyList(), it.body)
+            assertEquals(listOf(emptyList()), it.head)
         }
         BasicSequent(TRUE implies (TRUE and FALSE)).let {
             assertEquals(emptyList(), it.body)
@@ -161,6 +182,8 @@ class BasicTest {
                     , listOf(P(y).lit(), Q(y).lit())
                     , listOf(P(z).lit(), Q(z).lit())), it.head)
         }
+        assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(TRUE) })
+        assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(FALSE) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(FALSE implies TRUE) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent((P(x) or Q(x)) implies R(x)) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(P(x) implies R(x) and (Q(z) or R(z))) })

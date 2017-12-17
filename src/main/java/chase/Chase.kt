@@ -43,7 +43,7 @@ fun <M: Model<M>, S: Sequent<M>, SL: Evaluator<M, S>, ST: Strategy<M>> solve(the
             subs.forEach {
                 val observationsList = sequent.evaluate(model, it)
                 observationsList.forEach {
-                    val newModel = model.clone()
+                    val newModel = model.duplicate()
                     it.forEach { newModel.addObservation(it) }
                     strategy.add(newModel)
                 }

@@ -70,7 +70,7 @@ interface Model<out M> {
     /**
      * Returns a copy of this model (for branching purposed)
      */
-    fun clone(): M
+    fun duplicate(): M
 
     /**
      * Add an element to the model.
