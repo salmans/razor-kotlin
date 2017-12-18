@@ -15,25 +15,6 @@ class BasicTest {
     }
 
     @Test
-    fun testAddElement() {
-        BasicModel().let {
-            it.addElement(e_0)
-            assertEquals(setOf(e_0), it.getDomain())
-        }
-        BasicModel().let {
-            it.addElement(e_0)
-            it.addElement(e_0)
-            assertEquals(setOf(e_0), it.getDomain())
-        }
-        BasicModel().let {
-            it.addElement(e_0)
-            it.addElement(e_1)
-            it.addElement(e_2)
-            assertEquals(setOf(e_0, e_1, e_2), it.getDomain())
-        }
-    }
-
-    @Test
     fun testAddObservations() {
         BasicModel().let {
             it.addObservation(_R())
@@ -86,12 +67,6 @@ class BasicTest {
             assertEquals(emptySet(), it.getDomain())
             assertEquals(emptySet(), it.getObservations())
             assertEquals(emptySet(), it.getWitnesses(e_0))
-        }
-        BasicModel().let {
-            it.addElement(e_0)
-            it.duplicate().let {
-                assertEquals(setOf(e_0), it.getDomain())
-            }
         }
         BasicModel().let {
             it.addObservation(_R(e_0, e_1))

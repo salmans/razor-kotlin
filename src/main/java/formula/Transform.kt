@@ -5,6 +5,8 @@ package formula
  */
 typealias Substitution = (Var) -> Term
 
+fun substitutionMap(subMap: Map<Var, Term>): Substitution = { subMap.getOrDefault(it, it) }
+
 /**
  * Applies a substitution function on the term.
  */

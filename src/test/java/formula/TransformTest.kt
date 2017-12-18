@@ -141,6 +141,26 @@ internal class TransformTest {
     }
 
     @Test
+    fun substitutionMap() {
+        assertEquals(
+                x,
+                x.substitute(substitutionMap(emptyMap()))
+        )
+        assertEquals(
+                y,
+                x.substitute(substitutionMap(HashMap<Var, Term>().apply {
+                    put(x, y)
+                }))
+        )
+        assertEquals(f(g(z), h(z, y)),
+                f(x, y).substitute(formula.substitutionMap(HashMap<Var, Term>().apply {
+                    put(x, g(z))
+                    put(y, h(z, y))
+                }))
+        )
+    }
+
+    @Test
     fun substituteTerm() {
         assertEquals(x, x.substitute { it })
         assertEquals(a, a.substitute {

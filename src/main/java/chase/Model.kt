@@ -73,9 +73,9 @@ interface Model<out M> {
     fun duplicate(): M
 
     /**
-     * Add an element to the model.
+     * Returns a next element in this model
      */
-    fun addElement(element: Element)
+    fun nextElement(): Element
 
     /**
      * Get the set of elements in the domain of a model.
@@ -91,6 +91,11 @@ interface Model<out M> {
      * Get the set of witnesses for a given element.
      */
     fun getWitnesses(element: Element): Set<WitnessTerm>
+
+    /**
+     * Returns the element for a given witness (if it exists).
+     */
+    fun getElement(witness: WitnessTerm): Element?
 
     /**
      * Add an observation to the model.

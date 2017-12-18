@@ -3,6 +3,10 @@ package chase
 import formula.*
 
 class BasicModel() : Model<BasicModel> {
+    private var elementIndex = 0
+
+    override fun nextElement() = Element(elementIndex++)
+
     private var domain: HashSet<Element> = HashSet()
     private var facts: HashSet<Observation.Fact> = HashSet()
     private var witnesses: HashMap<Element, Set<WitnessTerm>> = HashMap()
@@ -13,8 +17,8 @@ class BasicModel() : Model<BasicModel> {
         this.witnesses.putAll(model.witnesses)
     }
 
-    override fun addElement(element: Element) {
-        domain.add(element)
+    override fun getElement(witness: WitnessTerm): Element? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun getDomain(): Set<Element> = domain
@@ -84,10 +88,21 @@ private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
 }
 
 class BasicSequent(formula: Formula) : Sequent<BasicModel> {
+    val freeVars = formula.freeVars
     val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else throw EXPECTED_STANDARD_SEQUENT.internalError()
     val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw EXPECTED_STANDARD_SEQUENT.internalError()
 
+    private fun totalSubs(domainSize: Int, varSize: Int): Int = when (varSize){
+        0 -> 1
+        else -> domainSize * totalSubs(domainSize, varSize - 1)
+    }
+
     override fun evaluate(model: BasicModel, substitution: Substitution): List<List<Observation>> {
+        val domain = mutableListOf<Element>().apply { addAll(model.getDomain()) }
+
+        for (i in 0..(totalSubs(domain.size, freeVars.size) - 1)) {
+
+        }
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
