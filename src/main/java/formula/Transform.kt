@@ -193,7 +193,12 @@ fun Formula.snf(generator: SkolemGenerator = SkolemGenerator()): Formula {
             is Forall -> Forall(formula.variables, skolemHelper(formula.formula, skolemVariables + formula.variables))
             is Exists -> {
                 // Notice that it doesn't apply all substitutions at the end but during the recursive call to account for shadowing variable names:
-                val substitutionMap = formula.variables.map { Pair(it, App(Func(generator.nextFunction()), skolemVariables)) }.toMap()
+                val substitutionMap = formula.variables.map {
+                    Pair(it, when {
+                        skolemVariables.isEmpty() -> Const(generator.nextFunction())
+                        else -> App(Func(generator.nextFunction()), skolemVariables)
+                    })
+                }.toMap()
                 return skolemHelper(formula.formula.substitute { substitutionMap[it] ?: it }, skolemVariables)
             }
             else -> formula // Nothing to do (assuming that the input formula is in PNF)

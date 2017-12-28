@@ -1,27 +1,31 @@
 package chase
 
 import formula.*
+import sun.awt.util.IdentityLinkedList
+import tools.pow
 
-class BasicModel() : Model<BasicModel> {
-    private var elementIndex = 0
-
-    override fun nextElement() = Element(elementIndex++)
-
-    private var domain: HashSet<Element> = HashSet()
-    private var facts: HashSet<Observation.Fact> = HashSet()
+class BasicModel() : Model<BasicModel>() {
     private var witnesses: HashMap<Element, Set<WitnessTerm>> = HashMap()
+    private val rewrites: MutableMap<WitnessTerm, Element> = mutableMapOf()
+
+    override val elements: Collection<Element>
+        get() = rewrites.values
+    override var facts: HashSet<Observation.Fact> = HashSet()
+
+    override fun reduce(term: WitnessTerm): Element = when (term) {
+        is Element -> term
+        is WitnessConst -> rewrites[term] ?: { val e = Element(elements.size + 1); rewrites[term] = e; e }.invoke()
+        is WitnessApp -> {
+            val elems = term.terms.map { reduce(it) }
+            rewrites[WitnessApp(term.function, elems)]!!
+        }
+    }
 
     constructor(model: BasicModel) : this() {
-        this.domain.addAll(model.domain)
+        this.rewrites.putAll(model.rewrites)
         this.facts.addAll(model.facts)
         this.witnesses.putAll(model.witnesses)
     }
-
-    override fun getElement(witness: WitnessTerm): Element? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getDomain(): Set<Element> = domain
 
     override fun addWitness(element: Element, witness: WitnessTerm) {
         this.witnesses.put(element, this.witnesses[element].orEmpty().plus(witness))
@@ -32,11 +36,9 @@ class BasicModel() : Model<BasicModel> {
     override fun addObservation(observation: Observation) {
         when (observation) {
             is Observation.Fact -> this.facts.add(observation)
-            is Observation.Identity -> TODO()
+            is Observation.Identity -> this.rewrites.replaceAll({ _, v -> if (v == observation.left) observation.right else v })
         }
     }
-
-    override fun getObservations(): Set<Observation> = facts
 
     override fun duplicate(): BasicModel = BasicModel(this)
 }
@@ -44,7 +46,7 @@ class BasicModel() : Model<BasicModel> {
 sealed class Literal {
     abstract fun print(): String
 
-    data class Atm(private val pred: Pred, val terms: Terms) : Literal() {
+    data class Atm(val pred: Pred, val terms: Terms) : Literal() {
         override fun print(): String = "$pred(${this.terms.joinToString(", ")})"
     }
 
@@ -55,7 +57,6 @@ sealed class Literal {
 
 fun Atom.lit() = Literal.Atm(this.pred, this.terms)
 fun Equals.lit() = Literal.Eql(this.left, this.right)
-
 
 private fun buildBody(formula: Formula): List<Literal> = when (formula) {
     is Top -> emptyList()
@@ -88,21 +89,84 @@ private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
 }
 
 class BasicSequent(formula: Formula) : Sequent<BasicModel> {
-    val freeVars = formula.freeVars
+    val freeVars = formula.freeVars.toList()
     val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else throw EXPECTED_STANDARD_SEQUENT.internalError()
     val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw EXPECTED_STANDARD_SEQUENT.internalError()
+}
 
-    private fun totalSubs(domainSize: Int, varSize: Int): Int = when (varSize){
-        0 -> 1
-        else -> domainSize * totalSubs(domainSize, varSize - 1)
-    }
+typealias Witness = (Var) -> Element
 
-    override fun evaluate(model: BasicModel, substitution: Substitution): List<List<Observation>> {
-        val domain = mutableListOf<Element>().apply { addAll(model.getDomain()) }
+fun Term.witness(witness: Witness): WitnessTerm = when (this) {
+    is Const -> WitnessConst(this.name)
+    is Var -> witness(this)
+    is App -> WitnessApp(this.function, this.terms.map { it.witness(witness) })
+}
 
-        for (i in 0..(totalSubs(domain.size, freeVars.size) - 1)) {
+class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<BasicModel, BasicSequent> {
+    override fun evaluate(model: BasicModel): List<BasicModel>? {
+        val domain = model.elements.toList()
 
+        for (sequent in sequents) {
+            for (i in 0..(pow(domain.size, sequent.freeVars.size) - 1)) {
+                val witMap = (0 until sequent.freeVars.size).associate {
+                    sequent.freeVars[it] to domain[i % pow(domain.size, it)]
+                }
+                val witness = { v: Var -> witMap[v]!! }
+
+                val convert = { lit: Literal ->
+                    when (lit) {
+                        is Literal.Atm -> Observation.Fact(Rel(lit.pred.name), lit.terms.map { model.reduce(it.witness(witness)) })
+                        is Literal.Eql -> Observation.Identity(model.reduce(lit.left.witness(witness)), model.reduce(lit.right.witness(witness)))
+                    }
+                }
+
+                val bodies: List<Observation> = sequent.body.map(convert)
+                val heads: List<List<Observation>> = sequent.head.map { it.map(convert) }
+
+                if (model.facts.containsAll(bodies) && !heads.any { model.facts.containsAll(it) }) {
+                    return if (heads.isEmpty()) {
+                        null // failure
+                    } else {
+                        heads.map { model.duplicate().apply { it.forEach { addObservation(it) } } }
+                        // this evaluator returns the models from first successful sequent
+                    }
+                }
+            }
         }
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
+        return emptyList() // not failed but no progress
     }
+}
+
+class BasicStrategy : Strategy<BasicModel>() {
+    private val queue = IdentityLinkedList<BasicModel>()
+
+    override fun iterator(): Iterator<BasicModel> {
+        return queue.iterator()
+    }
+
+    override fun add(model: BasicModel): Boolean {
+        return queue.add(model)
+    }
+
+    override fun remove(model: BasicModel): Boolean {
+        return queue.remove(model)
+    }
+}
+
+class BasicChase : Chase<BasicModel, BasicSequent, BasicEvaluator, BasicStrategy>() {
+    override fun emptyModel(): BasicModel = BasicModel()
+
+    override fun newSequent(formula: Formula): BasicSequent = BasicSequent(formula)
+
+    override fun newEvaluator(sequents: List<BasicSequent>): BasicEvaluator = BasicEvaluator(sequents)
+
+    override fun newStrategy(): BasicStrategy = BasicStrategy()
+}
+
+fun main(args: Array<String>) {
+    solve("P('a)\nP(x) implies Q(x)".parseTheory()!!.geometric(), BasicChase())
+    solve("P('a)\nP(x) implies Q(x)\nQ(x) implies R(x)".parseTheory()!!.geometric(), BasicChase())
+    solve("P('a)".parseTheory()!!.geometric(), BasicChase())
+    solve("exists x. P(x)".parseTheory()!!.geometric(), BasicChase())
 }

@@ -3,11 +3,6 @@ package chase
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-// Witness Functions
-val _f = WitnessFunc("f")
-val _g = WitnessFunc("g")
-val _h = WitnessFunc("h")
-
 // Elements
 val e_0 = Element(0)
 val e_1 = Element(1)

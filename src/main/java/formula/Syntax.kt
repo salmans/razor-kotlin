@@ -24,7 +24,7 @@ typealias Terms = List<Term>
 /**
  * Functions
  */
-data class Func(val name: String) : Syntax {
+data class Func(private val name: String) : Syntax {
     override fun toString(): String = name
 }
 

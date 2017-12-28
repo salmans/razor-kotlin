@@ -9,6 +9,13 @@ val f = Func("f")
 val g = Func("g")
 val h = Func("h")
 
+// Skolem constants
+val _sk_0 = Const("sk#0")
+val _sk_1 = Const("sk#1")
+val _sk_2 = Const("sk#2")
+val _sk_3 = Const("sk#3")
+val _sk_4 = Const("sk#4")
+
 // Skolem functions
 val sk_0 = Func("sk#0")
 val sk_1 = Func("sk#1")
