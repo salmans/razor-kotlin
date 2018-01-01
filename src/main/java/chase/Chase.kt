@@ -21,10 +21,29 @@ data class WitnessConst(private val name: String) : WitnessTerm() {
 /**
  * Elements of a model
  */
-data class Element(private val index: Int) : WitnessTerm() {
+open class Element(private var index: Int) : WitnessTerm() {
     override fun toString(): String = "e#${this.index}"
+
+    override fun equals(other: Any?): Boolean = when (other) {
+        is Element -> this.index == other.index
+        else -> false
+    }
+
+    override fun hashCode(): Int {
+        return index
+    }
+
+    /**
+     * Collapse this element with `element`
+     */
+    fun collapse(element: Element) {
+        index = element.index
+    }
 }
 
+/**
+ * Witness function application
+ */
 data class WitnessApp(val function: Func, val terms: List<WitnessTerm> = emptyList()) : WitnessTerm() {
     override fun toString(): String = "${this.function}${this.terms.joinToString(prefix = "[", postfix = "]") { it.toString() }}"
 }
@@ -42,11 +61,11 @@ data class Rel(private val name: String) {
  * Observations: observations are *positive* facts that are true in the model.
  */
 sealed class Observation {
-    data class Fact(private val relation: Rel, private val elements: List<Element>) : Observation() {
-        override fun toString(): String = "<${this.relation}${this.elements.joinToString(prefix = "(", postfix = ")") { it.toString() }}>"
+    data class Fact(private val relation: Rel, val terms: List<WitnessTerm>) : Observation() {
+        override fun toString(): String = "<${this.relation}${this.terms.joinToString(prefix = "(", postfix = ")") { it.toString() }}>"
     }
 
-    data class Identity(val left: Element, val right: Element) : Observation() {
+    data class Identity(val left: WitnessTerm, val right: WitnessTerm) : Observation() {
         override fun toString(): String = "<$left = $right>"
     }
 }
@@ -71,24 +90,14 @@ abstract class Model<out M> {
     abstract fun duplicate(): M
 
     /**
-     * Get the element to which a term is pointing.
-     */
-    abstract fun reduce(term: WitnessTerm): Element
-
-    /**
-     * Add a witness term for a given element.
-     */
-    abstract fun addWitness(element: Element, witness: WitnessTerm)
-
-    /**
-     * Get the set of witnesses for a given element.
-     */
-    abstract fun getWitnesses(element: Element): Set<WitnessTerm>
-
-    /**
      * Add an observation to the model.
      */
-    abstract fun addObservation(observation: Observation)
+    abstract fun observe(observation: Observation)
+
+    /**
+     * Lookup an observatin in the model.
+     */
+    abstract fun lookup(observation: Observation): Boolean
 }
 
 
@@ -100,18 +109,18 @@ abstract class Strategy<M : Model<M>> : Iterable<M> {
     abstract fun remove(model: M): Boolean
 }
 
-interface Evaluator<M : Model<M>, S: Sequent<M>> {
+interface Evaluator<M : Model<M>, S : Sequent<M>> {
     fun evaluate(model: M): List<M>?
 }
 
-abstract class Chase<M : Model<M>, S : Sequent<M>, out SL: Evaluator<M, S>, out ST: Strategy<M>> {
+abstract class Chase<M : Model<M>, S : Sequent<M>, out SL : Evaluator<M, S>, out ST : Strategy<M>> {
     abstract fun emptyModel(): M
     abstract fun newSequent(formula: Formula): S
     abstract fun newEvaluator(sequents: List<S>): SL
     abstract fun newStrategy(): ST
 }
 
-fun <M: Model<M>, S: Sequent<M>, SL: Evaluator<M, S>, ST: Strategy<M>> solve(theory: Theory, chase: Chase<M, S, SL, ST>) {
+fun <M : Model<M>, S : Sequent<M>, SL : Evaluator<M, S>, ST : Strategy<M>> solve(theory: Theory, chase: Chase<M, S, SL, ST>) {
     val geometricTheory = theory.geometric()
     val sequents = geometricTheory.formulas.map { chase.newSequent(it) }
     val evaluator = chase.newEvaluator(sequents)

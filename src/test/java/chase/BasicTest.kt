@@ -17,27 +17,27 @@
 //    @Test
 //    fun testAddObservations() {
 //        BasicModel().let {
-//            it.addObservation(_R())
+//            it.observe(_R())
 //            assertEquals(setOf(_R()), it.getObservations())
 //        }
 //        BasicModel().let {
-//            it.addObservation(_R(e_0))
+//            it.observe(_R(e_0))
 //            assertEquals(setOf(_R(e_0)), it.getObservations())
 //        }
 //        BasicModel().let {
-//            it.addObservation(_R(e_0, e_1))
+//            it.observe(_R(e_0, e_1))
 //            assertEquals(setOf(_R(e_0, e_1)), it.getObservations())
 //        }
 //        BasicModel().let {
-//            it.addObservation(_R(e_0, e_1))
-//            it.addObservation(_S(e_2, e_3))
+//            it.observe(_R(e_0, e_1))
+//            it.observe(_S(e_2, e_3))
 //            assertEquals(setOf(_R(e_0, e_1), _S(e_2, e_3)), it.getObservations())
 //        }
 //        BasicModel().let {
-//            it.addObservation(_R(e_0, e_1))
-//            it.addObservation(_S(e_2))
-//            it.addObservation(_R(e_3, e_4))
-//            it.addObservation(_S(e_5))
+//            it.observe(_R(e_0, e_1))
+//            it.observe(_S(e_2))
+//            it.observe(_R(e_3, e_4))
+//            it.observe(_S(e_5))
 //            assertEquals(setOf(_R(e_0, e_1), _S(e_2), _R(e_3, e_4), _S(e_5)), it.getObservations())
 //        }
 //    }
@@ -69,10 +69,10 @@
 //            assertEquals(emptySet(), it.getWitnesses(e_0))
 //        }
 //        BasicModel().let {
-//            it.addObservation(_R(e_0, e_1))
-//            it.addObservation(_S(e_2))
-//            it.addObservation(_R(e_3, e_4))
-//            it.addObservation(_S(e_5))
+//            it.observe(_R(e_0, e_1))
+//            it.observe(_S(e_2))
+//            it.observe(_R(e_3, e_4))
+//            it.observe(_S(e_5))
 //            it.duplicate().let {
 //                assertEquals(setOf(_R(e_0, e_1), _S(e_2), _R(e_3, e_4), _S(e_5)), it.getObservations())
 //            }

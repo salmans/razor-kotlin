@@ -38,6 +38,8 @@ internal class ParserTest {
                 , actual = "P(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(x)))))))))))))))))))))".parseTheory())
         assertTheoriesEqual(P(f(x, g(y)), g(f(g(y))))
                 , actual = "P(f(x, g(y)), g(f(g(y))))".parseTheory())
+        assertTheoriesEqual(a equals b
+                , actual = "'a = 'b".parseTheory())
         assertTheoriesEqual(x equals x
                 , actual = "x = x".parseTheory())
         assertTheoriesEqual(f() equals x

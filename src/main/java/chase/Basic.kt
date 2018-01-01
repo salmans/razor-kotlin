@@ -4,44 +4,51 @@ import formula.*
 import sun.awt.util.IdentityLinkedList
 import tools.pow
 
+
 class BasicModel() : Model<BasicModel>() {
-    private var witnesses: HashMap<Element, Set<WitnessTerm>> = HashMap()
     private val rewrites: MutableMap<WitnessTerm, Element> = mutableMapOf()
 
     override val elements: Collection<Element>
         get() = rewrites.values
     override var facts: HashSet<Observation.Fact> = HashSet()
 
-    override fun reduce(term: WitnessTerm): Element = when (term) {
+    private fun record(term: WitnessTerm): Element = reduce(term) ?: Element(elements.size + 1).apply { rewrites[term] = this }
+
+
+    private fun reduce(term: WitnessTerm): Element? = when (term) {
         is Element -> term
-        is WitnessConst -> rewrites[term] ?: { val e = Element(elements.size + 1); rewrites[term] = e; e }.invoke()
-        is WitnessApp -> {
-            val t = WitnessApp(term.function, term.terms.map { reduce(it) })
-            rewrites[t] ?: { val e = Element(elements.size + 1); rewrites[t] = e; e }.invoke()
+        is WitnessConst -> rewrites[term]
+        is WitnessApp -> term.terms.map { reduce(it) }.let {
+            if (it.any { it == null }) null else rewrites[term.copy(terms = it.filterNotNull())]
         }
     }
 
     constructor(model: BasicModel) : this() {
         this.rewrites.putAll(model.rewrites)
         this.facts.addAll(model.facts)
-        this.witnesses.putAll(model.witnesses)
     }
 
-    override fun addWitness(element: Element, witness: WitnessTerm) {
-        this.witnesses.put(element, this.witnesses[element].orEmpty().plus(witness))
-    }
-
-    override fun getWitnesses(element: Element): Set<WitnessTerm> = witnesses[element] ?: emptySet()
-
-    override fun addObservation(observation: Observation) {
+    override fun observe(observation: Observation) {
         when (observation) {
-            is Observation.Fact -> this.facts.add(observation)
-            is Observation.Identity -> this.rewrites.replaceAll({ _, v -> if (v == observation.left) observation.right else v })
+            is Observation.Fact -> this.facts.add(observation.copy(terms = observation.terms.map { record(it) }))
+            is Observation.Identity -> {
+                val l = record(observation.left)
+                val r = record(observation.right)
+                this.rewrites.replaceAll({ _, v -> if (v == r) r.apply { collapse(l) } else v })
+            }
         }
+    }
+
+    override fun lookup(observation: Observation): Boolean = when (observation) {
+        is Observation.Fact -> observation.terms.map { reduce(it) }.let {
+            if (it.any { it == null }) false else facts.contains(observation.copy(terms = it.filterNotNull()))
+        }
+        is Observation.Identity -> reduce(observation.left).let { it != null && it == reduce(observation.right) }
     }
 
     override fun duplicate(): BasicModel = BasicModel(this)
 }
+
 
 sealed class Literal {
     abstract fun print(): String
@@ -115,19 +122,19 @@ class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<Basic
 
                 val convert = { lit: Literal ->
                     when (lit) {
-                        is Literal.Atm -> Observation.Fact(Rel(lit.pred.name), lit.terms.map { model.reduce(it.witness(witness)) })
-                        is Literal.Eql -> Observation.Identity(model.reduce(lit.left.witness(witness)), model.reduce(lit.right.witness(witness)))
+                        is Literal.Atm -> Observation.Fact(Rel(lit.pred.name), lit.terms.map { it.witness(witness) })
+                        is Literal.Eql -> Observation.Identity(lit.left.witness(witness), lit.right.witness(witness))
                     }
                 }
 
                 val bodies: List<Observation> = sequent.body.map(convert)
                 val heads: List<List<Observation>> = sequent.head.map { it.map(convert) }
 
-                if (model.facts.containsAll(bodies) && !heads.any { model.facts.containsAll(it) }) {
+                if (bodies.all { model.lookup(it) } && !heads.any { it.all { model.lookup(it) } }) {
                     return if (heads.isEmpty()) {
                         null // failure
                     } else {
-                        heads.map { model.duplicate().apply { it.forEach { addObservation(it) } } }
+                        heads.map { model.duplicate().apply { it.forEach { observe(it) } } }
                         // this evaluator returns the models from first successful sequent
                     }
                 }
@@ -170,5 +177,8 @@ fun main(args: Array<String>) {
     // solve("P('a)".parseTheory()!!.geometric(), BasicChase())
     // solve("exists x. P(x)".parseTheory()!!.geometric(), BasicChase())
     // solve("P(f('a))".parseTheory()!!.geometric(), BasicChase())
-    solve("P('a) or Q('b)".parseTheory()!!.geometric(), BasicChase())
+    // solve("P('a) or Q('b) or R('c)".parseTheory()!!.geometric(), BasicChase())
+    // solve("TRUE implies P('a, 'b)".parseTheory()!!.geometric(), BasicChase())
+    // solve("'a = 'b".parseTheory()!!.geometric(), BasicChase())
+    solve("P('a)\nQ('b)\nP(x) and Q(y) implies x = y".parseTheory()!!.geometric(), BasicChase())
 }

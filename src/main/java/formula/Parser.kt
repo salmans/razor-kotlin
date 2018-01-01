@@ -282,8 +282,8 @@ class Parser {
      * Not = Atom
      */
     private fun parseNot(): Formula? {
-        when (match(TokenType.NOT)?.type) {
-            TokenType.NOT -> return expect {
+        return when (match(TokenType.NOT)?.type) {
+            TokenType.NOT -> expect {
                 consume(TokenType.NOT)
                 when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
                     TokenType.EXISTS -> Not(expect { parseQuantified() })
@@ -291,7 +291,7 @@ class Parser {
                     else -> Not(expect { parseNot() })
                 }
             }
-            else -> return expect { parseAtom() }
+            else -> expect { parseAtom() }
         }
     }
 
@@ -304,7 +304,7 @@ class Parser {
      * Atom = LPAREN Formula RPAREN
      */
     private fun parseAtom(): Formula? {
-        val token = match(TokenType.TRUE, TokenType.FALSE, TokenType.LOWER, TokenType.UPPER, TokenType.LPAREN)
+        val token = match(TokenType.TRUE, TokenType.FALSE, TokenType.LOWER, TokenType.APOSTROPHE, TokenType.UPPER, TokenType.LPAREN)
         return when (token?.type) {
             TokenType.TRUE -> expect {
                 consume(TokenType.TRUE)
@@ -314,7 +314,7 @@ class Parser {
                 consume(TokenType.FALSE)
                 Bottom
             }
-            TokenType.LOWER -> expect {
+            TokenType.LOWER, TokenType.APOSTROPHE -> expect {
                 val term1 = expect { parseTerm() }
                 consume(TokenType.EQUALS)
                 val term2 = expect { parseTerm() }
