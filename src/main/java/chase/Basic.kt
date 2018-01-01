@@ -16,8 +16,8 @@ class BasicModel() : Model<BasicModel>() {
         is Element -> term
         is WitnessConst -> rewrites[term] ?: { val e = Element(elements.size + 1); rewrites[term] = e; e }.invoke()
         is WitnessApp -> {
-            val elems = term.terms.map { reduce(it) }
-            rewrites[WitnessApp(term.function, elems)]!!
+            val t = WitnessApp(term.function, term.terms.map { reduce(it) })
+            rewrites[t] ?: { val e = Element(elements.size + 1); rewrites[t] = e; e }.invoke()
         }
     }
 
@@ -165,8 +165,10 @@ class BasicChase : Chase<BasicModel, BasicSequent, BasicEvaluator, BasicStrategy
 }
 
 fun main(args: Array<String>) {
-    solve("P('a)\nP(x) implies Q(x)".parseTheory()!!.geometric(), BasicChase())
-    solve("P('a)\nP(x) implies Q(x)\nQ(x) implies R(x)".parseTheory()!!.geometric(), BasicChase())
-    solve("P('a)".parseTheory()!!.geometric(), BasicChase())
-    solve("exists x. P(x)".parseTheory()!!.geometric(), BasicChase())
+    // solve("P('a)\nP(x) implies Q(x)".parseTheory()!!.geometric(), BasicChase())
+    // solve("P('a)\nP(x) implies Q(x)\nQ(x) implies R(x)".parseTheory()!!.geometric(), BasicChase())
+    // solve("P('a)".parseTheory()!!.geometric(), BasicChase())
+    // solve("exists x. P(x)".parseTheory()!!.geometric(), BasicChase())
+    // solve("P(f('a))".parseTheory()!!.geometric(), BasicChase())
+    solve("P('a) or Q('b)".parseTheory()!!.geometric(), BasicChase())
 }
