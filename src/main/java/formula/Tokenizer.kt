@@ -160,7 +160,7 @@ fun tokenize(source: String): List<Token> {
             }
         }
         // TODO use parser exception
-        if (!match) throw "Unexpected token at: $src".internalError()
+        if (!match) throw RuntimeException("Unexpected token at: $src")
     } while (!isEnd)
 
     return tokens

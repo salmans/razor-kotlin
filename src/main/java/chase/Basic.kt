@@ -3,20 +3,34 @@ package chase
 import formula.*
 import sun.awt.util.IdentityLinkedList
 import tools.pow
+import java.util.*
 
+
+val EXPECTED_STANDARD_SEQUENT = "Internal Error: Expecting a geometric sequent in standard form."
+val ELEMENT_NOT_IN_DOMAIN = "The element is not in the domain of this model."
 
 class BasicModel() : Model<BasicModel>() {
+    private var elementIndex = 0
+
     private val rewrites: MutableMap<WitnessTerm, Element> = mutableMapOf()
 
-    override val elements: Collection<Element>
-        get() = rewrites.values
-    override var facts: HashSet<Observation.Fact> = HashSet()
+    // TODO make this a HashSet
+    private var facts: LinkedList<Observation.Fact> = LinkedList()
 
-    private fun record(term: WitnessTerm): Element = reduce(term) ?: Element(elements.size + 1).apply { rewrites[term] = this }
+    override fun getDomain(): Set<Element> = rewrites.values.toSet()
 
+    override fun getFacts(): Set<Observation.Fact> = facts.toSet()
+
+    private fun record(term: WitnessTerm): Element = when (term) {
+        is Element -> if (term in getDomain()) term else throw throw RuntimeException(ELEMENT_NOT_IN_DOMAIN)
+        is WitnessConst -> rewrites[term] ?: { Element(elementIndex++).apply { rewrites[term] = this } }.invoke()
+        is WitnessApp -> term.copy(terms = term.terms.map { record(it) }).let {
+            rewrites[it] ?: { Element(elementIndex++).apply { rewrites[it] = this } }.invoke()
+        }
+    }
 
     private fun reduce(term: WitnessTerm): Element? = when (term) {
-        is Element -> term
+        is Element -> if (term in getDomain()) term else null
         is WitnessConst -> rewrites[term]
         is WitnessApp -> term.terms.map { reduce(it) }.let {
             if (it.any { it == null }) null else rewrites[term.copy(terms = it.filterNotNull())]
@@ -24,6 +38,7 @@ class BasicModel() : Model<BasicModel>() {
     }
 
     constructor(model: BasicModel) : this() {
+        this.elementIndex = model.elementIndex
         this.rewrites.putAll(model.rewrites)
         this.facts.addAll(model.facts)
     }
@@ -47,18 +62,28 @@ class BasicModel() : Model<BasicModel>() {
     }
 
     override fun duplicate(): BasicModel = BasicModel(this)
+
+    override fun equals(other: Any?): Boolean = when (other) {
+        is BasicModel -> this.elementIndex == other.elementIndex && this.rewrites == other.rewrites && this.facts == other.facts
+        else -> false
+    }
+
+    override fun hashCode(): Int {
+        var result = elementIndex
+        result = 31 * result + rewrites.hashCode()
+        result = 31 * result + facts.hashCode()
+        return result
+    }
 }
 
 
 sealed class Literal {
-    abstract fun print(): String
-
     data class Atm(val pred: Pred, val terms: Terms) : Literal() {
-        override fun print(): String = "$pred(${this.terms.joinToString(", ")})"
+        override fun toString(): String = "$pred(${this.terms.joinToString(", ")})"
     }
 
     data class Eql(val left: Term, val right: Term) : Literal() {
-        override fun print(): String = "$left = $right"
+        override fun toString(): String = "$left = $right"
     }
 }
 
@@ -70,7 +95,7 @@ private fun buildBody(formula: Formula): List<Literal> = when (formula) {
     is Atom -> listOf(formula.lit())
     is Equals -> listOf(formula.lit())
     is And -> buildBody(formula.left) + buildBody(formula.right)
-    else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
+    else -> throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
 }
 
 private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
@@ -88,17 +113,17 @@ private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
         } else if (left.size == 1 || right.size == 1) {
             listOf((left.firstOrNull() ?: emptyList()) + (right.firstOrNull() ?: emptySet()))
         } else {
-            throw EXPECTED_STANDARD_SEQUENT.internalError()
+            throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
         }
     }
     is Or -> buildHead(formula.left) + buildHead(formula.right)
-    else -> throw EXPECTED_STANDARD_SEQUENT.internalError()
+    else -> throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
 }
 
-class BasicSequent(formula: Formula) : Sequent<BasicModel> {
+class BasicSequent(formula: Formula) : Sequent {
     val freeVars = formula.freeVars.toList()
-    val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else throw EXPECTED_STANDARD_SEQUENT.internalError()
-    val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw EXPECTED_STANDARD_SEQUENT.internalError()
+    val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
+    val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
 }
 
 typealias Witness = (Var) -> Element
@@ -111,7 +136,7 @@ fun Term.witness(witness: Witness): WitnessTerm = when (this) {
 
 class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<BasicModel, BasicSequent> {
     override fun evaluate(model: BasicModel): List<BasicModel>? {
-        val domain = model.elements.toList()
+        val domain = model.getDomain().toList()
 
         for (sequent in sequents) {
             for (i in 0..(pow(domain.size, sequent.freeVars.size) - 1)) {
@@ -145,7 +170,7 @@ class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<Basic
     }
 }
 
-class BasicStrategy : Strategy<BasicModel>() {
+class BasicStrategy : Strategy<BasicModel> {
     private val queue = IdentityLinkedList<BasicModel>()
 
     override fun iterator(): Iterator<BasicModel> {
@@ -161,24 +186,25 @@ class BasicStrategy : Strategy<BasicModel>() {
     }
 }
 
-class BasicChase : Chase<BasicModel, BasicSequent, BasicEvaluator, BasicStrategy>() {
-    override fun emptyModel(): BasicModel = BasicModel()
-
-    override fun newSequent(formula: Formula): BasicSequent = BasicSequent(formula)
-
-    override fun newEvaluator(sequents: List<BasicSequent>): BasicEvaluator = BasicEvaluator(sequents)
-
-    override fun newStrategy(): BasicStrategy = BasicStrategy()
-}
-
 fun main(args: Array<String>) {
-    // solve("P('a)\nP(x) implies Q(x)".parseTheory()!!.geometric(), BasicChase())
-    // solve("P('a)\nP(x) implies Q(x)\nQ(x) implies R(x)".parseTheory()!!.geometric(), BasicChase())
-    // solve("P('a)".parseTheory()!!.geometric(), BasicChase())
-    // solve("exists x. P(x)".parseTheory()!!.geometric(), BasicChase())
-    // solve("P(f('a))".parseTheory()!!.geometric(), BasicChase())
-    // solve("P('a) or Q('b) or R('c)".parseTheory()!!.geometric(), BasicChase())
-    // solve("TRUE implies P('a, 'b)".parseTheory()!!.geometric(), BasicChase())
-    // solve("'a = 'b".parseTheory()!!.geometric(), BasicChase())
-    solve("P('a)\nQ('b)\nP(x) and Q(y) implies x = y".parseTheory()!!.geometric(), BasicChase())
+    // val source = "P('a)\nP(x) implies Q(x)"
+    // val source = "P('a)\nP(x) implies Q(x)\nQ(x) implies R(x)"
+    // val source = "P('a)"
+    // val source = "exists x. P(x)"
+    // val source = "P(f('a))"
+    // val source = "P('a) or Q('b) or R('c)"
+    // val source = "TRUE implies P('a, 'b)"
+    // val source = "'a = 'b"
+    // val source = "P('a)\nQ('b)\nP(x) and Q(y) implies x = y"
+    val source = "P('a) or Q('b)\nP(x) implies R(x)\nQ(x) implies S(x)"
+    // val source = "P(f('a))"
+    val geometricTheory = source.parseTheory()!!.geometric()
+    val sequents = geometricTheory.formulas.map { BasicSequent(it) }
+    val evaluator = BasicEvaluator(sequents)
+    val strategy = BasicStrategy().apply { add(BasicModel()) }
+
+    solveAll(strategy, evaluator).forEach {
+        print(it.getDomain())
+        println(it.getFacts())
+    }
 }

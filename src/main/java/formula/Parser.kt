@@ -64,7 +64,7 @@ class Parser {
     fun consume(type: TokenType): Token {
         return peek().let {
             if (it.type != type) {
-                throw "Parse error at ${it.location}: expecting '$type' but '${it.token}' is found.".parserException()
+                throw ParserException("Parse error at ${it.location}: expecting '$type' but '${it.token}' is found.")
             }
             index++
             it
@@ -84,7 +84,7 @@ class Parser {
             } else {
                 // generate a parser error
                 peek().let {
-                    throw "Parse error at ${it.location}: expecting ${expectedTokenStack.pop().joinToString { "'$it'" }} but '${it.token}' is found.".parserException()
+                    throw ParserException("Parse error at ${it.location}: expecting ${expectedTokenStack.pop().joinToString { "'$it'" }} but '${it.token}' is found.")
                 }
             }
         }

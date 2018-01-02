@@ -1,5 +1,8 @@
 package formula
 
+
+val EXPECTED_NNF_FORMULA = "Internal Error: Expecting a formula in negation normal form."
+
 /**
  * A Substitution is a function from variables to terms.
  */
@@ -260,8 +263,8 @@ fun Formula.cnf(generator: SkolemGenerator = SkolemGenerator()): Formula {
                 }
             }
             is Forall -> formula.copy(formula = pushOr(formula.formula))
-            is Implies -> throw EXPECTED_NNF_FORMULA.internalError() // because already NNF
-            is Exists -> throw EXPECTED_NNF_FORMULA.internalError()  // because already SNF
+            is Implies -> throw RuntimeException(EXPECTED_NNF_FORMULA) // because already NNF
+            is Exists -> throw RuntimeException(EXPECTED_NNF_FORMULA)  // because already SNF
         }
     }
 

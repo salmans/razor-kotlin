@@ -7,24 +7,30 @@ import formula.g
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class ModelTest {
+class ChaseTest {
     @Test
     fun witnessConst() {
         assertEquals(_c, WitnessConst(c))
-    }
-
-    @Test
-    fun toStringWitnessConst() {
         assertEquals("'c", _c.toString())
     }
 
     @Test
-    fun toStringElement() {
+    fun element() {
         assertEquals("e#0", e_0.toString())
+        assertEquals(true, e_0 == e_0)
+        assertEquals(false, e_0 == e_1)
+        assertEquals(true, Element(1) == Element(1))
+        assertEquals(0, e_0.hashCode())
+        run {
+            val e = Element(0)
+            e.collapse(e_1)
+            assertEquals(e_1, e)
+            assertEquals(Element(1), e_1)
+        }
     }
 
     @Test
-    fun toStringWitnessApp() {
+    fun witnessApp() {
         assertEquals("f[]", WitnessApp(f).toString())
         assertEquals("f['c]", WitnessApp(f, listOf(_c)).toString())
         assertEquals("f[g[]]", WitnessApp(f, listOf(WitnessApp(g))).toString())
@@ -34,15 +40,11 @@ class ModelTest {
     @Test
     fun rel() {
         assertEquals(_R, Rel(R))
-    }
-
-    @Test
-    fun toStringRel() {
         assertEquals("R", _R.toString())
     }
 
     @Test
-    fun toStringObservation() {
+    fun obs() {
         assertEquals("<R()>", _R().toString())
         assertEquals("<R(e#0)>", _R(e_0).toString())
         assertEquals("<R(e#0, e#1, e#2)>", _R(e_0, e_1, e_2).toString())

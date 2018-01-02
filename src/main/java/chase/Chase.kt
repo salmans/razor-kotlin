@@ -1,6 +1,9 @@
 package chase
 
-import formula.*
+import formula.Const
+import formula.Func
+import formula.Pred
+import java.util.*
 
 /**
  * Witness Terms: witness terms are used to justify an element in the model.
@@ -21,7 +24,7 @@ data class WitnessConst(private val name: String) : WitnessTerm() {
 /**
  * Elements of a model
  */
-open class Element(private var index: Int) : WitnessTerm() {
+data class Element(private var index: Int) : WitnessTerm() {
     override fun toString(): String = "e#${this.index}"
 
     override fun equals(other: Any?): Boolean = when (other) {
@@ -34,7 +37,8 @@ open class Element(private var index: Int) : WitnessTerm() {
     }
 
     /**
-     * Collapse this element with `element`
+     * Collapse this element with `element`, so they would be equal.
+     * This method is used to identify elements for equality reasoning.
      */
     fun collapse(element: Element) {
         index = element.index
@@ -44,7 +48,7 @@ open class Element(private var index: Int) : WitnessTerm() {
 /**
  * Witness function application
  */
-data class WitnessApp(val function: Func, val terms: List<WitnessTerm> = emptyList()) : WitnessTerm() {
+data class WitnessApp(private val function: Func, val terms: List<WitnessTerm> = emptyList()) : WitnessTerm() {
     override fun toString(): String = "${this.function}${this.terms.joinToString(prefix = "[", postfix = "]") { it.toString() }}"
 }
 
@@ -75,14 +79,14 @@ sealed class Observation {
  */
 abstract class Model<out M> {
     /**
-     * A collection of elements in this model
+     * Returns the domain of this model.
      */
-    abstract val elements: Collection<Element>
+    abstract fun getDomain(): Set<Element>
 
     /**
-     * A collection of facts in this model
+     * Returns the set of facts in this model.
      */
-    abstract val facts: Collection<Observation.Fact>
+    abstract fun getFacts(): Set<Observation.Fact>
 
     /**
      * Returns a copy of this model (for branching purposed)
@@ -95,38 +99,25 @@ abstract class Model<out M> {
     abstract fun observe(observation: Observation)
 
     /**
-     * Lookup an observatin in the model.
+     * Lookup an observation in the model.
      */
     abstract fun lookup(observation: Observation): Boolean
 }
 
+interface Sequent
 
-interface Sequent<out M : Model<M>>
-
-abstract class Strategy<M : Model<M>> : Iterable<M> {
-    abstract override fun iterator(): Iterator<M>
-    abstract fun add(model: M): Boolean
-    abstract fun remove(model: M): Boolean
+interface Strategy<M : Model<M>> : Iterable<M> {
+    override fun iterator(): Iterator<M>
+    fun add(model: M): Boolean
+    fun remove(model: M): Boolean
 }
 
-interface Evaluator<M : Model<M>, S : Sequent<M>> {
+interface Evaluator<M : Model<M>, S : Sequent> {
     fun evaluate(model: M): List<M>?
 }
 
-abstract class Chase<M : Model<M>, S : Sequent<M>, out SL : Evaluator<M, S>, out ST : Strategy<M>> {
-    abstract fun emptyModel(): M
-    abstract fun newSequent(formula: Formula): S
-    abstract fun newEvaluator(sequents: List<S>): SL
-    abstract fun newStrategy(): ST
-}
-
-fun <M : Model<M>, S : Sequent<M>, SL : Evaluator<M, S>, ST : Strategy<M>> solve(theory: Theory, chase: Chase<M, S, SL, ST>) {
-    val geometricTheory = theory.geometric()
-    val sequents = geometricTheory.formulas.map { chase.newSequent(it) }
-    val evaluator = chase.newEvaluator(sequents)
-    val strategy = chase.newStrategy().apply { add(chase.emptyModel()) }
-
-
+fun <M : Model<M>, S : Sequent> solveAll(strategy: Strategy<M>, evaluator: Evaluator<M, S>): List<M> {
+    val result = LinkedList<M>()
     while (strategy.iterator().hasNext()) {
         val model = strategy.iterator().next()
         strategy.remove(model)
@@ -138,9 +129,10 @@ fun <M : Model<M>, S : Sequent<M>, SL : Evaluator<M, S>, ST : Strategy<M>> solve
                     strategy.add(it)
                 }
             } else {
-                print(model.elements)
-                print(model.facts)
+                result.add(model)
             }
         }
     }
+
+    return result
 }
