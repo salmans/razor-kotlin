@@ -46,7 +46,7 @@ val _Q = Rel("Q")
 val _R = Rel("R")
 val _S = Rel("S")
 
-fun assertFailure (errorMessage: String, func: () -> Unit) {
+fun assertFailure(errorMessage: String, func: () -> Unit) {
     try {
         func()
         fail("error expected!")
@@ -60,5 +60,7 @@ fun testBasic(source: String): String {
     val sequents = geometricTheory.formulas.map { BasicSequent(it) }
     val evaluator = BasicEvaluator(sequents)
     val strategy = FIFOStrategy().apply { add(BasicModel()) }
-    return solveAll(strategy, evaluator).joinToString(separator = "\n-- -- -- -- -- -- -- -- -- --\n")
+    return solveAll(strategy, evaluator).joinToString(separator = "\n-- -- -- -- -- -- -- -- -- --\n") { it ->
+        it.toString() + it.getDomain().joinToString(prefix = "\n", separator = "\n") { e -> "${it.witness(e).joinToString()} -> $e" }
+    }
 }

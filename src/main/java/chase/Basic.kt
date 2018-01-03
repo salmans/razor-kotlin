@@ -29,14 +29,6 @@ class BasicModel() : Model<BasicModel>() {
         }
     }
 
-    private fun reduce(term: WitnessTerm): Element? = when (term) {
-        is Element -> if (term in getDomain()) term else null
-        is WitnessConst -> rewrites[term]
-        is WitnessApp -> term.terms.map { reduce(it) }.let {
-            if (it.any { it == null }) null else rewrites[term.copy(terms = it.filterNotNull())]
-        }
-    }
-
     constructor(model: BasicModel) : this() {
         this.elementIndex = model.elementIndex
         this.rewrites.putAll(model.rewrites)
@@ -55,11 +47,21 @@ class BasicModel() : Model<BasicModel>() {
     }
 
     override fun lookup(observation: Observation): Boolean = when (observation) {
-        is Observation.Fact -> observation.terms.map { reduce(it) }.let {
+        is Observation.Fact -> observation.terms.map { element(it) }.let {
             if (it.any { it == null }) false else facts.contains(observation.copy(terms = it.filterNotNull()))
         }
-        is Observation.Identity -> reduce(observation.left).let { it != null && it == reduce(observation.right) }
+        is Observation.Identity -> element(observation.left).let { it != null && it == element(observation.right) }
     }
+
+    override fun element(term: WitnessTerm): Element? = when (term) {
+        is Element -> if (term in getDomain()) term else null
+        is WitnessConst -> rewrites[term]
+        is WitnessApp -> term.terms.map { element(it) }.let {
+            if (it.any { it == null }) null else rewrites[term.copy(terms = it.filterNotNull())]
+        }
+    }
+
+    override fun witness(element: Element): Set<WitnessTerm> = rewrites.keys.filter { rewrites[it] == element }.toSet()
 
     override fun duplicate(): BasicModel = BasicModel(this)
 

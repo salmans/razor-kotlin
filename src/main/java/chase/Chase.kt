@@ -6,7 +6,7 @@ import formula.Pred
 import java.util.*
 
 /**
- * Witness Terms: witness terms are used to justify an element in the model.
+ * Witness Terms: element terms are used to justify an element in the model.
  */
 sealed class WitnessTerm {
     abstract override fun toString(): String
@@ -16,7 +16,7 @@ sealed class WitnessTerm {
  * Witness constants
  */
 data class WitnessConst(private val name: String) : WitnessTerm() {
-    constructor(constant: Const) : this(constant.name) // create a witness constant for an existing constant
+    constructor(constant: Const) : this(constant.name) // create a element constant for an existing constant
 
     override fun toString(): String = "'${this.name}"
 }
@@ -102,6 +102,17 @@ abstract class Model<out M> {
      * Lookup an observation in the model.
      */
     abstract fun lookup(observation: Observation): Boolean
+
+    /**
+     * Get the set of element terms for a given element.
+     */
+    abstract fun witness(element: Element): Set<WitnessTerm>
+
+    /**
+     * Get the element for a given element term.
+     */
+    abstract fun element(term: WitnessTerm): Element?
+
 
     override fun toString(): String {
         return """Domain: ${getDomain().joinToString(prefix = "{", postfix = "}")}
