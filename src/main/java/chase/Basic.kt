@@ -139,9 +139,11 @@ class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<Basic
         val domain = model.getDomain().toList()
 
         for (sequent in sequents) {
-            for (i in 0..(pow(domain.size, sequent.freeVars.size) - 1)) {
-                val witMap = (0 until sequent.freeVars.size).associate {
-                    sequent.freeVars[it] to domain[i % pow(domain.size, it)]
+            val domainSize = domain.size
+            val sequentsSize = sequent.freeVars.size
+            for (i in 0 until pow(domainSize, sequentsSize)) {
+                val witMap = (1 .. sequentsSize).associate {
+                    sequent.freeVars[it - 1] to domain[(i / pow(domainSize, (it - 1))) % pow(domainSize, it)]
                 }
                 val witness = { v: Var -> witMap[v]!! }
 
@@ -183,28 +185,5 @@ class BasicStrategy : Strategy<BasicModel> {
 
     override fun remove(model: BasicModel): Boolean {
         return queue.remove(model)
-    }
-}
-
-fun main(args: Array<String>) {
-    // val source = "P('a)\nP(x) implies Q(x)"
-    // val source = "P('a)\nP(x) implies Q(x)\nQ(x) implies R(x)"
-    // val source = "P('a)"
-    // val source = "exists x. P(x)"
-    // val source = "P(f('a))"
-    // val source = "P('a) or Q('b) or R('c)"
-    // val source = "TRUE implies P('a, 'b)"
-    // val source = "'a = 'b"
-    // val source = "P('a)\nQ('b)\nP(x) and Q(y) implies x = y"
-    val source = "P('a) or Q('b)\nP(x) implies R(x)\nQ(x) implies S(x)"
-    // val source = "P(f('a))"
-    val geometricTheory = source.parseTheory()!!.geometric()
-    val sequents = geometricTheory.formulas.map { BasicSequent(it) }
-    val evaluator = BasicEvaluator(sequents)
-    val strategy = BasicStrategy().apply { add(BasicModel()) }
-
-    solveAll(strategy, evaluator).forEach {
-        print(it.getDomain())
-        println(it.getFacts())
     }
 }

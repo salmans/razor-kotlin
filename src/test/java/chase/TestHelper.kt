@@ -1,5 +1,7 @@
 package chase
 
+import formula.geometric
+import formula.parseTheory
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
@@ -51,4 +53,12 @@ fun assertFailure (errorMessage: String, func: () -> Unit) {
     } catch (e: Exception) {
         assertEquals(errorMessage, e.message)
     }
+}
+
+fun testBasic(source: String): String {
+    val geometricTheory = source.parseTheory()!!.geometric()
+    val sequents = geometricTheory.formulas.map { BasicSequent(it) }
+    val evaluator = BasicEvaluator(sequents)
+    val strategy = BasicStrategy().apply { add(BasicModel()) }
+    return solveAll(strategy, evaluator).joinToString(separator = "\n-- -- -- -- -- -- -- -- -- --\n")
 }

@@ -186,4 +186,53 @@ class BasicTest {
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(TRUE implies !TRUE) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(!P(x) implies !Q(x)) })
     }
+
+    @Test
+    fun testCore() {
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>", testBasic(this.javaClass.getResource("/basic/thy0.raz").readText()))
+        assertEquals("Domain: {e#0, e#1}\n" +
+                "Facts: <P(e#0)>, <P(e#1)>", testBasic(this.javaClass.getResource("/basic/thy1.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <Q(e#0)>", testBasic(this.javaClass.getResource("/basic/thy2.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>", testBasic(this.javaClass.getResource("/basic/thy3.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: ", testBasic(this.javaClass.getResource("/basic/thy4.raz").readText()))
+        assertEquals("Domain: {e#0, e#1}\n" +
+                "Facts: <P(e#0, e#1)>", testBasic(this.javaClass.getResource("/basic/thy5.raz").readText()))
+        assertEquals("Domain: {e#0, e#1}\n" +
+                "Facts: <P(e#1)>", testBasic(this.javaClass.getResource("/basic/thy6.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <Q(e#0)>, <R(e#0)>", testBasic(this.javaClass.getResource("/basic/thy7.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0}\n" +
+                "Facts: <Q(e#0)>\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0}\n" +
+                "Facts: <R(e#0)>", testBasic(this.javaClass.getResource("/basic/thy8.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <Q(e#0)>", testBasic(this.javaClass.getResource("/basic/thy9.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <R(e#0)>\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0}\n" +
+                "Facts: <Q(e#0)>, <S(e#0)>", testBasic(this.javaClass.getResource("/basic/thy10.raz").readText()))
+        assertEquals("Domain: {}\n" +
+                "Facts: ", testBasic(this.javaClass.getResource("/basic/thy11.raz").readText()))
+        assertEquals("Domain: {}\n" +
+                "Facts: ", testBasic(this.javaClass.getResource("/basic/thy12.raz").readText()))
+        assertEquals("", testBasic(this.javaClass.getResource("/basic/thy13.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <Q(e#0)>", testBasic(this.javaClass.getResource("/basic/thy14.raz").readText()))
+        assertEquals("", testBasic(this.javaClass.getResource("/basic/thy15.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0, e#0)>, <Q(e#0)>", testBasic(this.javaClass.getResource("/basic/thy16.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2}\n" +
+                "Facts: <P(e#0, e#0)>, <P(e#1, e#2)>, <Q(e#0)>", testBasic(this.javaClass.getResource("/basic/thy17.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2}\n" +
+                "Facts: <P(e#0, e#1)>, <P(e#2, e#2)>, <Q(e#2)>", testBasic(this.javaClass.getResource("/basic/thy18.raz").readText()))
+    }
 }

@@ -102,6 +102,12 @@ abstract class Model<out M> {
      * Lookup an observation in the model.
      */
     abstract fun lookup(observation: Observation): Boolean
+
+    override fun toString(): String {
+        return """Domain: ${getDomain().joinToString(prefix = "{", postfix = "}")}
+            |Facts: ${getFacts().joinToString()}
+        """.trimMargin()
+    }
 }
 
 interface Sequent
