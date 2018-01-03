@@ -337,5 +337,49 @@ class BasicTest {
                 "Facts: <P(e#0)>\n" +
                 "'sk#1 -> e#0", testBasic(this.javaClass.getResource("/basic/thy26.raz").readText()))
         assertEquals("", testBasic(this.javaClass.getResource("/basic/thy27.raz").readText()))
+        assertEquals("Domain: {}\n" +
+                "Facts: <T()>, <V()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <U()>, <V()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <T()>, <U()>, <V()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <U()>, <T()>, <V()>\n", testBasic(this.javaClass.getResource("/basic/thy28.raz").readText()))
+        assertEquals("Domain: {}\n" +
+                "Facts: <P()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <Q()>, <S()>, <W()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <Q()>, <S()>, <X()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <Q()>, <S()>, <Y()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <Q()>, <R()>, <T()>, <V()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <Q()>, <R()>, <U()>, <V()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <Q()>, <R()>, <T()>, <U()>, <V()>\n" +
+                "\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {}\n" +
+                "Facts: <Q()>, <R()>, <U()>, <T()>, <V()>\n", testBasic(this.javaClass.getResource("/basic/thy29.raz").readText()))
     }
 }
