@@ -4,6 +4,7 @@ import formula.*
 import sun.awt.util.IdentityLinkedList
 import tools.pow
 import java.util.*
+import kotlin.collections.HashMap
 
 
 val EXPECTED_STANDARD_SEQUENT = "Internal Error: Expecting a geometric sequent in standard form."
@@ -142,8 +143,12 @@ class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<Basic
             val domainSize = domain.size
             val sequentsSize = sequent.freeVars.size
             for (i in 0 until pow(domainSize, sequentsSize)) {
-                val witMap = (1 .. sequentsSize).associate {
-                    sequent.freeVars[it - 1] to domain[(i / pow(domainSize, (it - 1))) % pow(domainSize, it)]
+                val witMap = HashMap<Var, Element>()
+                var j = 0
+                var total = i
+                while (j < sequentsSize) {
+                    witMap[sequent.freeVars[j++]] = domain[total % domainSize]
+                    total /= domainSize
                 }
                 val witness = { v: Var -> witMap[v]!! }
 

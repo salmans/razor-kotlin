@@ -234,5 +234,25 @@ class BasicTest {
                 "Facts: <P(e#0, e#0)>, <P(e#1, e#2)>, <Q(e#0)>", testBasic(this.javaClass.getResource("/basic/thy17.raz").readText()))
         assertEquals("Domain: {e#0, e#1, e#2}\n" +
                 "Facts: <P(e#0, e#1)>, <P(e#2, e#2)>, <Q(e#2)>", testBasic(this.javaClass.getResource("/basic/thy18.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9, e#10}\n" +
+                "Facts: ", testBasic(this.javaClass.getResource("/basic/thy19.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9, e#10}\n" +
+                "Facts: <P(e#0)>, <P(e#1)>, <P(e#2)>, <P(e#3)>, <P(e#4)>, <P(e#5)>, <P(e#6)>, <P(e#7)>, <P(e#8)>, <P(e#9)>", testBasic(this.javaClass.getResource("/basic/thy20.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9, e#10}\n" +
+                "Facts: <P(e#0)>, <P(e#1)>, <P(e#2)>, <P(e#3)>, <P(e#4)>, <P(e#5)>, <P(e#6)>, <P(e#7)>, <P(e#8)>", testBasic(this.javaClass.getResource("/basic/thy21.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <Q(e#0)>, <R(e#0)>", testBasic(this.javaClass.getResource("/basic/thy22.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <Q(e#0)>, <R(e#0)>, <S(e#0)>", testBasic(this.javaClass.getResource("/basic/thy23.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <Q(e#0)>, <R(e#0)>, <S(e#0)>, <T(e#0)>", testBasic(this.javaClass.getResource("/basic/thy24.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3}\n" +
+                "Facts: <P(e#0)>, <Q(e#1)>, <R(e#2)>, <S(e#3)>", testBasic(this.javaClass.getResource("/basic/thy25.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0}\n" +
+                "Facts: <P(e#0)>", testBasic(this.javaClass.getResource("/basic/thy26.raz").readText()))
+        assertEquals("", testBasic(this.javaClass.getResource("/basic/thy27.raz").readText()))
     }
 }

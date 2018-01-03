@@ -1,0 +1,2 @@
+f(f(f(f(f(f(f(f(f(f('a)))))))))) = 'b
+f(x0) = x1 and f(x1) = x2 and f(x2) = x3 and f(x3) = x4 and f(x4) = x5 implies P(x0)
