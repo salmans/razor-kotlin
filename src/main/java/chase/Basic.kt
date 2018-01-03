@@ -1,14 +1,13 @@
 package chase
 
 import formula.*
-import sun.awt.util.IdentityLinkedList
 import tools.pow
 import java.util.*
 import kotlin.collections.HashMap
 
 
-val EXPECTED_STANDARD_SEQUENT = "Internal Error: Expecting a geometric sequent in standard form."
-val ELEMENT_NOT_IN_DOMAIN = "The element is not in the domain of this model."
+const val EXPECTED_STANDARD_SEQUENT = "Internal Error: Expecting a geometric sequent in standard form."
+const val ELEMENT_NOT_IN_DOMAIN = "The element is not in the domain of this model."
 
 class BasicModel() : Model<BasicModel>() {
     private var elementIndex = 0
@@ -127,15 +126,13 @@ class BasicSequent(formula: Formula) : Sequent {
     val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
 }
 
-typealias Witness = (Var) -> Element
-
-fun Term.witness(witness: Witness): WitnessTerm = when (this) {
-    is Const -> WitnessConst(this.name)
-    is Var -> witness(this)
-    is App -> WitnessApp(this.function, this.terms.map { it.witness(witness) })
-}
-
 class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<BasicModel, BasicSequent> {
+    private fun Term.witness(witness: (Var) -> Element): WitnessTerm = when (this) {
+        is Const -> WitnessConst(this.name)
+        is Var -> witness(this)
+        is App -> WitnessApp(this.function, this.terms.map { it.witness(witness) })
+    }
+
     override fun evaluate(model: BasicModel): List<BasicModel>? {
         val domain = model.getDomain().toList()
 
@@ -174,21 +171,5 @@ class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<Basic
         }
 
         return emptyList() // not failed but no progress
-    }
-}
-
-class BasicStrategy : Strategy<BasicModel> {
-    private val queue = IdentityLinkedList<BasicModel>()
-
-    override fun iterator(): Iterator<BasicModel> {
-        return queue.iterator()
-    }
-
-    override fun add(model: BasicModel): Boolean {
-        return queue.add(model)
-    }
-
-    override fun remove(model: BasicModel): Boolean {
-        return queue.remove(model)
     }
 }

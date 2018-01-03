@@ -59,6 +59,6 @@ fun testBasic(source: String): String {
     val geometricTheory = source.parseTheory()!!.geometric()
     val sequents = geometricTheory.formulas.map { BasicSequent(it) }
     val evaluator = BasicEvaluator(sequents)
-    val strategy = BasicStrategy().apply { add(BasicModel()) }
+    val strategy = FIFOStrategy().apply { add(BasicModel()) }
     return solveAll(strategy, evaluator).joinToString(separator = "\n-- -- -- -- -- -- -- -- -- --\n")
 }

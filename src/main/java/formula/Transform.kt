@@ -1,7 +1,7 @@
 package formula
 
 
-val EXPECTED_NNF_FORMULA = "Internal Error: Expecting a formula in negation normal form."
+const val EXPECTED_NNF_FORMULA = "Internal Error: Expecting a formula in negation normal form."
 
 /**
  * A Substitution is a function from variables to terms.
