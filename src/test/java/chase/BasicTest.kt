@@ -381,5 +381,13 @@ class BasicTest {
                 "-- -- -- -- -- -- -- -- -- --\n" +
                 "Domain: {}\n" +
                 "Facts: <Q()>, <R()>, <U()>, <T()>, <V()>\n", testBasic(this.javaClass.getResource("/core/thy29.raz").readText()))
+        assertEquals("", testBasic(this.javaClass.getResource("/core/thy30.raz").readText()))
+    }
+
+    @Test
+    fun testExamples() {
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <Man(e#0)>, <MustDie(e#0)>\n" +
+                "'gregor -> e#0", testBasic(this.javaClass.getResource("/examples/valar-morghulis.raz").readText()))
     }
 }
