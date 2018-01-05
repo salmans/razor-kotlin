@@ -7,13 +7,16 @@ import java.util.regex.Pattern
  * Token Type
  */
 enum class TokenType(vararg regex: String) {
+    WHITESPACE("( |\\t|\\f|(\\r\\n)|\\r|\\n)") {
+        override fun toString(): String = "<Whitespace>"
+    },
     COMMA(",") {
         override fun toString(): String = ","
     },
     DOT("\\.") {
         override fun toString(): String = "."
     },
-    APOSTROPHE("\\'"){
+    APOSTROPHE("\\'") {
         override fun toString(): String = "'"
     },
     LPAREN("\\(") {
@@ -54,6 +57,9 @@ enum class TokenType(vararg regex: String) {
     },
     UPPER("[A-Z][a-zA-Z0-9_]*") {
         override fun toString(): String = "<Uppercase Identifier>"
+    },
+    COMMENT("\\/\\/[^\\r\\n]*[\\r\\n]?", "\\/\\*([^*]|\\*+[^*/])*\\**\\*\\/", "\\/\\*([^*]|\\*+[^*/])*") {
+        override fun toString(): String = "<Comment>"
     },
     END("^$") {
         override fun toString(): String = "<End of Input>"
@@ -108,43 +114,10 @@ fun tokenize(source: String): List<Token> {
      */
     var src = source
 
-    /**
-     * A matcher to match and discard whitespaces. (Whitespace is not a token)
-     */
-    val whiteSpace = Pattern.compile("^\\s*")
-
-    /**
-     * Ignores whitespace characters using {@code whiteSpace}. It updates {@code line} and {@code column} accordingly.
-     */
-    fun ignoreWhiteSpace() {
-        whiteSpace.matcher(src).let {
-            if (it.find()) {
-                val tok = it.group()
-                var lastCarriageReturn = false
-                tok.forEach {
-                    // \r\n, \r or \n indicate line breaks.
-                    when (it) {
-                        '\r' -> {
-                            line++; column = 1; lastCarriageReturn = true
-                        }
-                        '\n' -> if (!lastCarriageReturn) {
-                            line++; column = 1; lastCarriageReturn = false
-                        }
-                        else -> {
-                            column++; lastCarriageReturn = false
-                        }
-                    }
-                }
-                src = it.replaceFirst("")
-            }
-        }
-    }
-
     do {
-        ignoreWhiteSpace()
-
         var match = false
         var isEnd = false
+
         for (type in TokenType.values()) {
             val m = type.pattern.matcher(src)
             if (m.find()) {
@@ -153,8 +126,26 @@ fun tokenize(source: String): List<Token> {
                 val tok = if (isEnd) {
                     TokenType.END.toString()
                 } else m.group()
-                tokens.add(Token(type, tok.trim(), Token.Location(line, column)))
-                column += tok.length
+                if (type == TokenType.WHITESPACE || type == TokenType.COMMENT) {
+                    var lastCarriageReturn = false
+                    tok.forEach {
+                        // \r\n, \r or \n indicate line breaks.
+                        when (it) {
+                            '\r' -> {
+                                line++; column = 1; lastCarriageReturn = true
+                            }
+                            '\n' -> if (!lastCarriageReturn) {
+                                line++; column = 1; lastCarriageReturn = false
+                            }
+                            else -> {
+                                column++; lastCarriageReturn = false
+                            }
+                        }
+                    }
+                } else {
+                    tokens.add(Token(type, tok.trim(), Token.Location(line, column)))
+                    column += tok.length
+                }
                 src = m.replaceFirst("")
                 break
             }

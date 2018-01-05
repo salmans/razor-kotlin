@@ -10,6 +10,7 @@ internal class ParserTest {
 
     @Test
     fun parse() {
+        assertTheoriesEqual(actual = "".parseTheory())
         assertTheoriesEqual(TRUE
                 , actual = "TRUE".parseTheory())
         assertTheoriesEqual(FALSE
@@ -158,6 +159,16 @@ internal class ParserTest {
                 "x = y & y = z -> x = z").parseTheory())
         assertTheoriesEqual("∀ x. (∃ y. (((x = y) ∧ ¬P(y)) ∨ (Q(x) → R(y))))".parseTheory()!!.formulas.first()
                 , actual = "forall x . exists y . (x = y and not P(y)) or (Q(x) implies R(y))".parseTheory())
+        assertTheoriesEqual(actual = "// test comment\n".parseTheory())
+        assertTheoriesEqual(P(x), actual = "// P(x)\nP(x)".parseTheory())
+        assertTheoriesEqual(P(x), actual = "// // P(x)\nP(x)".parseTheory())
+        assertTheoriesEqual(P(x), P(x), actual = "P(x)// P(x)\nP(x)".parseTheory())
+
+        assertTheoriesEqual(actual = "/* test comment*/\n".parseTheory())
+        assertTheoriesEqual(actual = "/* test comment\n".parseTheory())
+        assertTheoriesEqual(P(x), actual = "/* P(x)\n\n\nP(x)*/ P(x)".parseTheory())
+        assertTheoriesEqual(P(x), actual = "/* /* P(x)\n*/P(x)".parseTheory())
+        assertTheoriesEqual(P(x), P(x), actual = "P(x)/* P(x)\nP(x) */ P(x)".parseTheory())
     }
 
     @Test
@@ -184,5 +195,8 @@ internal class ParserTest {
         assertFailure("Parse error at (1, 2): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', ''', '<Uppercase Identifier>', '(' but 'and' is found.", { " and Q(x)".parseTheory() })
         assertFailure("Parse error at (1, 12): expecting ''', '<Lowercase Identifier>' but '=' is found.", { "f(x, g(y), = h(x)".parseTheory() })
         assertFailure("Parse error at (1, 11): expecting ')' but '=' is found.", { "f(x, g(y) = h(x)".parseTheory() })
+        assertFailure("Parse error at (2, 3): expecting '(' but '<End of Input>' is found.", { "\r\n T".parseTheory() })
+        assertFailure("Parse error at (2, 3): expecting '(' but '<End of Input>' is found.", { "//\n T".parseTheory() })
+        assertFailure("Parse error at (3, 11): expecting '(' but '<End of Input>' is found.", { "/*\n\n test */ T".parseTheory() })
     }
 }
