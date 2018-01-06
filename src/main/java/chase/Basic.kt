@@ -81,10 +81,10 @@ class BasicModel() : Model<BasicModel>() {
 
 class DomainSizeBounder(val maxDomainSize: Int): Bounder<BasicModel> {
     override fun bound(model: BasicModel, observation: Observation): Boolean = when (observation) {
-        is Observation.Fact -> model.getDomain().size + observation.terms.map { model.element(it) }.filter { it == null }.size > maxDomainSize
+        is Observation.Fact -> model.getDomain().size + observation.terms.map { model.element(it) }.filter { it == null }.size >= maxDomainSize
         is Observation.Identity -> {
             fun countOne(value: Element?): Int = if (value == null) 1 else 0
-            model.getDomain().size + countOne(model.element(observation.left)) + countOne(model.element(observation.right)) > maxDomainSize
+            model.getDomain().size + countOne(model.element(observation.left)) + countOne(model.element(observation.right)) >= maxDomainSize
         }
     }
 }

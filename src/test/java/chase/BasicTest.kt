@@ -389,6 +389,76 @@ class BasicTest {
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <Man(e#0)>, <MustDie(e#0)>\n" +
                 "'gregor -> e#0", testBasic(this.javaClass.getResource("/examples/valar-morghulis.raz").readText()))
+        assertEquals("", testBasic(this.javaClass.getResource("/examples/lannisters.raz").readText()))
+        assertEquals("Domain: {e#3, e#1, e#2}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "'sk#1 -> e#2\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1, e#2}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3, father[e#3], 'sk#1 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3, father[e#3], mother[e#3], 'sk#2 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3, mother[e#3], father[e#3], 'sk#1 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3, mother[e#3], 'sk#2 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3, father[e#3], 'sk#1 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3, father[e#3], mother[e#3], 'sk#2 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3, father[e#3], mother[e#3], 'sk#1 -> e#3\n" +
+                "'sk#0 -> e#1\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#3, e#1}\n" +
+                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
+                "'sk#3, father[e#3], mother[e#3], 'sk#2 -> e#3\n" +
+                "'sk#0 -> e#1", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 4))
+        assertEquals("Domain: {e#2, e#1, e#4}\n" +
+                "Facts: <Grandpas(e#2, e#2)>, <Parent(e#1, e#2)>, <Grandpas(e#1, e#2)>, <Grandpas(e#2, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#2, e#1)>, <Man(e#2)>, <Person(e#2)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#2, e#2)>, <Ancestor(e#2, e#2)>\n" +
+                "'sk#3, 'sk#1 -> e#2\n" +
+                "'sk#0 -> e#1\n" +
+                "mother[e#1], 'sk#2 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#2, e#1}\n" +
+                "Facts: <Grandpas(e#2, e#2)>, <Parent(e#1, e#2)>, <Grandpas(e#1, e#2)>, <Grandpas(e#2, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#2, e#1)>, <Man(e#2)>, <Person(e#2)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#2, e#2)>, <Ancestor(e#2, e#2)>, <Ancestor(e#1, e#2)>\n" +
+                "'sk#3, 'sk#1, father[e#1] -> e#2\n" +
+                "'sk#0 -> e#1\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#2, e#1, e#5}\n" +
+                "Facts: <Grandpas(e#2, e#2)>, <Parent(e#1, e#2)>, <Grandpas(e#1, e#2)>, <Grandpas(e#2, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#2, e#1)>, <Man(e#2)>, <Person(e#2)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#2, e#2)>, <Ancestor(e#2, e#2)>, <Ancestor(e#1, e#2)>\n" +
+                "'sk#3, 'sk#1, father[e#1] -> e#2\n" +
+                "'sk#0 -> e#1\n" +
+                "'sk#2 -> e#5", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 5))
+        assertEquals("", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 6))
+        assertEquals("", testBasic(this.javaClass.getResource("/examples/grandpa.raz").readText()))
     }
 
     @Test

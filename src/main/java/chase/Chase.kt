@@ -151,7 +151,7 @@ fun <M : Model<M>, S : Sequent> solveAll(strategy: Strategy<M>, evaluator: Evalu
                     if (it.isLeft()) {
                         strategy.add(it.left()!!)
                     } else {
-                        result.add(model)
+                        result.add(it.right()!!)
                     }
                 }
             } else {
