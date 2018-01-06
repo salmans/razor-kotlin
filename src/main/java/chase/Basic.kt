@@ -10,7 +10,7 @@ import kotlin.collections.HashMap
 const val EXPECTED_STANDARD_SEQUENT = "Internal Error: Expecting a geometric sequent in standard form."
 const val ELEMENT_NOT_IN_DOMAIN = "The element is not in the domain of this model."
 
-class BasicModel() : Model<BasicModel>() {
+class BasicModel() : Model() {
     private var elementIndex = 0
 
     private val rewrites: MutableMap<WitnessTerm, Element> = mutableMapOf()
@@ -79,16 +79,6 @@ class BasicModel() : Model<BasicModel>() {
     }
 }
 
-class DomainSizeBounder(val maxDomainSize: Int): Bounder<BasicModel> {
-    override fun bound(model: BasicModel, observation: Observation): Boolean = when (observation) {
-        is Observation.Fact -> model.getDomain().size + observation.terms.map { model.element(it) }.filter { it == null }.size >= maxDomainSize
-        is Observation.Identity -> {
-            fun countOne(value: Element?): Int = if (value == null) 1 else 0
-            model.getDomain().size + countOne(model.element(observation.left)) + countOne(model.element(observation.right)) >= maxDomainSize
-        }
-    }
-}
-
 sealed class Literal {
     data class Atm(val pred: Pred, val terms: Terms) : Literal() {
         override fun toString(): String = "$pred(${this.terms.joinToString(", ")})"
@@ -138,14 +128,14 @@ class BasicSequent(formula: Formula) : Sequent {
     val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
 }
 
-class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<BasicModel, BasicSequent> {
+class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator {
     private fun Term.witness(witness: (Var) -> Element): WitnessTerm = when (this) {
         is Const -> WitnessConst(this.name)
         is Var -> witness(this)
         is App -> WitnessApp(this.function, this.terms.map { it.witness(witness) })
     }
 
-    override fun evaluate(model: BasicModel, bounder: Bounder<BasicModel>?): List<Either<BasicModel, BasicModel>>? {
+    override fun evaluate(model: Model, bounder: Bounder?): List<Either<Model, Model>>? {
         val domain = model.getDomain().toList()
 
         for (sequent in sequents) {

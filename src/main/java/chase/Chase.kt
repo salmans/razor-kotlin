@@ -78,7 +78,7 @@ sealed class Observation {
 /**
  * Models
  */
-abstract class Model<out M> {
+abstract class Model {
     /**
      * Returns the domain of this model.
      */
@@ -92,7 +92,7 @@ abstract class Model<out M> {
     /**
      * Returns a copy of this model (for branching purposed)
      */
-    abstract fun duplicate(): M
+    abstract fun duplicate(): Model
 
     /**
      * Add an observation to the model.
@@ -124,22 +124,22 @@ abstract class Model<out M> {
 
 interface Sequent
 
-interface Strategy<M : Model<M>> : Iterable<M> {
-    override fun iterator(): Iterator<M>
-    fun add(model: M): Boolean
-    fun remove(model: M): Boolean
+interface Strategy : Iterable<Model> {
+    override fun iterator(): Iterator<Model>
+    fun add(model: Model): Boolean
+    fun remove(model: Model): Boolean
 }
 
-interface Bounder<M: Model<M>> {
-    fun bound(model: M, observation: Observation): Boolean
+interface Bounder {
+    fun bound(model: Model, observation: Observation): Boolean
 }
 
-interface Evaluator<M : Model<M>, S : Sequent> {
-    fun evaluate(model: M, bounder: Bounder<M>?): List<Either<M, M>>?
+interface Evaluator {
+    fun evaluate(model: Model, bounder: Bounder?): List<Either<Model, Model>>?
 }
 
-fun <M : Model<M>, S : Sequent> solveAll(strategy: Strategy<M>, evaluator: Evaluator<M, S>, bounder: Bounder<M>?): List<M> {
-    val result = LinkedList<M>()
+fun solveAll(strategy: Strategy, evaluator: Evaluator, bounder: Bounder?): List<Model> {
+    val result = LinkedList<Model>()
     while (strategy.iterator().hasNext()) {
         val model = strategy.iterator().next()
         strategy.remove(model)
