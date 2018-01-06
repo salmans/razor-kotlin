@@ -3,6 +3,7 @@ package chase
 import formula.Const
 import formula.Func
 import formula.Pred
+import tools.Either
 import java.util.*
 
 /**
@@ -129,21 +130,29 @@ interface Strategy<M : Model<M>> : Iterable<M> {
     fun remove(model: M): Boolean
 }
 
-interface Evaluator<M : Model<M>, S : Sequent> {
-    fun evaluate(model: M): List<M>?
+interface Bounder<M: Model<M>> {
+    fun bound(model: M, observation: Observation): Boolean
 }
 
-fun <M : Model<M>, S : Sequent> solveAll(strategy: Strategy<M>, evaluator: Evaluator<M, S>): List<M> {
+interface Evaluator<M : Model<M>, S : Sequent> {
+    fun evaluate(model: M, bounder: Bounder<M>?): List<Either<M, M>>?
+}
+
+fun <M : Model<M>, S : Sequent> solveAll(strategy: Strategy<M>, evaluator: Evaluator<M, S>, bounder: Bounder<M>?): List<M> {
     val result = LinkedList<M>()
     while (strategy.iterator().hasNext()) {
         val model = strategy.iterator().next()
         strategy.remove(model)
-        val models = evaluator.evaluate(model)
+        val models = evaluator.evaluate(model, bounder)
 
         if (models != null) {
             if (!models.isEmpty()) {
                 models.forEach {
-                    strategy.add(it)
+                    if (it.isLeft()) {
+                        strategy.add(it.left()!!)
+                    } else {
+                        result.add(model)
+                    }
                 }
             } else {
                 result.add(model)

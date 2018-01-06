@@ -1,6 +1,7 @@
 package chase
 
 import formula.*
+import tools.Either
 import tools.pow
 import java.util.*
 import kotlin.collections.HashMap
@@ -78,6 +79,15 @@ class BasicModel() : Model<BasicModel>() {
     }
 }
 
+class DomainSizeBounder(val maxDomainSize: Int): Bounder<BasicModel> {
+    override fun bound(model: BasicModel, observation: Observation): Boolean = when (observation) {
+        is Observation.Fact -> model.getDomain().size + observation.terms.map { model.element(it) }.filter { it == null }.size > maxDomainSize
+        is Observation.Identity -> {
+            fun countOne(value: Element?): Int = if (value == null) 1 else 0
+            model.getDomain().size + countOne(model.element(observation.left)) + countOne(model.element(observation.right)) > maxDomainSize
+        }
+    }
+}
 
 sealed class Literal {
     data class Atm(val pred: Pred, val terms: Terms) : Literal() {
@@ -135,7 +145,7 @@ class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<Basic
         is App -> WitnessApp(this.function, this.terms.map { it.witness(witness) })
     }
 
-    override fun evaluate(model: BasicModel): List<BasicModel>? {
+    override fun evaluate(model: BasicModel, bounder: Bounder<BasicModel>?): List<Either<BasicModel, BasicModel>>? {
         val domain = model.getDomain().toList()
 
         for (sequent in sequents) {
@@ -165,7 +175,12 @@ class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator<Basic
                     return if (heads.isEmpty()) {
                         null // failure
                     } else {
-                        heads.map { model.duplicate().apply { it.forEach { observe(it) } } }
+                        heads.map {
+                            if (bounder != null && it.any { bounder.bound(model, it) })
+                                Either.right(model.duplicate().apply { it.forEach { observe(it) } })
+                            else
+                                Either.left(model.duplicate().apply { it.forEach { observe(it) } })
+                        }
                         // this evaluator returns the models from first successful sequent
                     }
                 }

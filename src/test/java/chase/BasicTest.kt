@@ -390,4 +390,37 @@ class BasicTest {
                 "Facts: <Man(e#0)>, <MustDie(e#0)>\n" +
                 "'gregor -> e#0", testBasic(this.javaClass.getResource("/examples/valar-morghulis.raz").readText()))
     }
+
+    @Test
+    fun testBounded() {
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P(e#1)>, <P(e#2)>, <P(e#3)>, <P(e#4)>\n" +
+                "'a -> e#0\n" +
+                "f[e#0] -> e#1\n" +
+                "f[e#1] -> e#2\n" +
+                "f[e#2] -> e#3\n" +
+                "f[e#3] -> e#4", testDomainBoundedBasic(this.javaClass.getResource("/bounded/thy0.raz").readText(), 5))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9, e#10, e#11, e#12, e#13, e#14, e#15, e#16, e#17, e#18, e#19}\n" +
+                "Facts: <P(e#0)>, <P(e#1)>, <P(e#2)>, <P(e#3)>, <P(e#4)>, <P(e#5)>, <P(e#6)>, <P(e#7)>, <P(e#8)>, <P(e#9)>, <P(e#10)>, <P(e#11)>, <P(e#12)>, <P(e#13)>, <P(e#14)>, <P(e#15)>, <P(e#16)>, <P(e#17)>, <P(e#18)>, <P(e#19)>\n" +
+                "'a -> e#0\n" +
+                "f[e#0] -> e#1\n" +
+                "f[e#1] -> e#2\n" +
+                "f[e#2] -> e#3\n" +
+                "f[e#3] -> e#4\n" +
+                "f[e#4] -> e#5\n" +
+                "f[e#5] -> e#6\n" +
+                "f[e#6] -> e#7\n" +
+                "f[e#7] -> e#8\n" +
+                "f[e#8] -> e#9\n" +
+                "f[e#9] -> e#10\n" +
+                "f[e#10] -> e#11\n" +
+                "f[e#11] -> e#12\n" +
+                "f[e#12] -> e#13\n" +
+                "f[e#13] -> e#14\n" +
+                "f[e#14] -> e#15\n" +
+                "f[e#15] -> e#16\n" +
+                "f[e#16] -> e#17\n" +
+                "f[e#17] -> e#18\n" +
+                "f[e#18] -> e#19", testDomainBoundedBasic(this.javaClass.getResource("/bounded/thy0.raz").readText(), 20))
+    }
 }
