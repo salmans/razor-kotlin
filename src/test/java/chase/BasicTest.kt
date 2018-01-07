@@ -771,7 +771,8 @@ class BasicTest {
                 "f[e#1] -> e#2\n" +
                 "f[e#2] -> e#3\n" +
                 "'sk#1 -> e#4", testBasic(this.javaClass.getResource("/core/thy40.raz").readText()))
-        assertEquals("", testBasic(this.javaClass.getResource("/core/thy41.raz").readText()))
+        assertEquals("Domain: {}\n" +
+                "Facts: \n", testBasic(this.javaClass.getResource("/core/thy41.raz").readText()))
     }
 
     @Test

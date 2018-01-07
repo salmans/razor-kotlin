@@ -1,4 +1,4 @@
--- if the evaluation is not fair, this theory will not terminate.
+// if the evaluation is not fair, this theory will not terminate.
 exists x . x = e()
 f(x, e()) = x
 f(f(x, y), z) = f(x, f(y,z))

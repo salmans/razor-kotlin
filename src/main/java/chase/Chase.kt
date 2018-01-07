@@ -126,8 +126,9 @@ abstract class Model {
 
 interface Sequent
 
-interface Strategy : Iterable<Model> {
-    override fun iterator(): Iterator<Model>
+interface Strategy : Iterator<Model> {
+    override fun hasNext(): Boolean
+    override fun next(): Model
     fun add(model: Model): Boolean
     fun remove(model: Model): Boolean
 }
