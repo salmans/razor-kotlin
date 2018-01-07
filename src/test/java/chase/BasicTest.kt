@@ -215,9 +215,10 @@ class BasicTest {
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>, <Q(e#0)>\n" +
                 "'a -> e#0", testBasic(this.javaClass.getResource("/core/thy2.raz").readText()))
-        assertEquals("Domain: {e#0}\n" +
-                "Facts: <P(e#0)>\n" +
-                "'sk#0 -> e#0", testBasic(this.javaClass.getResource("/core/thy3.raz").readText()))
+        assertEquals("Domain: {e#0, e#1}\n" +
+                "Facts: <R(e#0, e#1)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1", testBasic(this.javaClass.getResource("/core/thy3.raz").readText()))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: \n" +
                 "'a, 'b -> e#0", testBasic(this.javaClass.getResource("/core/thy4.raz").readText()))
@@ -382,6 +383,378 @@ class BasicTest {
                 "Domain: {}\n" +
                 "Facts: <Q()>, <R()>, <U()>, <T()>, <V()>\n", testBasic(this.javaClass.getResource("/core/thy29.raz").readText()))
         assertEquals("", testBasic(this.javaClass.getResource("/core/thy30.raz").readText()))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <R(e#0)>, <U(e#0)>, <Q(e#0, e#0)>\n" +
+                "'sk#0 -> e#0", testBasic(this.javaClass.getResource("/core/thy31.raz").readText()))
+        assertEquals("Domain: {e#0, e#1}\n" +
+                "Facts: <R(e#0)>, <Q(e#0, e#1)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1", testBasic(this.javaClass.getResource("/core/thy32.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2}\n" +
+                "Facts: <Q(e#0)>, <R(e#0, e#0)>, <S(e#1)>, <Q(e#2)>, <R(e#2, e#2)>, <R(e#2, e#0)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2}\n" +
+                "Facts: <Q(e#0)>, <R(e#0, e#0)>, <S(e#1)>, <Q(e#2)>, <S(e#2)>, <R(e#2, e#2)>, <R(e#2, e#0)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2}\n" +
+                "Facts: <Q(e#0)>, <S(e#0)>, <R(e#0, e#0)>, <S(e#1)>, <Q(e#2)>, <R(e#2, e#2)>, <R(e#2, e#0)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2}\n" +
+                "Facts: <Q(e#0)>, <S(e#0)>, <R(e#0, e#0)>, <S(e#1)>, <Q(e#2)>, <S(e#2)>, <R(e#2, e#2)>, <R(e#2, e#0)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2", testBasic(this.javaClass.getResource("/core/thy33.raz").readText()))
+        assertEquals("Domain: {e#0, e#1}\n" +
+                "Facts: <P(e#0)>, <P(e#1)>\n" +
+                "'a -> e#0\n" +
+                "'sk#0 -> e#1", testBasic(this.javaClass.getResource("/core/thy34.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P1(e#1)>, <P11(e#2)>, <P111(e#3)>, <P1111(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#3 -> e#2\n" +
+                "'sk#7 -> e#3\n" +
+                "'sk#15 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P1(e#1)>, <P11(e#2)>, <P111(e#3)>, <P1112(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#3 -> e#2\n" +
+                "'sk#7 -> e#3\n" +
+                "'sk#15 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P1(e#1)>, <P11(e#2)>, <P112(e#3)>, <P1121(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#3 -> e#2\n" +
+                "'sk#7 -> e#3\n" +
+                "'sk#17 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P1(e#1)>, <P11(e#2)>, <P112(e#3)>, <P1122(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#3 -> e#2\n" +
+                "'sk#7 -> e#3\n" +
+                "'sk#17 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P1(e#1)>, <P12(e#2)>, <P121(e#3)>, <P1211(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#3 -> e#2\n" +
+                "'sk#9 -> e#3\n" +
+                "'sk#19 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P1(e#1)>, <P12(e#2)>, <P121(e#3)>, <P1212(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#3 -> e#2\n" +
+                "'sk#9 -> e#3\n" +
+                "'sk#19 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P1(e#1)>, <P12(e#2)>, <P122(e#3)>, <P1221(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#3 -> e#2\n" +
+                "'sk#9 -> e#3\n" +
+                "'sk#21 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P1(e#1)>, <P12(e#2)>, <P122(e#3)>, <P1222(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#3 -> e#2\n" +
+                "'sk#9 -> e#3\n" +
+                "'sk#21 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P2(e#1)>, <P21(e#2)>, <P211(e#3)>, <P2111(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#5 -> e#2\n" +
+                "'sk#11 -> e#3\n" +
+                "'sk#23 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P2(e#1)>, <P21(e#2)>, <P211(e#3)>, <P2112(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#5 -> e#2\n" +
+                "'sk#11 -> e#3\n" +
+                "'sk#23 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P2(e#1)>, <P21(e#2)>, <P212(e#3)>, <P2121(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#5 -> e#2\n" +
+                "'sk#11 -> e#3\n" +
+                "'sk#25 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P2(e#1)>, <P21(e#2)>, <P212(e#3)>, <P2122(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#5 -> e#2\n" +
+                "'sk#11 -> e#3\n" +
+                "'sk#25 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P2(e#1)>, <P22(e#2)>, <P221(e#3)>, <P2211(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#5 -> e#2\n" +
+                "'sk#13 -> e#3\n" +
+                "'sk#27 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P2(e#1)>, <P22(e#2)>, <P221(e#3)>, <P2212(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#5 -> e#2\n" +
+                "'sk#13 -> e#3\n" +
+                "'sk#27 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P2(e#1)>, <P22(e#2)>, <P222(e#3)>, <P2221(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#5 -> e#2\n" +
+                "'sk#13 -> e#3\n" +
+                "'sk#29 -> e#4\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P2(e#1)>, <P22(e#2)>, <P222(e#3)>, <P2222(e#4)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#5 -> e#2\n" +
+                "'sk#13 -> e#3\n" +
+                "'sk#29 -> e#4", testBasic(this.javaClass.getResource("/core/thy35.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q11(e#4, e#5)>, <Q111(e#6, e#7)>, <Q1111(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#6 -> e#4\n" +
+                "'sk#7 -> e#5\n" +
+                "'sk#14 -> e#6\n" +
+                "'sk#15 -> e#7\n" +
+                "'sk#30 -> e#8\n" +
+                "'sk#31 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q11(e#4, e#5)>, <Q111(e#6, e#7)>, <Q1112(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#6 -> e#4\n" +
+                "'sk#7 -> e#5\n" +
+                "'sk#14 -> e#6\n" +
+                "'sk#15 -> e#7\n" +
+                "'sk#30 -> e#8\n" +
+                "'sk#31 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q11(e#4, e#5)>, <Q112(e#6, e#7)>, <Q1121(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#6 -> e#4\n" +
+                "'sk#7 -> e#5\n" +
+                "'sk#14 -> e#6\n" +
+                "'sk#15 -> e#7\n" +
+                "'sk#34 -> e#8\n" +
+                "'sk#35 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q11(e#4, e#5)>, <Q112(e#6, e#7)>, <Q1122(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#6 -> e#4\n" +
+                "'sk#7 -> e#5\n" +
+                "'sk#14 -> e#6\n" +
+                "'sk#15 -> e#7\n" +
+                "'sk#34 -> e#8\n" +
+                "'sk#35 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q12(e#4, e#5)>, <Q121(e#6, e#7)>, <Q1211(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#6 -> e#4\n" +
+                "'sk#7 -> e#5\n" +
+                "'sk#18 -> e#6\n" +
+                "'sk#19 -> e#7\n" +
+                "'sk#38 -> e#8\n" +
+                "'sk#39 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q12(e#4, e#5)>, <Q121(e#6, e#7)>, <Q1212(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#6 -> e#4\n" +
+                "'sk#7 -> e#5\n" +
+                "'sk#18 -> e#6\n" +
+                "'sk#19 -> e#7\n" +
+                "'sk#38 -> e#8\n" +
+                "'sk#39 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q12(e#4, e#5)>, <Q122(e#6, e#7)>, <Q1221(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#6 -> e#4\n" +
+                "'sk#7 -> e#5\n" +
+                "'sk#18 -> e#6\n" +
+                "'sk#19 -> e#7\n" +
+                "'sk#42 -> e#8\n" +
+                "'sk#43 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q12(e#4, e#5)>, <Q122(e#6, e#7)>, <Q1222(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#6 -> e#4\n" +
+                "'sk#7 -> e#5\n" +
+                "'sk#18 -> e#6\n" +
+                "'sk#19 -> e#7\n" +
+                "'sk#42 -> e#8\n" +
+                "'sk#43 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q2(e#2, e#3)>, <Q21(e#4, e#5)>, <Q211(e#6, e#7)>, <Q2111(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#10 -> e#4\n" +
+                "'sk#11 -> e#5\n" +
+                "'sk#22 -> e#6\n" +
+                "'sk#23 -> e#7\n" +
+                "'sk#46 -> e#8\n" +
+                "'sk#47 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q2(e#2, e#3)>, <Q21(e#4, e#5)>, <Q211(e#6, e#7)>, <Q2112(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#10 -> e#4\n" +
+                "'sk#11 -> e#5\n" +
+                "'sk#22 -> e#6\n" +
+                "'sk#23 -> e#7\n" +
+                "'sk#46 -> e#8\n" +
+                "'sk#47 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q2(e#2, e#3)>, <Q21(e#4, e#5)>, <Q212(e#6, e#7)>, <Q2121(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#10 -> e#4\n" +
+                "'sk#11 -> e#5\n" +
+                "'sk#22 -> e#6\n" +
+                "'sk#23 -> e#7\n" +
+                "'sk#50 -> e#8\n" +
+                "'sk#51 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q2(e#2, e#3)>, <Q21(e#4, e#5)>, <Q212(e#6, e#7)>, <Q2122(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#10 -> e#4\n" +
+                "'sk#11 -> e#5\n" +
+                "'sk#22 -> e#6\n" +
+                "'sk#23 -> e#7\n" +
+                "'sk#50 -> e#8\n" +
+                "'sk#51 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q2(e#2, e#3)>, <Q22(e#4, e#5)>, <Q221(e#6, e#7)>, <Q2211(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#10 -> e#4\n" +
+                "'sk#11 -> e#5\n" +
+                "'sk#26 -> e#6\n" +
+                "'sk#27 -> e#7\n" +
+                "'sk#54 -> e#8\n" +
+                "'sk#55 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q2(e#2, e#3)>, <Q22(e#4, e#5)>, <Q221(e#6, e#7)>, <Q2212(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#10 -> e#4\n" +
+                "'sk#11 -> e#5\n" +
+                "'sk#26 -> e#6\n" +
+                "'sk#27 -> e#7\n" +
+                "'sk#54 -> e#8\n" +
+                "'sk#55 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q2(e#2, e#3)>, <Q22(e#4, e#5)>, <Q222(e#6, e#7)>, <Q2221(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#10 -> e#4\n" +
+                "'sk#11 -> e#5\n" +
+                "'sk#26 -> e#6\n" +
+                "'sk#27 -> e#7\n" +
+                "'sk#58 -> e#8\n" +
+                "'sk#59 -> e#9\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
+                "Facts: <Q(e#0, e#1)>, <Q2(e#2, e#3)>, <Q22(e#4, e#5)>, <Q222(e#6, e#7)>, <Q2222(e#8, e#9)>\n" +
+                "'sk#0 -> e#0\n" +
+                "'sk#1 -> e#1\n" +
+                "'sk#2 -> e#2\n" +
+                "'sk#3 -> e#3\n" +
+                "'sk#10 -> e#4\n" +
+                "'sk#11 -> e#5\n" +
+                "'sk#26 -> e#6\n" +
+                "'sk#27 -> e#7\n" +
+                "'sk#58 -> e#8\n" +
+                "'sk#59 -> e#9", testBasic(this.javaClass.getResource("/core/thy36.raz").readText()))
+        assertEquals("", testBasic(this.javaClass.getResource("/core/thy37.raz").readText()))
+        assertEquals("Domain: {e#2}\n" +
+                "Facts: <R(e#2, e#2, e#2)>\n" +
+                "'sk#0, 'sk#1, 'sk#2 -> e#2", testBasic(this.javaClass.getResource("/core/thy38.raz").readText()))
     }
 
     @Test
@@ -414,16 +787,6 @@ class BasicTest {
                 "-- -- -- -- -- -- -- -- -- --\n" +
                 "Domain: {e#3, e#1}\n" +
                 "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
-                "'sk#3, mother[e#3], father[e#3], 'sk#1 -> e#3\n" +
-                "'sk#0 -> e#1\n" +
-                "-- -- -- -- -- -- -- -- -- --\n" +
-                "Domain: {e#3, e#1}\n" +
-                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
-                "'sk#3, mother[e#3], 'sk#2 -> e#3\n" +
-                "'sk#0 -> e#1\n" +
-                "-- -- -- -- -- -- -- -- -- --\n" +
-                "Domain: {e#3, e#1}\n" +
-                "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
                 "'sk#3, father[e#3], 'sk#1 -> e#3\n" +
                 "'sk#0 -> e#1\n" +
                 "-- -- -- -- -- -- -- -- -- --\n" +
@@ -441,22 +804,7 @@ class BasicTest {
                 "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
                 "'sk#3, father[e#3], mother[e#3], 'sk#2 -> e#3\n" +
                 "'sk#0 -> e#1", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 4))
-        assertEquals("Domain: {e#2, e#1, e#4}\n" +
-                "Facts: <Grandpas(e#2, e#2)>, <Parent(e#1, e#2)>, <Grandpas(e#1, e#2)>, <Grandpas(e#2, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#2, e#1)>, <Man(e#2)>, <Person(e#2)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#2, e#2)>, <Ancestor(e#2, e#2)>\n" +
-                "'sk#3, 'sk#1 -> e#2\n" +
-                "'sk#0 -> e#1\n" +
-                "mother[e#1], 'sk#2 -> e#4\n" +
-                "-- -- -- -- -- -- -- -- -- --\n" +
-                "Domain: {e#2, e#1}\n" +
-                "Facts: <Grandpas(e#2, e#2)>, <Parent(e#1, e#2)>, <Grandpas(e#1, e#2)>, <Grandpas(e#2, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#2, e#1)>, <Man(e#2)>, <Person(e#2)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#2, e#2)>, <Ancestor(e#2, e#2)>, <Ancestor(e#1, e#2)>\n" +
-                "'sk#3, 'sk#1, father[e#1] -> e#2\n" +
-                "'sk#0 -> e#1\n" +
-                "-- -- -- -- -- -- -- -- -- --\n" +
-                "Domain: {e#2, e#1, e#5}\n" +
-                "Facts: <Grandpas(e#2, e#2)>, <Parent(e#1, e#2)>, <Grandpas(e#1, e#2)>, <Grandpas(e#2, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#2, e#1)>, <Man(e#2)>, <Person(e#2)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#2, e#2)>, <Ancestor(e#2, e#2)>, <Ancestor(e#1, e#2)>\n" +
-                "'sk#3, 'sk#1, father[e#1] -> e#2\n" +
-                "'sk#0 -> e#1\n" +
-                "'sk#2 -> e#5", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 5))
+        assertEquals("", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 5))
         assertEquals("", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 6))
         assertEquals("", testBasic(this.javaClass.getResource("/examples/grandpa.raz").readText()))
     }

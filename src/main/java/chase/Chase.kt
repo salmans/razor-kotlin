@@ -44,6 +44,8 @@ data class Element(private var index: Int) : WitnessTerm() {
     fun collapse(element: Element) {
         index = element.index
     }
+
+    fun duplicate(): Element = Element(this.index)
 }
 
 /**

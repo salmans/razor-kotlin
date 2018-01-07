@@ -41,8 +41,8 @@ class BasicModel() : Model() {
             is Observation.Fact -> this.facts.add(observation.copy(terms = observation.terms.map { record(it) }))
             is Observation.Identity -> {
                 val l = record(observation.left)
-                val r = record(observation.right)
-                this.rewrites.replaceAll({ _, v -> if (v == r) r.apply { collapse(l) } else v })
+                val r = record(observation.right).duplicate() // duplicate the element to avoid complications when replacing in rewrites
+                this.rewrites.replaceAll{ _, v -> if (v == r) v.apply { collapse(l) } else v }
             }
         }
     }
@@ -126,6 +126,8 @@ class BasicSequent(formula: Formula) : Sequent {
     val freeVars = formula.freeVars.toList()
     val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
     val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
+
+    public override fun toString(): String = "$body -> $head"
 }
 
 class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator {
