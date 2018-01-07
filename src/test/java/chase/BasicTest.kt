@@ -755,6 +755,23 @@ class BasicTest {
         assertEquals("Domain: {e#2}\n" +
                 "Facts: <R(e#2, e#2, e#2)>\n" +
                 "'sk#0, 'sk#1, 'sk#2 -> e#2", testBasic(this.javaClass.getResource("/core/thy38.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6}\n" +
+                "Facts: <Q(e#1)>, <R(e#1, e#6)>\n" +
+                "'sk#0 -> e#0\n" +
+                "f[e#0] -> e#1\n" +
+                "f[e#1] -> e#2\n" +
+                "f[e#2] -> e#3\n" +
+                "f[e#3] -> e#4\n" +
+                "f[e#4] -> e#5\n" +
+                "f[e#5] -> e#6", testBasic(this.javaClass.getResource("/core/thy39.raz").readText()))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <Q(e#1)>, <R(e#0, e#1)>, <R(e#1, e#3)>, <S(e#4)>, <P(e#1)>\n" +
+                "'sk#0 -> e#0\n" +
+                "f[e#0] -> e#1\n" +
+                "f[e#1] -> e#2\n" +
+                "f[e#2] -> e#3\n" +
+                "'sk#1 -> e#4", testBasic(this.javaClass.getResource("/core/thy40.raz").readText()))
+        assertEquals("", testBasic(this.javaClass.getResource("/core/thy41.raz").readText()))
     }
 
     @Test
@@ -840,5 +857,11 @@ class BasicTest {
                 "f[e#16] -> e#17\n" +
                 "f[e#17] -> e#18\n" +
                 "f[e#18] -> e#19", testDomainBoundedBasic(this.javaClass.getResource("/bounded/thy0.raz").readText(), 20))
+        assertEquals("Domain: {e#4, e#5, e#7, e#9}\n" +
+                "Facts: \n" +
+                "'sk#0, e[], f[e#4, e#4], f[e#4, e#5] -> e#4\n" +
+                "i[e#4], f[e#5, e#4] -> e#5\n" +
+                "f[e#5, e#5], f[e#7, e#4] -> e#7\n" +
+                "f[e#7, e#5] -> e#9", testDomainBoundedBasic(this.javaClass.getResource("/bounded/thy1.raz").readText(), 5))
     }
 }
