@@ -126,27 +126,30 @@ abstract class Model {
 
 interface Sequent
 
-interface Strategy : Iterator<Model> {
-    override fun hasNext(): Boolean
-    override fun next(): Model
+interface Strategy : Iterable<Model> {
+    override fun iterator(): Iterator<Model>
     fun add(model: Model): Boolean
     fun remove(model: Model): Boolean
+}
+
+interface Selector<out S: Sequent> : Iterable<S> {
+    override fun iterator(): Iterator<S>
 }
 
 interface Bounder {
     fun bound(model: Model, observation: Observation): Boolean
 }
 
-interface Evaluator {
-    fun evaluate(model: Model, bounder: Bounder?): List<Either<Model, Model>>?
+interface Evaluator<in S: Sequent> {
+    fun evaluate(model: Model, selector: Selector<S>, bounder: Bounder?): List<Either<Model, Model>>?
 }
 
-fun solveAll(strategy: Strategy, evaluator: Evaluator, bounder: Bounder?): List<Model> {
+fun <S: Sequent> solveAll(strategy: Strategy, selector: Selector<S>, evaluator: Evaluator<S>, bounder: Bounder?): List<Model> {
     val result = LinkedList<Model>()
     while (strategy.iterator().hasNext()) {
         val model = strategy.iterator().next()
         strategy.remove(model)
-        val models = evaluator.evaluate(model, bounder)
+        val models = evaluator.evaluate(model, selector, bounder)
 
         if (models != null) {
             if (!models.isEmpty()) {

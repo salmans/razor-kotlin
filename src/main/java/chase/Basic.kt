@@ -127,20 +127,22 @@ class BasicSequent(formula: Formula) : Sequent {
     val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
     val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
 
-    public override fun toString(): String = "$body -> $head"
+    override fun toString(): String = "$body -> $head"
 }
 
-class BasicEvaluator(private val sequents: List<BasicSequent>) : Evaluator {
+class BasicEvaluator : Evaluator<BasicSequent> {
     private fun Term.witness(witness: (Var) -> Element): WitnessTerm = when (this) {
         is Const -> WitnessConst(this.name)
         is Var -> witness(this)
         is App -> WitnessApp(this.function, this.terms.map { it.witness(witness) })
     }
 
-    override fun evaluate(model: Model, bounder: Bounder?): List<Either<Model, Model>>? {
+    override fun evaluate(model: Model, selector: Selector<BasicSequent>, bounder: Bounder?): List<Either<Model, Model>>? {
         val domain = model.getDomain().toList()
+        val iterator = selector.iterator()
 
-        for (sequent in sequents) {
+        while (iterator.hasNext()) {
+            val sequent = iterator.next()
             val domainSize = domain.size
             val sequentsSize = sequent.freeVars.size
             for (i in 0 until pow(domainSize, sequentsSize)) {

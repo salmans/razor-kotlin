@@ -58,9 +58,10 @@ fun assertFailure(errorMessage: String, func: () -> Unit) {
 fun testBasic(source: String): String {
     val geometricTheory = source.parseTheory()!!.geometric()
     val sequents = geometricTheory.formulas.map { BasicSequent(it) }
-    val evaluator = BasicEvaluator(sequents)
+    val evaluator = BasicEvaluator()
     val strategy = FIFOStrategy().apply { add(BasicModel()) }
-    return solveAll(strategy, evaluator, null).joinToString(separator = "\n-- -- -- -- -- -- -- -- -- --\n") { it ->
+    val selector = TopDownSelector(sequents)
+    return solveAll(strategy, selector, evaluator, null).joinToString(separator = "\n-- -- -- -- -- -- -- -- -- --\n") { it ->
         it.toString() + it.getDomain().joinToString(prefix = "\n", separator = "\n") { e -> "${it.witness(e).joinToString()} -> $e" }
     }
 }
@@ -69,9 +70,10 @@ fun testDomainBoundedBasic(source: String, bound: Int): String {
     val geometricTheory = source.parseTheory()!!.geometric()
     val sequents = geometricTheory.formulas.map { BasicSequent(it) }
     val bounder = DomainSizeBounder(bound)
-    val evaluator = BasicEvaluator(sequents)
+    val evaluator = BasicEvaluator()
     val strategy = FIFOStrategy().apply { add(BasicModel()) }
-    return solveAll(strategy, evaluator, bounder).joinToString(separator = "\n-- -- -- -- -- -- -- -- -- --\n") { it ->
+    val selector = TopDownSelector(sequents)
+    return solveAll(strategy, selector, evaluator, bounder).joinToString(separator = "\n-- -- -- -- -- -- -- -- -- --\n") { it ->
         it.toString() + it.getDomain().joinToString(prefix = "\n", separator = "\n") { e -> "${it.witness(e).joinToString()} -> $e" }
     }
 }
