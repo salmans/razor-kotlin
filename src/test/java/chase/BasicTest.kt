@@ -1,6 +1,7 @@
 package chase
 
 import formula.*
+import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -207,32 +208,32 @@ class BasicTest {
     fun testCore() {
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>\n" +
-                "'a -> e#0", testBasic(this.javaClass.getResource("/core/thy0.raz").readText()))
+                "'a -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy0.raz").readText())))
         assertEquals("Domain: {e#0, e#1}\n" +
                 "Facts: <P(e#0)>, <P(e#1)>\n" +
                 "'a -> e#0\n" +
-                "'b -> e#1", testBasic(this.javaClass.getResource("/core/thy1.raz").readText()))
+                "'b -> e#1", printModels(solveBasic(this.javaClass.getResource("/core/thy1.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>, <Q(e#0)>\n" +
-                "'a -> e#0", testBasic(this.javaClass.getResource("/core/thy2.raz").readText()))
+                "'a -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy2.raz").readText())))
         assertEquals("Domain: {e#0, e#1}\n" +
                 "Facts: <R(e#0, e#1)>\n" +
                 "'sk#0 -> e#0\n" +
-                "'sk#1 -> e#1", testBasic(this.javaClass.getResource("/core/thy3.raz").readText()))
+                "'sk#1 -> e#1", printModels(solveBasic(this.javaClass.getResource("/core/thy3.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: \n" +
-                "'a, 'b -> e#0", testBasic(this.javaClass.getResource("/core/thy4.raz").readText()))
+                "'a, 'b -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy4.raz").readText())))
         assertEquals("Domain: {e#0, e#1}\n" +
                 "Facts: <P(e#0, e#1)>\n" +
                 "'a -> e#0\n" +
-                "'b -> e#1", testBasic(this.javaClass.getResource("/core/thy5.raz").readText()))
+                "'b -> e#1", printModels(solveBasic(this.javaClass.getResource("/core/thy5.raz").readText())))
         assertEquals("Domain: {e#0, e#1}\n" +
                 "Facts: <P(e#1)>\n" +
                 "'a -> e#0\n" +
-                "f[e#0] -> e#1", testBasic(this.javaClass.getResource("/core/thy6.raz").readText()))
+                "f[e#0] -> e#1", printModels(solveBasic(this.javaClass.getResource("/core/thy6.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>, <Q(e#0)>, <R(e#0)>\n" +
-                "'a -> e#0", testBasic(this.javaClass.getResource("/core/thy7.raz").readText()))
+                "'a -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy7.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>\n" +
                 "'a -> e#0\n" +
@@ -243,39 +244,39 @@ class BasicTest {
                 "-- -- -- -- -- -- -- -- -- --\n" +
                 "Domain: {e#0}\n" +
                 "Facts: <R(e#0)>\n" +
-                "'c -> e#0", testBasic(this.javaClass.getResource("/core/thy8.raz").readText()))
+                "'c -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy8.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>, <Q(e#0)>\n" +
-                "'a, 'b -> e#0", testBasic(this.javaClass.getResource("/core/thy9.raz").readText()))
+                "'a, 'b -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy9.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>, <R(e#0)>\n" +
                 "'a -> e#0\n" +
                 "-- -- -- -- -- -- -- -- -- --\n" +
                 "Domain: {e#0}\n" +
                 "Facts: <Q(e#0)>, <S(e#0)>\n" +
-                "'b -> e#0", testBasic(this.javaClass.getResource("/core/thy10.raz").readText()))
+                "'b -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy10.raz").readText())))
         assertEquals("Domain: {}\n" +
-                "Facts: \n", testBasic(this.javaClass.getResource("/core/thy11.raz").readText()))
+                "Facts: \n", printModels(solveBasic(this.javaClass.getResource("/core/thy11.raz").readText())))
         assertEquals("Domain: {}\n" +
-                "Facts: \n", testBasic(this.javaClass.getResource("/core/thy12.raz").readText()))
-        assertEquals("", testBasic(this.javaClass.getResource("/core/thy13.raz").readText()))
+                "Facts: \n", printModels(solveBasic(this.javaClass.getResource("/core/thy12.raz").readText())))
+        assertEquals("", printModels(solveBasic(this.javaClass.getResource("/core/thy13.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <Q(e#0)>\n" +
-                "'b -> e#0", testBasic(this.javaClass.getResource("/core/thy14.raz").readText()))
-        assertEquals("", testBasic(this.javaClass.getResource("/core/thy15.raz").readText()))
+                "'b -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy14.raz").readText())))
+        assertEquals("", printModels(solveBasic(this.javaClass.getResource("/core/thy15.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0, e#0)>, <Q(e#0)>\n" +
-                "'c -> e#0", testBasic(this.javaClass.getResource("/core/thy16.raz").readText()))
+                "'c -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy16.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2}\n" +
                 "Facts: <P(e#0, e#0)>, <P(e#1, e#2)>, <Q(e#0)>\n" +
                 "'c -> e#0\n" +
                 "'a -> e#1\n" +
-                "'b -> e#2", testBasic(this.javaClass.getResource("/core/thy17.raz").readText()))
+                "'b -> e#2", printModels(solveBasic(this.javaClass.getResource("/core/thy17.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2}\n" +
                 "Facts: <P(e#0, e#1)>, <P(e#2, e#2)>, <Q(e#2)>\n" +
                 "'a -> e#0\n" +
                 "'b -> e#1\n" +
-                "'c -> e#2", testBasic(this.javaClass.getResource("/core/thy18.raz").readText()))
+                "'c -> e#2", printModels(solveBasic(this.javaClass.getResource("/core/thy18.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9, e#10}\n" +
                 "Facts: \n" +
                 "'a -> e#0\n" +
@@ -288,7 +289,7 @@ class BasicTest {
                 "f[e#6] -> e#7\n" +
                 "f[e#7] -> e#8\n" +
                 "f[e#8] -> e#9\n" +
-                "f[e#9], 'b -> e#10", testBasic(this.javaClass.getResource("/core/thy19.raz").readText()))
+                "f[e#9], 'b -> e#10", printModels(solveBasic(this.javaClass.getResource("/core/thy19.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9, e#10}\n" +
                 "Facts: <P(e#0)>, <P(e#1)>, <P(e#2)>, <P(e#3)>, <P(e#4)>, <P(e#5)>, <P(e#6)>, <P(e#7)>, <P(e#8)>, <P(e#9)>\n" +
                 "'a -> e#0\n" +
@@ -301,7 +302,7 @@ class BasicTest {
                 "f[e#6] -> e#7\n" +
                 "f[e#7] -> e#8\n" +
                 "f[e#8] -> e#9\n" +
-                "f[e#9], 'b -> e#10", testBasic(this.javaClass.getResource("/core/thy20.raz").readText()))
+                "f[e#9], 'b -> e#10", printModels(solveBasic(this.javaClass.getResource("/core/thy20.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9, e#10}\n" +
                 "Facts: <P(e#0)>, <P(e#1)>, <P(e#2)>, <P(e#3)>, <P(e#4)>, <P(e#5)>, <P(e#6)>, <P(e#7)>, <P(e#8)>\n" +
                 "'a -> e#0\n" +
@@ -314,30 +315,30 @@ class BasicTest {
                 "f[e#6] -> e#7\n" +
                 "f[e#7] -> e#8\n" +
                 "f[e#8] -> e#9\n" +
-                "f[e#9], 'b -> e#10", testBasic(this.javaClass.getResource("/core/thy21.raz").readText()))
+                "f[e#9], 'b -> e#10", printModels(solveBasic(this.javaClass.getResource("/core/thy21.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>, <Q(e#0)>, <R(e#0)>\n" +
-                "'a -> e#0", testBasic(this.javaClass.getResource("/core/thy22.raz").readText()))
+                "'a -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy22.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>, <Q(e#0)>, <R(e#0)>, <S(e#0)>\n" +
-                "'sk#0, 'sk#1, 'sk#2 -> e#0", testBasic(this.javaClass.getResource("/core/thy23.raz").readText()))
+                "'sk#0, 'sk#1, 'sk#2 -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy23.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>, <Q(e#0)>, <R(e#0)>, <S(e#0)>, <T(e#0)>\n" +
-                "'sk#0, 'sk#1, 'sk#2, 'sk#3 -> e#0", testBasic(this.javaClass.getResource("/core/thy24.raz").readText()))
+                "'sk#0, 'sk#1, 'sk#2, 'sk#3 -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy24.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2, e#3}\n" +
                 "Facts: <P(e#0)>, <Q(e#1)>, <R(e#2)>, <S(e#3)>\n" +
                 "'sk#0 -> e#0\n" +
                 "'sk#1 -> e#1\n" +
                 "'sk#2 -> e#2\n" +
-                "'sk#3 -> e#3", testBasic(this.javaClass.getResource("/core/thy25.raz").readText()))
+                "'sk#3 -> e#3", printModels(solveBasic(this.javaClass.getResource("/core/thy25.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <P(e#0)>\n" +
                 "'sk#0 -> e#0\n" +
                 "-- -- -- -- -- -- -- -- -- --\n" +
                 "Domain: {e#0}\n" +
                 "Facts: <P(e#0)>\n" +
-                "'sk#1 -> e#0", testBasic(this.javaClass.getResource("/core/thy26.raz").readText()))
-        assertEquals("", testBasic(this.javaClass.getResource("/core/thy27.raz").readText()))
+                "'sk#1 -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy26.raz").readText())))
+        assertEquals("", printModels(solveBasic(this.javaClass.getResource("/core/thy27.raz").readText())))
         assertEquals("Domain: {}\n" +
                 "Facts: <T()>, <V()>\n" +
                 "\n" +
@@ -351,7 +352,7 @@ class BasicTest {
                 "\n" +
                 "-- -- -- -- -- -- -- -- -- --\n" +
                 "Domain: {}\n" +
-                "Facts: <U()>, <T()>, <V()>\n", testBasic(this.javaClass.getResource("/core/thy28.raz").readText()))
+                "Facts: <U()>, <T()>, <V()>\n", printModels(solveBasic(this.javaClass.getResource("/core/thy28.raz").readText())))
         assertEquals("Domain: {}\n" +
                 "Facts: <P()>\n" +
                 "\n" +
@@ -381,15 +382,15 @@ class BasicTest {
                 "\n" +
                 "-- -- -- -- -- -- -- -- -- --\n" +
                 "Domain: {}\n" +
-                "Facts: <Q()>, <R()>, <U()>, <T()>, <V()>\n", testBasic(this.javaClass.getResource("/core/thy29.raz").readText()))
-        assertEquals("", testBasic(this.javaClass.getResource("/core/thy30.raz").readText()))
+                "Facts: <Q()>, <R()>, <U()>, <T()>, <V()>\n", printModels(solveBasic(this.javaClass.getResource("/core/thy29.raz").readText())))
+        assertEquals("", printModels(solveBasic(this.javaClass.getResource("/core/thy30.raz").readText())))
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <R(e#0)>, <U(e#0)>, <Q(e#0, e#0)>\n" +
-                "'sk#0 -> e#0", testBasic(this.javaClass.getResource("/core/thy31.raz").readText()))
+                "'sk#0 -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy31.raz").readText())))
         assertEquals("Domain: {e#0, e#1}\n" +
                 "Facts: <R(e#0)>, <Q(e#0, e#1)>\n" +
                 "'sk#0 -> e#0\n" +
-                "'sk#1 -> e#1", testBasic(this.javaClass.getResource("/core/thy32.raz").readText()))
+                "'sk#1 -> e#1", printModels(solveBasic(this.javaClass.getResource("/core/thy32.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2}\n" +
                 "Facts: <Q(e#0)>, <R(e#0, e#0)>, <S(e#1)>, <Q(e#2)>, <R(e#2, e#2)>, <R(e#2, e#0)>\n" +
                 "'sk#0 -> e#0\n" +
@@ -412,11 +413,11 @@ class BasicTest {
                 "Facts: <Q(e#0)>, <S(e#0)>, <R(e#0, e#0)>, <S(e#1)>, <Q(e#2)>, <S(e#2)>, <R(e#2, e#2)>, <R(e#2, e#0)>\n" +
                 "'sk#0 -> e#0\n" +
                 "'sk#1 -> e#1\n" +
-                "'sk#2 -> e#2", testBasic(this.javaClass.getResource("/core/thy33.raz").readText()))
+                "'sk#2 -> e#2", printModels(solveBasic(this.javaClass.getResource("/core/thy33.raz").readText())))
         assertEquals("Domain: {e#0, e#1}\n" +
                 "Facts: <P(e#0)>, <P(e#1)>\n" +
                 "'a -> e#0\n" +
-                "'sk#0 -> e#1", testBasic(this.javaClass.getResource("/core/thy34.raz").readText()))
+                "'sk#0 -> e#1", printModels(solveBasic(this.javaClass.getResource("/core/thy34.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
                 "Facts: <P(e#0)>, <P1(e#1)>, <P11(e#2)>, <P111(e#3)>, <P1111(e#4)>\n" +
                 "'sk#0 -> e#0\n" +
@@ -543,7 +544,7 @@ class BasicTest {
                 "'sk#1 -> e#1\n" +
                 "'sk#5 -> e#2\n" +
                 "'sk#13 -> e#3\n" +
-                "'sk#29 -> e#4", testBasic(this.javaClass.getResource("/core/thy35.raz").readText()))
+                "'sk#29 -> e#4", printModels(solveBasic(this.javaClass.getResource("/core/thy35.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9}\n" +
                 "Facts: <Q(e#0, e#1)>, <Q1(e#2, e#3)>, <Q11(e#4, e#5)>, <Q111(e#6, e#7)>, <Q1111(e#8, e#9)>\n" +
                 "'sk#0 -> e#0\n" +
@@ -750,11 +751,11 @@ class BasicTest {
                 "'sk#26 -> e#6\n" +
                 "'sk#27 -> e#7\n" +
                 "'sk#58 -> e#8\n" +
-                "'sk#59 -> e#9", testBasic(this.javaClass.getResource("/core/thy36.raz").readText()))
-        assertEquals("", testBasic(this.javaClass.getResource("/core/thy37.raz").readText()))
+                "'sk#59 -> e#9", printModels(solveBasic(this.javaClass.getResource("/core/thy36.raz").readText())))
+        assertEquals("", printModels(solveBasic(this.javaClass.getResource("/core/thy37.raz").readText())))
         assertEquals("Domain: {e#2}\n" +
                 "Facts: <R(e#2, e#2, e#2)>\n" +
-                "'sk#0, 'sk#1, 'sk#2 -> e#2", testBasic(this.javaClass.getResource("/core/thy38.raz").readText()))
+                "'sk#0, 'sk#1, 'sk#2 -> e#2", printModels(solveBasic(this.javaClass.getResource("/core/thy38.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6}\n" +
                 "Facts: <Q(e#1)>, <R(e#1, e#6)>\n" +
                 "'sk#0 -> e#0\n" +
@@ -763,24 +764,24 @@ class BasicTest {
                 "f[e#2] -> e#3\n" +
                 "f[e#3] -> e#4\n" +
                 "f[e#4] -> e#5\n" +
-                "f[e#5] -> e#6", testBasic(this.javaClass.getResource("/core/thy39.raz").readText()))
+                "f[e#5] -> e#6", printModels(solveBasic(this.javaClass.getResource("/core/thy39.raz").readText())))
         assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
                 "Facts: <Q(e#1)>, <R(e#0, e#1)>, <R(e#1, e#3)>, <S(e#4)>, <P(e#1)>\n" +
                 "'sk#0 -> e#0\n" +
                 "f[e#0] -> e#1\n" +
                 "f[e#1] -> e#2\n" +
                 "f[e#2] -> e#3\n" +
-                "'sk#1 -> e#4", testBasic(this.javaClass.getResource("/core/thy40.raz").readText()))
+                "'sk#1 -> e#4", printModels(solveBasic(this.javaClass.getResource("/core/thy40.raz").readText())))
         assertEquals("Domain: {}\n" +
-                "Facts: \n", testBasic(this.javaClass.getResource("/core/thy41.raz").readText()))
+                "Facts: \n", printModels(solveBasic(this.javaClass.getResource("/core/thy41.raz").readText())))
     }
 
     @Test
     fun testExamples() {
         assertEquals("Domain: {e#0}\n" +
                 "Facts: <Man(e#0)>, <MustDie(e#0)>\n" +
-                "'gregor -> e#0", testBasic(this.javaClass.getResource("/examples/valar-morghulis.raz").readText()))
-        assertEquals("", testBasic(this.javaClass.getResource("/examples/lannisters.raz").readText()))
+                "'gregor -> e#0", printModels(solveBasic(this.javaClass.getResource("/examples/valar-morghulis.raz").readText())))
+        assertEquals("", printModels(solveBasic(this.javaClass.getResource("/examples/lannisters.raz").readText())))
         assertEquals("Domain: {e#3, e#1, e#2}\n" +
                 "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
                 "'sk#3 -> e#3\n" +
@@ -821,10 +822,10 @@ class BasicTest {
                 "Domain: {e#3, e#1}\n" +
                 "Facts: <Grandpas(e#3, e#3)>, <Parent(e#1, e#3)>, <Grandpas(e#1, e#3)>, <Grandpas(e#3, e#1)>, <Grandpas(e#1, e#1)>, <Parent(e#1, e#1)>, <Parent(e#3, e#1)>, <Man(e#3)>, <Person(e#3)>, <Man(e#1)>, <Person(e#1)>, <Parent(e#3, e#3)>\n" +
                 "'sk#3, father[e#3], mother[e#3], 'sk#2 -> e#3\n" +
-                "'sk#0 -> e#1", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 4))
-        assertEquals("", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 5))
-        assertEquals("", testDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 6))
-        assertEquals("", testBasic(this.javaClass.getResource("/examples/grandpa.raz").readText()))
+                "'sk#0 -> e#1", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 4)))
+        assertEquals("", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 5)))
+        assertEquals("", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/examples/grandpa.raz").readText(), 6)))
+        assertEquals("", printModels(solveBasic(this.javaClass.getResource("/examples/grandpa.raz").readText())))
     }
 
     @Test
@@ -835,7 +836,7 @@ class BasicTest {
                 "f[e#0] -> e#1\n" +
                 "f[e#1] -> e#2\n" +
                 "f[e#2] -> e#3\n" +
-                "f[e#3] -> e#4", testDomainBoundedBasic(this.javaClass.getResource("/bounded/thy0.raz").readText(), 5))
+                "f[e#3] -> e#4", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/bounded/thy0.raz").readText(), 5)))
         assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4, e#5, e#6, e#7, e#8, e#9, e#10, e#11, e#12, e#13, e#14, e#15, e#16, e#17, e#18, e#19}\n" +
                 "Facts: <P(e#0)>, <P(e#1)>, <P(e#2)>, <P(e#3)>, <P(e#4)>, <P(e#5)>, <P(e#6)>, <P(e#7)>, <P(e#8)>, <P(e#9)>, <P(e#10)>, <P(e#11)>, <P(e#12)>, <P(e#13)>, <P(e#14)>, <P(e#15)>, <P(e#16)>, <P(e#17)>, <P(e#18)>, <P(e#19)>\n" +
                 "'a -> e#0\n" +
@@ -857,12 +858,31 @@ class BasicTest {
                 "f[e#15] -> e#16\n" +
                 "f[e#16] -> e#17\n" +
                 "f[e#17] -> e#18\n" +
-                "f[e#18] -> e#19", testDomainBoundedBasic(this.javaClass.getResource("/bounded/thy0.raz").readText(), 20))
+                "f[e#18] -> e#19", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/bounded/thy0.raz").readText(), 20)))
         assertEquals("Domain: {e#4, e#5, e#7, e#9}\n" +
                 "Facts: \n" +
                 "'sk#0, e[], f[e#4, e#4], f[e#4, e#5] -> e#4\n" +
                 "i[e#4], f[e#5, e#4] -> e#5\n" +
                 "f[e#5, e#5], f[e#7, e#4] -> e#7\n" +
-                "f[e#7, e#5] -> e#9", testDomainBoundedBasic(this.javaClass.getResource("/bounded/thy1.raz").readText(), 5))
+                "f[e#7, e#5] -> e#9", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/bounded/thy1.raz").readText(), 5)))
+    }
+
+    @Ignore
+    @Test
+    fun testFairBasic() {
+        fun runTest(source: String): List<Model> {
+            val geometricTheory = source.parseTheory()!!.geometric()
+            val sequents = geometricTheory.formulas.map { BasicSequent(it) }
+            val evaluator = BasicEvaluator()
+            val strategy = FIFOStrategy().apply { add(BasicModel()) }
+            val selector = FairSelector(sequents.toTypedArray())
+            return solveAll(strategy, selector, evaluator, null)
+        }
+
+        for (i in 0 .. 41) {
+            val source = this.javaClass.getResource("/core/thy$i.raz").readText()
+            assertEquals(solveBasic(source).toSet(), runTest(source).toSet())
+            println(i)
+        }
     }
 }
