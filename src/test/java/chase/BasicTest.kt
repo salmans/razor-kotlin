@@ -874,9 +874,9 @@ class BasicTest {
             val geometricTheory = source.parseTheory()!!.geometric()
             val sequents = geometricTheory.formulas.map { BasicSequent(it) }
             val evaluator = BasicEvaluator()
-            val strategy = FIFOStrategy().apply { add(BasicModel()) }
             val selector = FairSelector(sequents.toTypedArray())
-            return solveAll(strategy, selector, evaluator, null)
+            val strategy = FIFOStrategy<BasicSequent, FairSelector<BasicSequent>>().apply { add(StrategyNode(BasicModel(), selector)) }
+            return solveAll(strategy, evaluator, null)
         }
 
         for (i in 0 .. 41) {

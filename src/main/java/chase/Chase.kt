@@ -126,14 +126,17 @@ abstract class Model {
 
 interface Sequent
 
-interface Strategy : Iterable<Model> {
-    override fun iterator(): Iterator<Model>
-    fun add(model: Model): Boolean
-    fun remove(model: Model): Boolean
+data class StrategyNode<out S: Sequent, out SEL: Selector<S>>(val model: Model, val selector: SEL)
+
+interface Strategy<S: Sequent, SEL: Selector<S>> : Iterable<StrategyNode<S, SEL>> {
+    override fun iterator(): Iterator<StrategyNode<S, SEL>>
+    fun add(node: StrategyNode<S, SEL>): Boolean
+    fun remove(node: StrategyNode<S, SEL>): Boolean
 }
 
 interface Selector<out S: Sequent> : Iterable<S> {
     override fun iterator(): Iterator<S>
+    fun duplicate(): Selector<S>
 }
 
 interface Bounder {
@@ -144,24 +147,24 @@ interface Evaluator<in S: Sequent> {
     fun evaluate(model: Model, selector: Selector<S>, bounder: Bounder?): List<Either<Model, Model>>?
 }
 
-fun <S: Sequent> solveAll(strategy: Strategy, selector: Selector<S>, evaluator: Evaluator<S>, bounder: Bounder?): List<Model> {
+fun <S: Sequent, SEL: Selector<S>> solveAll(strategy: Strategy<S, SEL>, evaluator: Evaluator<S>, bounder: Bounder?): List<Model> {
     val result = LinkedList<Model>()
     while (strategy.iterator().hasNext()) {
-        val model = strategy.iterator().next()
-        strategy.remove(model)
-        val models = evaluator.evaluate(model, selector, bounder)
+        val node = strategy.iterator().next()
+        strategy.remove(node)
+        val models = evaluator.evaluate(node.model, node.selector, bounder)
 
         if (models != null) {
             if (!models.isEmpty()) {
                 models.forEach {
                     if (it.isLeft()) {
-                        strategy.add(it.left()!!)
+                        strategy.add(StrategyNode(it.left()!!, node.selector))
                     } else {
                         result.add(it.right()!!)
                     }
                 }
             } else {
-                result.add(model)
+                result.add(node.model)
             }
         }
     }

@@ -59,9 +59,9 @@ fun solveBasic(source: String): List<Model> {
     val geometricTheory = source.parseTheory()!!.geometric()
     val sequents = geometricTheory.formulas.map { BasicSequent(it) }
     val evaluator = BasicEvaluator()
-    val strategy = FIFOStrategy().apply { add(BasicModel()) }
     val selector = TopDownSelector(sequents)
-    return solveAll(strategy, selector, evaluator, null)
+    val strategy = FIFOStrategy<BasicSequent, TopDownSelector<BasicSequent>>().apply { add(StrategyNode(BasicModel(), selector)) }
+    return solveAll(strategy, evaluator, null)
 }
 
 fun solveDomainBoundedBasic(source: String, bound: Int): List<Model> {
@@ -69,9 +69,9 @@ fun solveDomainBoundedBasic(source: String, bound: Int): List<Model> {
     val sequents = geometricTheory.formulas.map { BasicSequent(it) }
     val bounder = DomainSizeBounder(bound)
     val evaluator = BasicEvaluator()
-    val strategy = FIFOStrategy().apply { add(BasicModel()) }
     val selector = TopDownSelector(sequents)
-    return solveAll(strategy, selector, evaluator, bounder)
+    val strategy = FIFOStrategy<BasicSequent, TopDownSelector<BasicSequent>>().apply { add(StrategyNode(BasicModel(), selector)) }
+    return solveAll(strategy, evaluator, bounder)
 }
 
 fun printModels(models: List<Model>): String {
