@@ -867,7 +867,6 @@ class BasicTest {
                 "f[e#7, e#5] -> e#9", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/bounded/thy1.raz").readText(), 5)))
     }
 
-    @Ignore
     @Test
     fun testFairBasic() {
         fun runTest(source: String): List<Model> {
@@ -875,14 +874,16 @@ class BasicTest {
             val sequents = geometricTheory.formulas.map { BasicSequent(it) }
             val evaluator = BasicEvaluator()
             val selector = FairSelector(sequents.toTypedArray())
-            val strategy = FIFOStrategy<BasicSequent, FairSelector<BasicSequent>>().apply { add(StrategyNode(BasicModel(), selector)) }
+            val strategy = FIFOStrategy<BasicSequent>().apply { add(StrategyNode(BasicModel(), selector)) }
             return solveAll(strategy, evaluator, null)
         }
 
-        for (i in 0 .. 41) {
-            val source = this.javaClass.getResource("/core/thy$i.raz").readText()
-            assertEquals(solveBasic(source).toSet(), runTest(source).toSet())
-            println(i)
-        }
+//        assertEquals("Domain: {e#7}\n" +
+//                "Facts: \n" +
+//                "'sk#0, e[], f[e#7, e#7], i[e#7] -> e#7", printModels(runTest(this.javaClass.getResource("/bounded/thy1.raz").readText())))
+
+        (0 .. 41)
+                .map { this.javaClass.getResource("/core/thy$it.raz").readText() }
+                .forEach { assertEquals(solveBasic(it).toSet(), runTest(it).toSet()) }
     }
 }

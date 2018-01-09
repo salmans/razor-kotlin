@@ -126,12 +126,12 @@ abstract class Model {
 
 interface Sequent
 
-data class StrategyNode<out S: Sequent, out SEL: Selector<S>>(val model: Model, val selector: SEL)
+data class StrategyNode<out S: Sequent>(val model: Model, val selector: Selector<S>)
 
-interface Strategy<S: Sequent, SEL: Selector<S>> : Iterable<StrategyNode<S, SEL>> {
-    override fun iterator(): Iterator<StrategyNode<S, SEL>>
-    fun add(node: StrategyNode<S, SEL>): Boolean
-    fun remove(node: StrategyNode<S, SEL>): Boolean
+interface Strategy<S: Sequent> : Iterable<StrategyNode<S>> {
+    override fun iterator(): Iterator<StrategyNode<S>>
+    fun add(node: StrategyNode<S>): Boolean
+    fun remove(node: StrategyNode<S>): Boolean
 }
 
 interface Selector<out S: Sequent> : Iterable<S> {
@@ -147,7 +147,7 @@ interface Evaluator<in S: Sequent> {
     fun evaluate(model: Model, selector: Selector<S>, bounder: Bounder?): List<Either<Model, Model>>?
 }
 
-fun <S: Sequent, SEL: Selector<S>> solveAll(strategy: Strategy<S, SEL>, evaluator: Evaluator<S>, bounder: Bounder?): List<Model> {
+fun <S: Sequent> solveAll(strategy: Strategy<S>, evaluator: Evaluator<S>, bounder: Bounder?): List<Model> {
     val result = LinkedList<Model>()
     while (strategy.iterator().hasNext()) {
         val node = strategy.iterator().next()
@@ -158,7 +158,7 @@ fun <S: Sequent, SEL: Selector<S>> solveAll(strategy: Strategy<S, SEL>, evaluato
             if (!models.isEmpty()) {
                 models.forEach {
                     if (it.isLeft()) {
-                        strategy.add(StrategyNode(it.left()!!, node.selector))
+                        strategy.add(StrategyNode(it.left()!!, node.selector.duplicate()))
                     } else {
                         result.add(it.right()!!)
                     }
