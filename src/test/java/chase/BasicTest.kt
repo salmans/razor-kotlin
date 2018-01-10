@@ -866,36 +866,4 @@ class BasicTest {
                 "f[e#5, e#5], f[e#7, e#4] -> e#7\n" +
                 "f[e#7, e#5] -> e#9", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/bounded/thy1.raz").readText(), 5)))
     }
-
-    @Test
-    fun testFairBasic() {
-        fun runTest(source: String): List<Model> {
-            val geometricTheory = source.parseTheory()!!.geometric()
-            val sequents = geometricTheory.formulas.map { BasicSequent(it) }
-            val evaluator = BasicEvaluator()
-            val selector = FairSelector(sequents.toTypedArray())
-            val strategy = FIFOStrategy<BasicSequent>().apply { add(StrategyNode(BasicModel(), selector)) }
-            return solveAll(strategy, evaluator, null)
-        }
-
-        (0 .. 41)
-                .map { this.javaClass.getResource("/core/thy$it.raz").readText() }
-                .forEach { assertEquals(solveBasic(it).toSet(), runTest(it).toSet()) }
-    }
-
-    @Test
-    fun testLIFOBasic() {
-        fun runTest(source: String): List<Model> {
-            val geometricTheory = source.parseTheory()!!.geometric()
-            val sequents = geometricTheory.formulas.map { BasicSequent(it) }
-            val evaluator = BasicEvaluator()
-            val selector = FairSelector(sequents.toTypedArray())
-            val strategy = LIFOStrategy<BasicSequent>().apply { add(StrategyNode(BasicModel(), selector)) }
-            return solveAll(strategy, evaluator, null)
-        }
-
-        (0 .. 41)
-                .map { this.javaClass.getResource("/core/thy$it.raz").readText() }
-                .forEach { assertEquals(solveBasic(it).toSet(), runTest(it).toSet()) }
-    }
 }
