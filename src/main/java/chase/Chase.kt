@@ -128,10 +128,10 @@ interface Sequent
 
 data class StrategyNode<out S: Sequent>(val model: Model, val selector: Selector<S>)
 
-interface Strategy<S: Sequent> : Iterable<StrategyNode<S>> {
-    override fun iterator(): Iterator<StrategyNode<S>>
+interface Strategy<S: Sequent> {
+    fun isEmpty(): Boolean
     fun add(node: StrategyNode<S>): Boolean
-    fun remove(node: StrategyNode<S>): Boolean
+    fun remove(): StrategyNode<S>?
 }
 
 interface Selector<out S: Sequent> : Iterable<S> {
@@ -149,9 +149,8 @@ interface Evaluator<in S: Sequent> {
 
 fun <S: Sequent> solveAll(strategy: Strategy<S>, evaluator: Evaluator<S>, bounder: Bounder?): List<Model> {
     val result = LinkedList<Model>()
-    while (strategy.iterator().hasNext()) {
-        val node = strategy.iterator().next()
-        strategy.remove(node)
+    while (!strategy.isEmpty()) {
+        val node = strategy.remove()!!
         val models = evaluator.evaluate(node.model, node.selector, bounder)
 
         if (models != null) {

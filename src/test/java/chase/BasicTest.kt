@@ -878,9 +878,21 @@ class BasicTest {
             return solveAll(strategy, evaluator, null)
         }
 
-//        assertEquals("Domain: {e#7}\n" +
-//                "Facts: \n" +
-//                "'sk#0, e[], f[e#7, e#7], i[e#7] -> e#7", printModels(runTest(this.javaClass.getResource("/bounded/thy1.raz").readText())))
+        (0 .. 41)
+                .map { this.javaClass.getResource("/core/thy$it.raz").readText() }
+                .forEach { assertEquals(solveBasic(it).toSet(), runTest(it).toSet()) }
+    }
+
+    @Test
+    fun testLIFOBasic() {
+        fun runTest(source: String): List<Model> {
+            val geometricTheory = source.parseTheory()!!.geometric()
+            val sequents = geometricTheory.formulas.map { BasicSequent(it) }
+            val evaluator = BasicEvaluator()
+            val selector = FairSelector(sequents.toTypedArray())
+            val strategy = LIFOStrategy<BasicSequent>().apply { add(StrategyNode(BasicModel(), selector)) }
+            return solveAll(strategy, evaluator, null)
+        }
 
         (0 .. 41)
                 .map { this.javaClass.getResource("/core/thy$it.raz").readText() }
