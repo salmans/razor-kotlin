@@ -40,9 +40,9 @@ class BasicModel() : Model() {
         when (observation) {
             is Observation.Fact -> this.facts.add(observation.copy(terms = observation.terms.map { record(it) }))
             is Observation.Identity -> {
-                val l = record(observation.left)
-                val r = record(observation.right).duplicate() // duplicate the element to avoid complications when replacing in rewrites
-                this.rewrites.replaceAll{ _, v -> if (v == r) v.apply { collapse(l) } else v }
+                val (l, r) = observation.let { record(it.left) to record(it.right) }
+                val (source, dest) = if (l > r) (r to l.duplicate()) else (l to r.duplicate())
+                this.rewrites.replaceAll{ _, v -> if (v == dest) v.apply { collapse(source) } else v }
             }
         }
     }

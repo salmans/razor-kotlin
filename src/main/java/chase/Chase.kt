@@ -25,13 +25,15 @@ data class WitnessConst(private val name: String) : WitnessTerm() {
 /**
  * Elements of a model
  */
-data class Element(private var index: Int) : WitnessTerm() {
+data class Element(private var index: Int) : WitnessTerm(), Comparable<Element> {
     override fun toString(): String = "e#${this.index}"
 
     override fun equals(other: Any?): Boolean = when (other) {
         is Element -> this.index == other.index
         else -> false
     }
+
+    override fun compareTo(other: Element): Int = this.index - other.index
 
     override fun hashCode(): Int {
         return index

@@ -19,6 +19,10 @@ class ChaseTest {
         assertEquals("e#0", e_0.toString())
         assertEquals(true, e_0 == e_0)
         assertEquals(false, e_0 == e_1)
+        assertEquals(true, e_0 < e_1)
+        assertEquals(false, e_0 > e_1)
+        assertEquals(false, e_1 > e_1)
+        assertEquals(false, e_1 < e_1)
         assertEquals(true, Element(1) == Element(1))
         assertEquals(0, e_0.hashCode())
         run {
