@@ -774,6 +774,9 @@ class BasicTest {
                 "'sk#1 -> e#4", printModels(solveBasic(this.javaClass.getResource("/core/thy40.raz").readText())))
         assertEquals("Domain: {}\n" +
                 "Facts: \n", printModels(solveBasic(this.javaClass.getResource("/core/thy41.raz").readText())))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: \n" +
+                "'sk#0, 'e, f[e#0, e#0], i[e#0] -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy42.raz").readText())))
     }
 
     @Test
@@ -854,5 +857,12 @@ class BasicTest {
                 "i[e#0], f[e#3, e#0] -> e#3\n" +
                 "f[e#3, e#3], f[e#6, e#0] -> e#6\n" +
                 "f[e#6, e#3], f[e#8, e#0] -> e#8", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/bounded/thy1.raz").readText(), 5)))
+        assertEquals("Domain: {e#0, e#1, e#2, e#3, e#4}\n" +
+                "Facts: <P(e#0)>, <P(e#1)>, <P(e#2)>, <P(e#3)>, <P(e#4)>\n" +
+                "'a -> e#0\n" +
+                "f[e#0] -> e#1\n" +
+                "f[e#1] -> e#2\n" +
+                "f[e#2] -> e#3\n" +
+                "f[e#3] -> e#4", printModels(solveDomainBoundedBasic(this.javaClass.getResource("/bounded/thy2.raz").readText(), 5)))
     }
 }

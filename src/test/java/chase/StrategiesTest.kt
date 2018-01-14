@@ -17,7 +17,7 @@ class StrategiesTest {
             return solveAll(strategy, evaluator, null)
         }
 
-        (0 .. 41)
+        (0 .. CORE_TEST_COUNT)
                 .map { this.javaClass.getResource("/core/thy$it.raz").readText() }
                 .forEach { assertEquals(solveBasic(it).toSet(), runTest(it).toSet()) }
     }

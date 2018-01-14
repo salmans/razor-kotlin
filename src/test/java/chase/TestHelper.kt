@@ -46,6 +46,10 @@ val _Q = Rel("Q")
 val _R = Rel("R")
 val _S = Rel("S")
 
+const val CORE_TEST_COUNT = 42
+const val BOUNDED_TEST_COUNT = 2
+const val STRESS_TEST_COUNT = 0
+
 fun assertFailure(errorMessage: String, func: () -> Unit) {
     try {
         func()
