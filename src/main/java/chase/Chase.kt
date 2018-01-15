@@ -1,6 +1,7 @@
 package chase
 
 import formula.Const
+import formula.Formula
 import formula.Func
 import formula.Pred
 import tools.Either
@@ -126,7 +127,10 @@ abstract class Model {
     }
 }
 
-interface Sequent
+abstract class Sequent {
+    abstract val body: Formula
+    abstract val head: Formula
+}
 
 data class StrategyNode<out S: Sequent>(val model: Model, val selector: Selector<S>)
 

@@ -1,7 +1,6 @@
 package chase
 
 import formula.*
-import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -146,51 +145,51 @@ class BasicTest {
     @Test
     fun testBuildSequent() {
         BasicSequent(TRUE implies TRUE).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(listOf(emptyList()), it.head)
+            assertEquals(emptyList(), it.bodyLiterals)
+            assertEquals(listOf(emptyList()), it.headLiterals)
         }
         BasicSequent(TRUE implies (TRUE and TRUE)).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(listOf(emptyList()), it.head)
+            assertEquals(emptyList(), it.bodyLiterals)
+            assertEquals(listOf(emptyList()), it.headLiterals)
         }
         BasicSequent(TRUE implies (TRUE or TRUE)).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(listOf(emptyList(), emptyList()), it.head)
+            assertEquals(emptyList(), it.bodyLiterals)
+            assertEquals(listOf(emptyList(), emptyList()), it.headLiterals)
         }
         BasicSequent(TRUE implies FALSE).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(emptyList(), it.head)
+            assertEquals(emptyList(), it.bodyLiterals)
+            assertEquals(emptyList(), it.headLiterals)
         }
         BasicSequent(TRUE implies (FALSE and TRUE)).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(listOf(emptyList()), it.head)
+            assertEquals(emptyList(), it.bodyLiterals)
+            assertEquals(listOf(emptyList()), it.headLiterals)
         }
         BasicSequent(TRUE implies (TRUE and FALSE)).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(listOf(emptyList()), it.head)
+            assertEquals(emptyList(), it.bodyLiterals)
+            assertEquals(listOf(emptyList()), it.headLiterals)
         }
         BasicSequent(TRUE implies (TRUE or FALSE)).let {
-            assertEquals(emptyList(), it.body)
-            assertEquals(listOf(emptyList()), it.head)
+            assertEquals(emptyList(), it.bodyLiterals)
+            assertEquals(listOf(emptyList()), it.headLiterals)
         }
         BasicSequent(P(x) implies Q(x)).let {
-            assertEquals(listOf(P(x).lit()), it.body)
-            assertEquals(listOf(listOf(Q(x).lit())), it.head)
+            assertEquals(listOf(P(x).lit()), it.bodyLiterals)
+            assertEquals(listOf(listOf(Q(x).lit())), it.headLiterals)
         }
         BasicSequent((P(x) and Q(x)) implies Q(y)).let {
-            assertEquals(listOf(P(x).lit(), Q(x).lit()), it.body)
-            assertEquals(listOf(listOf(Q(y).lit())), it.head)
+            assertEquals(listOf(P(x).lit(), Q(x).lit()), it.bodyLiterals)
+            assertEquals(listOf(listOf(Q(y).lit())), it.headLiterals)
         }
         BasicSequent((P(x) and Q(x)) implies (Q(x) or (R(z) and S(z)))).let {
-            assertEquals(listOf(P(x).lit(), Q(x).lit()), it.body)
-            assertEquals(listOf(listOf(Q(x).lit()), listOf(R(z).lit(), S(z).lit())), it.head)
+            assertEquals(listOf(P(x).lit(), Q(x).lit()), it.bodyLiterals)
+            assertEquals(listOf(listOf(Q(x).lit()), listOf(R(z).lit(), S(z).lit())), it.headLiterals)
         }
         BasicSequent(TRUE implies ((P(x) and Q(x)) or (P(y) and Q(y)) or (P(z) and Q(z)))).let {
-            assertEquals(emptyList(), it.body)
+            assertEquals(emptyList(), it.bodyLiterals)
             assertEquals(listOf(
                     listOf(P(x).lit(), Q(x).lit())
                     , listOf(P(y).lit(), Q(y).lit())
-                    , listOf(P(z).lit(), Q(z).lit())), it.head)
+                    , listOf(P(z).lit(), Q(z).lit())), it.headLiterals)
         }
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(TRUE) })
         assertFailure(EXPECTED_STANDARD_SEQUENT, { BasicSequent(FALSE) })

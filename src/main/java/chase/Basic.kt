@@ -122,12 +122,14 @@ private fun buildHead(formula: Formula): List<List<Literal>> = when (formula) {
     else -> throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
 }
 
-class BasicSequent(formula: Formula) : Sequent {
+class BasicSequent(formula: Formula) : Sequent() {
     val freeVars = formula.freeVars.toList()
-    val body: List<Literal> = if (formula is Implies) buildBody(formula.left) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
-    val head: List<List<Literal>> = if (formula is Implies) buildHead(formula.right) else throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
+    override val body = (formula as? Implies)?.left ?: throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
+    override val head = (formula as? Implies)?.right ?: throw RuntimeException(EXPECTED_STANDARD_SEQUENT)
+    val bodyLiterals: List<Literal> = buildBody(body)
+    val headLiterals: List<List<Literal>> = buildHead(head)
 
-    override fun toString(): String = "$body -> $head"
+    override fun toString(): String = "$bodyLiterals -> $headLiterals"
 }
 
 class BasicEvaluator : Evaluator<BasicSequent> {
@@ -162,8 +164,8 @@ class BasicEvaluator : Evaluator<BasicSequent> {
                     }
                 }
 
-                val bodies: List<Observation> = sequent.body.map(convert)
-                val heads: List<List<Observation>> = sequent.head.map { it.map(convert) }
+                val bodies: List<Observation> = sequent.bodyLiterals.map(convert)
+                val heads: List<List<Observation>> = sequent.headLiterals.map { it.map(convert) }
 
                 if (bodies.all { model.lookup(it) } && !heads.any { it.all { model.lookup(it) } }) {
                     return if (heads.isEmpty()) {

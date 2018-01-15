@@ -1,5 +1,7 @@
 package chase
 
+import formula.TRUE
+
 class TopDownSelector<out S : Sequent>(private val sequents: List<S>) : Selector<S> {
     override fun iterator(): Iterator<S> = sequents.iterator()
 
@@ -29,8 +31,40 @@ class FairSelector<S : Sequent>(val sequents: Array<S>) : Selector<S> {
         this.index = index // the index cannot
     }
 
-    override fun duplicate(): Selector<S> {
-        return FairSelector(this)
+    override fun duplicate(): Selector<S> = FairSelector(this)
+}
+
+class OptimalSelector<out S : Sequent> : Selector<S> {
+    inner class OneTimeIterator : Iterator<S> {
+        override fun hasNext(): Boolean = index < allSequents.first.size
+
+        override fun next(): S {
+            if (!hasNext())
+                throw NoSuchElementException()
+            return allSequents.first[index++]
+        }
     }
 
+    private val allSequents: Pair<List<S>, List<S>>
+    private val selector: Selector<S>
+    private var index: Int
+    private val iterator: Iterator<S>
+
+    constructor(sequents: List<S>, selectorFunction: (sequents: List<S>) -> Selector<S>) {
+        this.allSequents = sequents.partition { it.body == TRUE && it.head.freeVars.isEmpty() && it.head.freeVars.isEmpty() }
+        this.selector = selectorFunction(this.allSequents.second)
+        this.iterator = OneTimeIterator()
+        index = 0
+    }
+
+    private constructor(selector: OptimalSelector<S>) {
+        this.allSequents = selector.allSequents
+        this.selector = selector.selector.duplicate()
+        this.iterator = OneTimeIterator()
+        this.index = selector.index
+    }
+
+    override fun iterator(): Iterator<S> = if (iterator.hasNext()) iterator else selector.iterator()
+
+    override fun duplicate(): Selector<S> = OptimalSelector(this)
 }
