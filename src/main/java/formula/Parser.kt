@@ -1,6 +1,157 @@
 package formula
 
 import java.util.*
+import java.util.regex.Pattern
+
+/**
+ * Token Type
+ */
+enum class TokenType(vararg regex: String) {
+    WHITESPACE("( |\\t|\\f|(\\r\\n)|\\r|\\n)") {
+        override fun toString(): String = "<Whitespace>"
+    },
+    COMMA(",") {
+        override fun toString(): String = ","
+    },
+    DOT("\\.") {
+        override fun toString(): String = "."
+    },
+    APOSTROPHE("\\'") {
+        override fun toString(): String = "'"
+    },
+    LPAREN("\\(") {
+        override fun toString(): String = "("
+    },
+    RPAREN("\\)") {
+        override fun toString(): String = ")"
+    },
+    EQUALS("\\=") {
+        override fun toString(): String = "="
+    },
+    TRUE("TRUE", "⊤") {
+        override fun toString(): String = "⊤"
+    },
+    FALSE("FALSE", "⟘") {
+        override fun toString(): String = "⟘"
+    },
+    NOT("not", "\\~", "¬") {
+        override fun toString(): String = "¬"
+    },
+    AND("and", "\\&", "∧") {
+        override fun toString(): String = "∧"
+    },
+    OR("or", "\\|", "∨") {
+        override fun toString(): String = "∨"
+    },
+    IMPLIES("implies", "->", "→") {
+        override fun toString(): String = "→"
+    },
+    FORALL("forall", "∀") {
+        override fun toString(): String = "∀"
+    },
+    EXISTS("exists", "∃") {
+        override fun toString(): String = "∃"
+    },
+    LOWER("[a-z_][a-zA-Z0-9_]*") {
+        override fun toString(): String = "<Lowercase Identifier>"
+    },
+    UPPER("[A-Z][a-zA-Z0-9_]*") {
+        override fun toString(): String = "<Uppercase Identifier>"
+    },
+    COMMENT("\\/\\/[^\\r\\n]*[\\r\\n]?", "\\/\\*([^*]|\\*+[^*/])*\\**\\*\\/", "\\/\\*([^*]|\\*+[^*/])*") {
+        override fun toString(): String = "<Comment>"
+    },
+    END("^$") {
+        override fun toString(): String = "<End of Input>"
+    },
+    INVALID("[^\\s]+") {
+        override fun toString(): String = "<Invalid Token>"
+    };
+
+    /**
+     * The pattern by which the token is detected.
+     */
+    val pattern: Pattern = Pattern.compile("^(${regex.joinToString(separator = "|")})")
+}
+
+/**
+ * Token
+ */
+data class Token(val type: TokenType, val token: String, val location: Location) {
+    /**
+     * Location of tokens
+     */
+    data class Location(private val line: Int, private val column: Int) {
+        override fun toString(): String = "($line, $column)"
+    }
+}
+
+/**
+ * Tokenizes the input {@code source} according to {@link #TokenType}
+ */
+fun tokenize(source: String): List<Token> {
+    /**
+     * List of tokens to return
+     */
+    val tokens = LinkedList<Token>()
+
+    /**
+     * Line number
+     */
+    var line: Int = 1
+
+    /**
+     * Column number
+     */
+    var column: Int = 1
+
+    /**
+     * Source to tokenize
+     */
+    var src = source
+
+    do {
+        var match = false
+        var isEnd = false
+
+        for (type in TokenType.values()) {
+            val m = type.pattern.matcher(src)
+            if (m.find()) {
+                match = true
+                isEnd = type == TokenType.END
+                val tok = if (isEnd) {
+                    TokenType.END.toString()
+                } else m.group()
+                if (type == TokenType.WHITESPACE || type == TokenType.COMMENT) {
+                    var lastCarriageReturn = false
+                    tok.forEach {
+                        // \r\n, \r or \n indicate line breaks.
+                        when (it) {
+                            '\r' -> {
+                                line++; column = 1; lastCarriageReturn = true
+                            }
+                            '\n' -> if (!lastCarriageReturn) {
+                                line++; column = 1; lastCarriageReturn = false
+                            }
+                            else -> {
+                                column++; lastCarriageReturn = false
+                            }
+                        }
+                    }
+                } else {
+                    tokens.add(Token(type, tok.trim(), Token.Location(line, column)))
+                    column += tok.length
+                }
+                src = m.replaceFirst("")
+                break
+            }
+        }
+        // TODO use parser exception
+        if (!match) throw RuntimeException("Unexpected token at: $src")
+    } while (!isEnd)
+
+    return tokens
+}
 
 class ParserException(message: String) : Exception(message)
 
@@ -177,20 +328,20 @@ class Parser {
      * Quantified = Or
      */
     private fun parseQuantified(): Formula? {
-        when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
-            TokenType.EXISTS -> return expect {
+        return when (match(TokenType.EXISTS, TokenType.FORALL)?.type) {
+            TokenType.EXISTS -> expect {
                 consume(TokenType.EXISTS)
                 val vs = parseVars()
                 consume(TokenType.DOT)
                 parseQuantified()?.let { Exists(vs, it) }
             }
-            TokenType.FORALL -> return expect {
+            TokenType.FORALL -> expect {
                 consume(TokenType.FORALL)
                 val vs = parseVars()
                 consume(TokenType.DOT)
                 parseQuantified()?.let { Forall(vs, it) }
             }
-            else -> return expect { parseOr() }
+            else -> expect { parseOr() }
         }
     }
 
@@ -208,12 +359,12 @@ class Parser {
      */
     private fun parseVar(): Var? {
         match(TokenType.LOWER).let {
-            when (it?.type) {
-                TokenType.LOWER -> return expect {
+            return when (it?.type) {
+                TokenType.LOWER -> expect {
                     consume(TokenType.LOWER)
                     Var(it.token)
                 }
-                else -> return null
+                else -> null
             }
         }
     }
