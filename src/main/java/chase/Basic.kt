@@ -2,7 +2,7 @@ package chase
 
 import formula.*
 import tools.Either
-import tools.pow
+import helper.pow
 import java.util.*
 import kotlin.collections.HashMap
 
