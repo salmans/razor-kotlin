@@ -32,59 +32,59 @@ internal class TokenizerTest {
     @Test
     fun tokenize() {
         Assert.assertEquals(listOf(token(TokenType.LOWER, "x", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("x"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("x"))
         Assert.assertEquals(listOf(token(TokenType.UPPER, "P", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("P"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("P"))
         Assert.assertEquals(listOf(token(TokenType.COMMA, ",", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize(","))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize(","))
         Assert.assertEquals(listOf(token(TokenType.DOT, ".", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("."))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("."))
         Assert.assertEquals(listOf(token(TokenType.LPAREN, "(", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("("))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("("))
         Assert.assertEquals(listOf(token(TokenType.RPAREN, ")", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize(")"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize(")"))
         Assert.assertEquals(listOf(token(TokenType.EQUALS, "=", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("="))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("="))
         Assert.assertEquals(listOf(token(TokenType.TRUE, "TRUE", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 5)), tokenize("TRUE"))
+                , token(TokenType.END, "end of input", 1, 5)), tokenize("TRUE"))
         Assert.assertEquals(listOf(token(TokenType.TRUE, "⊤", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("⊤"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("⊤"))
         Assert.assertEquals(listOf(token(TokenType.FALSE, "FALSE", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 6)), tokenize("FALSE"))
+                , token(TokenType.END, "end of input", 1, 6)), tokenize("FALSE"))
         Assert.assertEquals(listOf(token(TokenType.FALSE, "⟘", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("⟘"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("⟘"))
         Assert.assertEquals(listOf(token(TokenType.NOT, "not", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 4)), tokenize("not"))
+                , token(TokenType.END, "end of input", 1, 4)), tokenize("not"))
         Assert.assertEquals(listOf(token(TokenType.NOT, "~", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("~"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("~"))
         Assert.assertEquals(listOf(token(TokenType.NOT, "¬", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("¬"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("¬"))
         Assert.assertEquals(listOf(token(TokenType.AND, "and", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 4)), tokenize("and"))
+                , token(TokenType.END, "end of input", 1, 4)), tokenize("and"))
         Assert.assertEquals(listOf(token(TokenType.AND, "&", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("&"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("&"))
         Assert.assertEquals(listOf(token(TokenType.AND, "∧", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("∧"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("∧"))
         Assert.assertEquals(listOf(token(TokenType.OR, "or", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 3)), tokenize("or"))
+                , token(TokenType.END, "end of input", 1, 3)), tokenize("or"))
         Assert.assertEquals(listOf(token(TokenType.OR, "|", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("|"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("|"))
         Assert.assertEquals(listOf(token(TokenType.OR, "∨", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("∨"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("∨"))
         Assert.assertEquals(listOf(token(TokenType.IMPLIES, "implies", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 8)), tokenize("implies"))
+                , token(TokenType.END, "end of input", 1, 8)), tokenize("implies"))
         Assert.assertEquals(listOf(token(TokenType.IMPLIES, "->", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 3)), tokenize("->"))
+                , token(TokenType.END, "end of input", 1, 3)), tokenize("->"))
         Assert.assertEquals(listOf(token(TokenType.IMPLIES, "→", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("→"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("→"))
         Assert.assertEquals(listOf(token(TokenType.FORALL, "forall", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 7)), tokenize("forall"))
+                , token(TokenType.END, "end of input", 1, 7)), tokenize("forall"))
         Assert.assertEquals(listOf(token(TokenType.FORALL, "∀", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("∀"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("∀"))
         Assert.assertEquals(listOf(token(TokenType.EXISTS, "exists", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 7)), tokenize("exists"))
+                , token(TokenType.END, "end of input", 1, 7)), tokenize("exists"))
         Assert.assertEquals(listOf(token(TokenType.EXISTS, "∃", 1, 1)
-                , token(TokenType.END, "<End of Input>", 1, 2)), tokenize("∃"))
+                , token(TokenType.END, "end of input", 1, 2)), tokenize("∃"))
 
         Assert.assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
@@ -93,7 +93,7 @@ internal class TokenizerTest {
                 token(TokenType.COMMA, ",", 1, 4),
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 2, 1),
-                token(TokenType.END, "<End of Input>", 2, 2)
+                token(TokenType.END, "end of input", 2, 2)
         ), tokenize("P(x,            y     \n)"))
         Assert.assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
@@ -102,7 +102,7 @@ internal class TokenizerTest {
                 token(TokenType.COMMA, ",", 1, 4),
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 2, 3),
-                token(TokenType.END, "<End of Input>", 2, 4)
+                token(TokenType.END, "end of input", 2, 4)
         ), tokenize("P(x,            y     \n  )"))
         Assert.assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
@@ -111,7 +111,7 @@ internal class TokenizerTest {
                 token(TokenType.COMMA, ",", 1, 4),
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 2, 3),
-                token(TokenType.END, "<End of Input>", 2, 4)
+                token(TokenType.END, "end of input", 2, 4)
         ), tokenize("P(x,            y     \r\n  )"))
         Assert.assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
@@ -120,7 +120,7 @@ internal class TokenizerTest {
                 token(TokenType.COMMA, ",", 1, 4),
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 2, 3),
-                token(TokenType.END, "<End of Input>", 2, 4)
+                token(TokenType.END, "end of input", 2, 4)
         ), tokenize("P(x,            y     \r  )"))
         Assert.assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
@@ -129,7 +129,7 @@ internal class TokenizerTest {
                 token(TokenType.COMMA, ",", 1, 4),
                 token(TokenType.LOWER, "y", 1, 17),
                 token(TokenType.RPAREN, ")", 4, 3),
-                token(TokenType.END, "<End of Input>", 4, 4)
+                token(TokenType.END, "end of input", 4, 4)
         ), tokenize("P(x,            y     \n\n  \n  )"))
         Assert.assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
@@ -140,7 +140,7 @@ internal class TokenizerTest {
                 token(TokenType.COMMA, ",", 1, 18),
                 token(TokenType.LOWER, "z", 3, 1),
                 token(TokenType.RPAREN, ")", 5, 3),
-                token(TokenType.END, "<End of Input>", 5, 4)
+                token(TokenType.END, "end of input", 5, 4)
         ), tokenize("P(x,            y,    \n\nz \r\r\n  )"))
 
         Assert.assertEquals(listOf(
@@ -158,7 +158,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "y", 1, 27),
                 token(TokenType.RPAREN, ")", 1, 28),
                 token(TokenType.RPAREN, ")", 1, 29),
-                token(TokenType.END, "<End of Input>", 1, 30)
+                token(TokenType.END, "end of input", 1, 30)
         ), tokenize("forall x. (exists y. P(x, y))"))
         Assert.assertEquals(listOf(
                 token(TokenType.UPPER, "P", 1, 1),
@@ -175,7 +175,7 @@ internal class TokenizerTest {
                 token(TokenType.LPAREN, "(", 1, 17),
                 token(TokenType.LOWER, "z", 1, 18),
                 token(TokenType.RPAREN, ")", 1, 19),
-                token(TokenType.END, "<End of Input>", 1, 20)
+                token(TokenType.END, "end of input", 1, 20)
         ), tokenize("P(x) -> Q(y) → R(z)"))
         Assert.assertEquals(listOf(
                 token(TokenType.NOT, "¬", 1, 1),
@@ -217,7 +217,7 @@ internal class TokenizerTest {
                 token(TokenType.LOWER, "y", 1, 43),
                 token(TokenType.RPAREN, ")", 1, 44),
                 token(TokenType.RPAREN, ")", 1, 45),
-                token(TokenType.END, "<End of Input>", 1, 46)
+                token(TokenType.END, "end of input", 1, 46)
         ), tokenize("¬(∃x.∀y.(P(x) ∧ Q(y)) → ∀x.∃y.(¬P(x) ∨ ¬Q(y))"))
     }
 }
@@ -390,21 +390,21 @@ internal class ParserTest {
         assertTheoriesEqual(P(x), P(x), actual = "P(x)/* P(x)\nP(x) */ P(x)".parseTheory())
     }
 
-    @Test
-    fun parseError() {
-//        assertFailure("Parse error at (1, 2): expecting '(' but '<End of Input>' is found.", { "T".parseTheory() })
-//        assertFailure("Parse error at (1, 8): expecting '<Lowercase Identifier>' but '.' is found.", { "forall . P(x)".parseTheory() })
+//    @Test
+//    fun parseError() {
+//        assertFailure("Parse error at (1, 1): expecting one of end of input,'∃','∀','¬','⊤','⟘','lowercase identifier',''','(' but 'T' is found.", { "T".parseTheory() })
+//        assertFailure("Parse error at (1, 8): expecting 'lowercase identifier' but '.' is found.", { "forall . P(x)".parseTheory() })
 //        assertFailure("Parse error at (1, 10): expecting '.' but 'P' is found.", { "forall x P(x)".parseTheory() })
-//        assertFailure("Parse error at (1, 10): expecting '<Lowercase Identifier>' but '.' is found.", { "forall x,. P(x)".parseTheory() })
+//        assertFailure("Parse error at (1, 10): expecting 'lowercase identifier' but '.' is found.", { "forall x,. P(x)".parseTheory() })
 //        assertFailure("Parse error at (1, 15): expecting '.' but 'Q' is found.", { "P(x) forall x Q(x)".parseTheory() })
-//        assertFailure("Parse error at (1, 9): expecting '=' but '<End of Input>' is found.", { "P(x) | x".parseTheory() })
-//        assertFailure("Parse error at (1, 3): expecting '=' but '|' is found.", { "x | P(x)".parseTheory() })
-//        assertFailure("Parse error at (1, 9): expecting '(' but '<End of Input>' is found.", { "P(x) | Q".parseTheory() })
-//        assertFailure("Parse error at (1, 2): expecting '(' but '|' is found.", { "Q|P(x)".parseTheory() })
-//        assertFailure("Parse error at (1, 3): expecting '=' but '<End of Input>' is found.", { "~x".parseTheory() })
-//        assertFailure("Parse error at (1, 4): expecting '<Lowercase Identifier>' but ')' is found.", { "P(')".parseTheory() })
-//        assertFailure("Parse error at (1, 3): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', ''', '<Uppercase Identifier>', '(' but '<End of Input>' is found.", { "~(".parseTheory() })
-//        assertFailure("Parse error at (1, 2): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', ''', '<Uppercase Identifier>', '(' but ')' is found.", { "()".parseTheory() })
+//        assertFailure("Parse error at (1, 6): expecting 'end of input' but '∨' is found.", { "P(x) | x".parseTheory() })
+//        assertFailure("Parse error at (1, 1): expecting 'end of input' but 'x' is found.", { "x | P(x)".parseTheory() })
+//        assertFailure("Parse error at (1, 6): expecting 'end of input' but '∨' is found.", { "P(x) | Q".parseTheory() })
+//        assertFailure("Parse error at (1, 1): expecting 'end of input' but 'Q' is found.", { "Q|P(x)".parseTheory() })
+//        assertFailure("Parse error at (1, 1): expecting 'end of input' but '¬' is found.", { "~x".parseTheory() })
+//        assertFailure("Parse error at (1, 1): expecting 'end of input' but 'P' is found.", { "P(')".parseTheory() })
+//        assertFailure("Parse error at (1, 1): expecting 'end of input' but '¬' is found.", { "~(".parseTheory() })
+//        assertFailure("Parse error at (1, 1): expecting 'end of input' but '(' is found.", { "()".parseTheory() })
 //        assertFailure("Parse error at (1, 1): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', ''', '<Uppercase Identifier>', '(' but ')' is found.", { ")".parseTheory() })
 //        assertFailure("Parse error at (1, 3): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', ''', '<Uppercase Identifier>', '(' but 'or' is found.", { "~ or".parseTheory() })
 //        assertFailure("Parse error at (1, 3): expecting '∃', '∀', '¬', '⊤', '⟘', '<Lowercase Identifier>', ''', '<Uppercase Identifier>', '(' but '|' is found.", { "~ |".parseTheory() })
@@ -417,5 +417,5 @@ internal class ParserTest {
 //        assertFailure("Parse error at (2, 3): expecting '(' but '<End of Input>' is found.", { "\r\n T".parseTheory() })
 //        assertFailure("Parse error at (2, 3): expecting '(' but '<End of Input>' is found.", { "//\n T".parseTheory() })
 //        assertFailure("Parse error at (3, 11): expecting '(' but '<End of Input>' is found.", { "/*\n\n test */ T".parseTheory() })
-    }
+//    }
 }
