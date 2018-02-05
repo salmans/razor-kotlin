@@ -3,7 +3,6 @@ package formula
 import combinator.*
 import parser.*
 import tools.Either
-import tools.compose
 import java.util.*
 import java.util.regex.Pattern
 
@@ -160,71 +159,69 @@ fun tokenize(source: String): List<Token> {
 fun expect(type: TokenType) = { tokens: Sequence<Token> ->
     tokens.firstOrNull().let {
         when {
-            it == null -> Either.left(UnexpectedEndOfInputException(type.toString())) to tokens
+            it == null -> Either.left(UnexpectedEndOfInputFailure(type.toString())) to tokens
             it.type == type -> Either.right(it) to tokens.drop(1)
             else -> {
-                Either.left(UnexpectedTokenException(Token(type, "", Token.Location(0, 0)),
-                        found = tokens.firstOrNull())) to tokens
+                Either.left(UnexpectedTokenFailure(Token(type, "", Token.Location(0, 0)))) to tokens
             }
         }
     }
 }
 
-fun <T> commaSeparated(parser: Parser<Token, T>): Parser<Token, List<T>> = { v: ParserResult<Token, List<Pair<Token, T>>> ->
-    v.mapResult({ r -> r.map { it.second } })
-} compose many(expect(TokenType.COMMA) and parser)
+fun <R> parens(parser: Parser<Token, R>): Parser<Token, R> = between(expect(TokenType.LPAREN), expect(TokenType.RPAREN), parser)
 
 /**
  * Parses the input source and returns a first-order theory.
  */
 fun parse(source: String): Theory {
     val tokens = tokenize(source).asSequence()
-    return manyTill(parseFormula(), expect(TokenType.END))(tokens).first.let {
-        when (it) {
-            is Either.Left ->throw reportError(it.value)
-            is Either.Right -> Theory(it.value)
+    return manyTill(parseFormula(), expect(TokenType.END))(tokens).let {
+        when (it.first) {
+            is Either.Left -> throw reportError(it.first.left()!!, it.second.firstOrNull())
+            is Either.Right -> Theory(it.first.right()!!)
         }
     }
 }
 
-private fun reportError(value: ParserException): Exception {
-    when (value) {
-        is UnexpectedTokenException<*> -> {
-            val found = value.found as Token
-            val tokens = value.tokens
-            val message = if (tokens.size == 1) {
-                "Parse error at ${found.location}: expecting '${(tokens[0] as Token).type}' but '${printToken(found)}' is found."
-            } else {
-                "Parse error at ${found.location}: " +
-                        "expecting one of ${tokens.joinToString(",") { "'${(it as Token).type}'" }} but '${printToken(found)}' is found."
-            }
-            throw Exception(message)
+private fun reportError(value: ParserFailure, found: Token?): Exception = when (value) {
+    is UnexpectedTokenFailure<*> -> {
+        val tokens = value.tokens
+        val message = if (tokens.size == 1) {
+            "Parse error at ${found?.location ?: "unknown"}: expecting '${(tokens[0] as Token).type}' but '${printToken(found)}' is found."
+        } else {
+            "Parse error at ${found?.location ?: "unknown"}: " +
+                    "expecting one of ${tokens.joinToString(",") { "'${(it as Token).type}'" }} but '${printToken(found)}' is found."
         }
-        else -> throw Exception(value.message)
+        Exception(message)
     }
+    is UnexpectedEndOfInputFailure<*> -> {
+        val message = when (value.tokens.size) {
+            0 -> "Unexpected 'end of input' was found."
+            1 -> "Expecting '${value.tokens[0]}' but 'end of input' was found."
+            else -> "Expecting one of ${value.tokens.joinToString(",") { "'$it'" }} but 'end of input' was found."
+        }
+        Exception(message)
+    }
+    is UnexpectedFailure -> Exception("Unexpected ${value.message}")
 }
 
-private fun printToken(token: Token): String = when(token.type){
-    TokenType.WHITESPACE -> " "
-    TokenType.LOWER -> token.token
-    TokenType.UPPER -> token.token
-    TokenType.END -> "end of input"
-    TokenType.INVALID -> token.token
-    else -> token.type.toString()
+private fun printToken(token: Token?): String = if (token != null) {
+    when (token.type) {
+        TokenType.WHITESPACE -> " "
+        TokenType.LOWER -> token.token
+        TokenType.UPPER -> token.token
+        TokenType.INVALID -> token.token
+        else -> token.type.toString()
+    }
+} else {
+    "unknown"
 }
 
 /**
  * Formula = Qualified (IMPLIES Qualified)*
  */
-// TODO: convert to (Q and optional(=> and F)
-fun parseFormula(): Parser<Token, Formula> = {
-    (parseQuantified() and many(expect(TokenType.IMPLIES) and parseQuantified()))(it).let {
-        it.mapResult {
-            val rest = it.second.map { it.second }
-            rest.fold(it.first, ::Implies)
-        }
-    }
-}
+fun parseFormula(): Parser<Token, Formula> = chainl1(parseQuantified(), expect(TokenType.IMPLIES) right give({ l, r -> Implies(l, r) }))
+
 
 /**
  * Qualified = EXISTS Vars DOT Qualified
@@ -241,99 +238,122 @@ fun parseQuantified(): Parser<Token, Formula> = run {
     }
 
     fun helper(quantifier: Token): Parser<Token, Formula> {
-        return (parseVars() left expect(TokenType.DOT) and parseQuantified()) bind { (vars, formula) ->
+        return (parseVars() left expect(TokenType.DOT) and parseQuantified()) { (vars, formula) ->
             makeFormula(quantifier, vars, formula)
         }
     }
 
-    ((expect(TokenType.EXISTS) or expect(TokenType.FORALL)) bind { quantifier -> helper(quantifier) } or parseOr())
+    ((expect(TokenType.EXISTS) or expect(TokenType.FORALL)) { quantifier ->
+        helper(quantifier)
+    } or parseOr())
 }
 
 
 /**
  * Vars = Var (COMMA Var)*
  */
-fun parseVars(): Parser<Token, Vars> = {
-    (parseVar() and commaSeparated(parseVar()))(it).let {
-        it.mapResult {
-            val (first, rest) = it
-            listOf(first) + rest
-        }
-    }
-}
+fun parseVars(): Parser<Token, Vars> = sepBy1(parseVar(), expect(TokenType.COMMA))
 
 /**
  * Var = LOWER
  */
-fun parseVar(): Parser<Token, Var> = {
-    expect(TokenType.LOWER)(it).let {
-        it.mapResult { Var(it.token) }
-    }
+fun parseVar(): Parser<Token, Var> = run {
+    fun makeVar(name: String): Parser<Token, Var> = give(Var(name))
+
+    (expect(TokenType.LOWER)) { makeVar(it.token) }
 }
 
 /**
  * Const = APOSTROPHE LOWER
  */
-fun parseConst(): Parser<Token, Const> = {
-    (expect(TokenType.APOSTROPHE) and expect(TokenType.LOWER))(it).let {
-        it.mapResult { Const(it.second.token) }
-    }
+fun parseConst(): Parser<Token, Const> = run {
+    fun makeConst(name: String): Parser<Token, Const> = give(Const(name))
+
+    (expect(TokenType.APOSTROPHE) right expect(TokenType.LOWER)) { makeConst(it.token) }
 }
 
+/**
+ * Or = And OR Quantified
+ * Or = And
+ */
 fun parseOr(): Parser<Token, Formula> = run {
     fun makeFormula(l: Formula, r: Formula): Parser<Token, Formula> = give(Or(l, r))
 
-    fun helper(l: Formula): Parser<Token, Formula> = attempt(expect(TokenType.OR) right (parseOr() or parseQuantified()) bind { r ->
+    fun helper(l: Formula): Parser<Token, Formula> = attempt((expect(TokenType.OR) right parseQuantified()) { r ->
         makeFormula(l, r)
     }) or give(l)
 
-    parseAnd() bind { l -> helper(l) }
+    (parseAnd()) { l -> helper(l) }
 }
 
+/**
+ * And = Not AND Quantified
+ * And = Not AND And
+ * And = Not
+ */
 fun parseAnd(): Parser<Token, Formula> = run {
     fun makeFormula(l: Formula, r: Formula): Parser<Token, Formula> = give(And(l, r))
 
-    fun helper(l: Formula): Parser<Token, Formula> = attempt(expect(TokenType.AND) right (parseAnd() or parseQuantified()) bind { r ->
+    fun helper(l: Formula): Parser<Token, Formula> = attempt(expect(TokenType.AND) right (parseAnd() or parseQuantified()) { r ->
         makeFormula(l, r)
     }) or give(l)
 
-    parseNot() bind { l -> helper(l) }
+    (parseNot()) { l -> helper(l) }
 }
 
+/**
+ * Not = NOT Quantified
+ * Not = Atom
+ */
 fun parseNot(): Parser<Token, Formula> = { tokens: Sequence<Token> ->
     fun makeFormula(formula: Formula): Parser<Token, Formula> = give<Token, Formula>(Not(formula))
-    ((expect(TokenType.NOT) right (parseNot() or parseQuantified()) bind { makeFormula(it) }) or parseAtom())(tokens)
+
+    ((expect(TokenType.NOT) right (parseNot() or parseQuantified()) { makeFormula(it) }) or parseAtom())(tokens)
 }
 
+/**
+ * Parse an atomic formula
+ * Atom = TRUE
+ * Atom = FALSE
+ * Atom = Term EQUALS Term
+ * Atom = UPPER LPAREN Terms RPAREN
+ * Atom = LPAREN Formula RPAREN
+ */
 fun parseAtom(): Parser<Token, Formula> = run {
-    fun parseTrue(): Parser<Token, Formula> = expect(TokenType.TRUE) right give(TRUE)
-    fun parseFalse(): Parser<Token, Formula> = expect(TokenType.FALSE) right give(FALSE)
     fun makeAtomic(pred: Pred, terms: Terms): Parser<Token, Formula> = give<Token, Formula>(Atom(pred, terms))
-    fun atomicHelper(pred: Pred): Parser<Token, Formula> = (expect(TokenType.LPAREN) right parseTerms() left expect(TokenType.RPAREN)) bind { terms -> makeAtomic(pred, terms) }
+    fun atomicHelper(pred: Pred): Parser<Token, Formula> = (parens(parseTerms())) { terms -> makeAtomic(pred, terms) }
 
-    fun atomic(): Parser<Token, Formula> = expect(TokenType.UPPER) bind { pred -> atomicHelper(Pred(pred.token)) }
-    fun parens(): Parser<Token, Formula> = expect(TokenType.LPAREN) right parseFormula() left expect(TokenType.RPAREN)
+    //fun atomic(): Parser<Token, Formula> =
 
     choice(listOf(
-            parseTrue(),
-            parseFalse(),
+            expect(TokenType.TRUE) right give(TRUE),
+            expect(TokenType.FALSE) right give(FALSE),
             parseEquals(),
-            atomic(),
-            parens()))
+            (expect(TokenType.UPPER)) { pred -> atomicHelper(Pred(pred.token)) },
+            parens(parseFormula())))
 }
 
 fun parseEquals(): Parser<Token, Equals> = run {
-    fun makeEquals(first: Term, second: Term): Parser<Token, Equals> = give<Token, Equals>(Equals(first, second))
-    ((parseTerm() left expect(TokenType.EQUALS)) and parseTerm()) bind { makeEquals(it.first, it.second) }
+    fun makeEquals(first: Term, second: Term): Parser<Token, Equals> = give(Equals(first, second))
+
+    ((parseTerm() left expect(TokenType.EQUALS)) and parseTerm()) { makeEquals(it.first, it.second) }
 }
 
+/**
+ * Terms = Term*
+ */
 fun parseTerms(): Parser<Token, Terms> = sepEndBy(parseTerm(), expect(TokenType.COMMA))
 
-fun parseTerm(): Parser<Token, Term> = {tokens: Sequence<Token> ->
+/**
+ * Term = Var
+ * Term = Const
+ * Term = LOWER LPAREN Terms RPAREN
+ */
+fun parseTerm(): Parser<Token, Term> = { tokens: Sequence<Token> ->
     fun makeComplex(func: Func, terms: Terms): Parser<Token, Term> = give(App(func, terms))
 
     fun complex(): Parser<Token, Term> =
-            (expect(TokenType.LOWER) left expect(TokenType.LPAREN) and parseTerms() left expect(TokenType.RPAREN)) bind { (f, ts) ->
+            (expect(TokenType.LOWER) and parens(parseTerms())) { (f, ts) ->
                 makeComplex(Func(f.token), ts)
             }
 
@@ -344,7 +364,3 @@ fun parseTerm(): Parser<Token, Term> = {tokens: Sequence<Token> ->
 }
 
 fun String.parseTheory() = parse(this)
-
-fun main(args: Array<String>) {
-    System.out.println(parse("exists x . not P(x, y)"))
-}
