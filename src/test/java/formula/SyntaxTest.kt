@@ -113,6 +113,7 @@ internal class SyntaxTest {
         assertEquals("¬(R(x, y) ∨ Q(z))", (!(R(x, y) or Q(z))).toString())
         assertEquals("¬(R(x, y) ∧ (¬Q(z)))", (!(R(x, y) and !Q(z))).toString())
         assertEquals("¬(R(x, y) → Q(z))", (!(R(x, y) implies Q(z))).toString())
+        assertEquals("¬(R(x, y) ⇔ Q(z))", (!(R(x, y) iff Q(z))).toString())
     }
 
     @Test
@@ -131,6 +132,7 @@ internal class SyntaxTest {
         assertEquals("P() ∧ (Q() ∧ R())", (P() and (Q() and R())).toString())
         assertEquals("P() ∧ (Q() ∨ R())", (P() and (Q() or R())).toString())
         assertEquals("P() ∧ (Q() → R())", (P() and (Q() implies R())).toString())
+        assertEquals("P() ∧ (Q() ⇔ R())", (P() and (Q() iff R())).toString())
     }
 
     @Test
@@ -147,6 +149,7 @@ internal class SyntaxTest {
         assertEquals("P() ∨ (Q() ∧ R())", (P() or (Q() and R())).toString())
         assertEquals("P() ∨ (Q() ∨ R())", (P() or (Q() or R())).toString())
         assertEquals("P() ∨ (Q() → R())", (P() or (Q() implies R())).toString())
+        assertEquals("P() ∨ (Q() ⇔ R())", (P() or (Q() iff R())).toString())
     }
 
     @Test
@@ -163,12 +166,30 @@ internal class SyntaxTest {
         assertEquals("P() → (Q() ∧ R())", (P() implies (Q() and R())).toString())
         assertEquals("P() → (Q() ∨ R())", (P() implies (Q() or R())).toString())
         assertEquals("P() → (Q() → R())", (P() implies (Q() implies R())).toString())
+        assertEquals("P() → (Q() ⇔ R())", (P() implies (Q() iff R())).toString())
     }
 
     @Test
     fun freeVarsImplies() {
         assertEquals(emptySet<Var>(), (P() implies Q()).freeVars)
         assertEquals(setOf(x, y, z), (P(z, y) implies (x equals y)).freeVars)
+    }
+
+    @Test
+    fun printIff() {
+        assertEquals("P() ⇔ Q()", (P() iff Q()).toString())
+        assertEquals("P() ⇔ (x = y)", (P() iff (x equals y)).toString())
+        assertEquals("P() ⇔ (¬Q())", (P() iff !Q()).toString())
+        assertEquals("P() ⇔ (Q() ∧ R())", (P() iff (Q() and R())).toString())
+        assertEquals("P() ⇔ (Q() ∨ R())", (P() iff (Q() or R())).toString())
+        assertEquals("P() ⇔ (Q() → R())", (P() iff (Q() implies R())).toString())
+        assertEquals("P() ⇔ (Q() ⇔ R())", (P() iff (Q() iff R())).toString())
+    }
+
+    @Test
+    fun freeVarsIff() {
+        assertEquals(emptySet<Var>(), (P() iff Q()).freeVars)
+        assertEquals(setOf(x, y, z), (P(z, y) iff (x equals y)).freeVars)
     }
 
     @Test
@@ -180,6 +201,7 @@ internal class SyntaxTest {
         assertEquals("∃ x. (Q(x) ∧ R(x))", (exists(x) { Q(x) and R(x) }).toString())
         assertEquals("∃ x. (Q(x) ∨ R(x))", (exists(x) { Q(x) or R(x) }).toString())
         assertEquals("∃ x. (Q(x) → R(x))", (exists(x) { Q(x) implies R(x) }).toString())
+        assertEquals("∃ x. (Q(x) ⇔ R(x))", (exists(x) { Q(x) iff R(x) }).toString())
     }
 
     @Test
@@ -200,6 +222,7 @@ internal class SyntaxTest {
         assertEquals("∀ x. (Q(x) ∧ R(x))", (forall(x) { Q(x) and R(x) }).toString())
         assertEquals("∀ x. (Q(x) ∨ R(x))", (forall(x) { Q(x) or R(x) }).toString())
         assertEquals("∀ x. (Q(x) → R(x))", (forall(x) { Q(x) implies R(x) }).toString())
+        assertEquals("∀ x. (Q(x) ⇔ R(x))", (forall(x) { Q(x) iff R(x) }).toString())
     }
 
     @Test

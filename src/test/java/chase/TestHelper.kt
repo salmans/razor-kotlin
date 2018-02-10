@@ -60,7 +60,7 @@ fun assertFailure(errorMessage: String, func: () -> Unit) {
 }
 
 fun solveBasic(source: String): List<Model> {
-    val geometricTheory = source.parseTheory()!!.geometric()
+    val geometricTheory = source.parseTheory().geometric()
     val sequents = geometricTheory.formulas.map { BasicSequent(it) }
     val evaluator = BasicEvaluator()
     val selector = TopDownSelector(sequents)
@@ -69,7 +69,7 @@ fun solveBasic(source: String): List<Model> {
 }
 
 fun solveDomainBoundedBasic(source: String, bound: Int): List<Model> {
-    val geometricTheory = source.parseTheory()!!.geometric()
+    val geometricTheory = source.parseTheory().geometric()
     val sequents = geometricTheory.formulas.map { BasicSequent(it) }
     val bounder = DomainSizeBounder(bound)
     val evaluator = BasicEvaluator()

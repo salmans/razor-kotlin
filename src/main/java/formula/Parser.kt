@@ -49,6 +49,9 @@ enum class TokenType(vararg regex: String) {
     IMPLIES("implies", "->", "→") {
         override fun toString(): String = "→"
     },
+    IFF("iff", "<=>", "⇔") {
+        override fun toString(): String = "⇔"
+    },
     FORALL("forall", "∀") {
         override fun toString(): String = "∀"
     },
@@ -220,7 +223,17 @@ private fun printToken(token: Token?): String = if (token != null) {
 /**
  * Formula = Qualified (IMPLIES Qualified)*
  */
-fun parseFormula(): Parser<Token, Formula> = chainl1(parseQuantified(), expect(TokenType.IMPLIES) right give({ l, r -> Implies(l, r) }))
+fun parseFormula(): Parser<Token, Formula> = run {
+    fun makeFormula(connective: Token): Parser<Token, (Formula, Formula) -> Formula> {
+        return if (connective.type == TokenType.IFF) {
+            give({ l, r -> Iff(l, r) })
+        } else {
+            give({ l, r -> Implies(l, r) })
+        }
+    }
+
+    chainl1(parseQuantified(), (expect(TokenType.IMPLIES) or expect(TokenType.IFF)){ makeFormula(it) })
+}
 
 
 /**

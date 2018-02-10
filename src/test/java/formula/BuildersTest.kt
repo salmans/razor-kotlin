@@ -58,6 +58,11 @@ internal class BuildersTest {
     }
 
     @Test
+    fun iff() {
+        assertEquals(Iff(R(), Q()), R() iff Q())
+    }
+
+    @Test
     fun equals() {
         assertEquals(Equals(x, y), x equals y)
         assertEquals(Equals(g(x, x), f(y)), g(x, x) equals f(y))

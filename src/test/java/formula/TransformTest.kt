@@ -116,6 +116,13 @@ internal class TransformTest {
                 else -> it
             }
         })
+        assertEquals(P(z) iff Q(z), (P(x) iff Q(y)).renameVar {
+            when (it) {
+                x -> z
+                y -> z
+                else -> it
+            }
+        })
         assertEquals(exists(y, y) { P(y, y, y) }, (exists(x, y) { P(x, y, z) }).renameVar {
             when (it) {
                 x -> y
@@ -309,6 +316,20 @@ internal class TransformTest {
                 else -> it
             }
         })
+        assertEquals(P(f()) iff Q(g()), (P(x) iff Q(y)).substitute {
+            when (it) {
+                x -> f()
+                y -> g()
+                else -> it
+            }
+        })
+        assertEquals(P(a) iff Q(b), (P(x) iff Q(y)).substitute {
+            when (it) {
+                x -> a
+                y -> b
+                else -> it
+            }
+        })
         assertEquals(exists(x, y) { P(f(g(y)), y, y) }, (exists(x, y) { P(x, y, z) }).substitute {
             when (it) {
                 x -> f(g(y))
@@ -343,6 +364,7 @@ internal class TransformTest {
         assertEquals(P(x) and Q(y), (P(x) and Q(y)).pnf())
         assertEquals(P(x) or Q(y), (P(x) or Q(y)).pnf())
         assertEquals(P(x) implies Q(y), (P(x) implies Q(y)).pnf())
+        assertEquals((P(x) implies Q(y)) and (Q(y) implies P(x)), (P(x) iff Q(y)).pnf())
         assertEquals(exists(x) { P(x) and !Q(y) or R(z) }, exists(x) { P(x) and !Q(y) or R(z) }.pnf())
         assertEquals(forall(x) { P(x) and !Q(y) or R(z) }, forall(x) { P(x) and !Q(y) or R(z) }.pnf())
         // sanity checking
@@ -377,6 +399,26 @@ internal class TransformTest {
         assertEquals(forall(x_1) { Q(x) implies P(x_1) }, (Q(x) implies forall(x) { P(x) }).pnf())
         assertEquals(exists(x_1) { Q(x) implies P(x_1) }, (Q(x) implies exists(x) { P(x) }).pnf())
         assertEquals(exists(x_1, y_1) { Q(x, y) implies P(x_1, y_1) }, (Q(x, y) implies exists(x, y) { P(x, y) }).pnf())
+        assertEquals(exists(x) { forall(x_1) { (P(x) implies Q(y)) and (Q(y) implies P(x_1)) } },
+                (forall(x) { P(x) } iff Q(y)).pnf())
+        assertEquals(forall(x) { exists(x_1) { (P(x) implies Q(y)) and (Q(y) implies P(x_1)) } },
+                (exists(x) { P(x) } iff Q(y)).pnf())
+        assertEquals(exists(x_1) { forall(x_2) { (P(x_1) implies Q(x)) and (Q(x) implies P(x_2)) } },
+                (forall(x) { P(x) } iff Q(x)).pnf())
+        assertEquals(forall(x_1) { exists(x_2) { (P(x_1) implies Q(x)) and (Q(x) implies P(x_2)) } },
+                (exists(x) { P(x) } iff Q(x)).pnf())
+        assertEquals(forall(x_1, y_1) { exists(x_2, y_2) { (P(x_1, y_1) implies Q(x, y)) and (Q(x, y) implies P(x_2, y_2)) } },
+                (exists(x, y) { P(x, y) } iff Q(x, y)).pnf())
+        assertEquals(forall(x) { exists(x_1) { (Q(y) implies P(x)) and (P(x_1) implies Q(y)) } },
+                (Q(y) iff forall(x) { P(x) }).pnf())
+        assertEquals(exists(x) { forall(x_1) { (Q(y) implies P(x)) and (P(x_1) implies Q(y)) } },
+                (Q(y) iff exists(x) { P(x) }).pnf())
+        assertEquals(forall(x_1) { exists(x_2) { (Q(x) implies P(x_1)) and (P(x_2) implies Q(x)) } },
+                (Q(x) iff forall(x) { P(x) }).pnf())
+        assertEquals(exists(x_1) { forall(x_2) { (Q(x) implies P(x_1)) and (P(x_2) implies Q(x)) } },
+                (Q(x) iff exists(x) { P(x) }).pnf())
+        assertEquals(exists(x_1, y_1) { forall(x_2, y_2) { (Q(x, y) implies P(x_1, y_1)) and (P(x_2, y_2) implies Q(x, y)) } },
+                (Q(x, y) iff exists(x, y) { P(x, y) }).pnf())
         //renaming tests
         assertEquals(forall(x_2, x_1) { P(x_2) and Q(x) }, (forall(x, x_1) { P(x) } and Q(x)).pnf())
         assertEquals(exists(x_2, x_1) { P(x_2) and Q(x) }, (exists(x, x_1) { P(x) } and Q(x)).pnf())
@@ -402,6 +444,22 @@ internal class TransformTest {
         assertEquals(exists(x_2, x_1) { Q(x) implies P(x_2) }, (Q(x) implies exists(x, x_1) { P(x) }).pnf())
         assertEquals(exists(x_2) { Q(x, x_1) implies P(x_2) }, (Q(x, x_1) implies exists(x) { P(x) }).pnf())
         assertEquals(exists(x_2) { Q(x) implies P(x_2, x_1) }, (Q(x) implies exists(x) { P(x, x_1) }).pnf())
+        assertEquals(exists(x_2, x_1) { forall(x_3, x_1) { (P(x_2) implies Q(x)) and (Q(x) implies P(x_3)) } },
+                (forall(x, x_1) { P(x) } iff Q(x)).pnf())
+        assertEquals(forall(x_2, x_1) { exists(x_3, x_1) { (P(x_2) implies Q(x)) and (Q(x) implies P(x_3)) } },
+                (exists(x, x_1) { P(x) } iff Q(x)).pnf())
+        assertEquals(forall(x_2) { exists(x_3) { (P(x_2) implies Q(x, x_1)) and (Q(x, x_1) implies P(x_3)) } },
+                (exists(x) { P(x) } iff Q(x, x_1)).pnf())
+        assertEquals(forall(x_2) { exists(x_3) { (P(x_2, x_1) implies Q(x)) and (Q(x) implies P(x_3, x_1)) } },
+                (exists(x) { P(x, x_1) } iff Q(x)).pnf())
+        assertEquals(forall(x_2, x_1) { exists(x_3, x_1) { (Q(x) implies P(x_2)) and (P(x_3) implies Q(x)) } },
+                (Q(x) iff forall(x, x_1) { P(x) }).pnf())
+        assertEquals(exists(x_2, x_1) { forall(x_3, x_1) { (Q(x) implies P(x_2)) and (P(x_3) implies Q(x)) } },
+                (Q(x) iff exists(x, x_1) { P(x) }).pnf())
+        assertEquals(exists(x_2) { forall(x_3) { (Q(x, x_1) implies P(x_2)) and (P(x_3) implies Q(x, x_1)) } },
+                (Q(x, x_1) iff exists(x) { P(x) }).pnf())
+        assertEquals(exists(x_2) { forall(x_3) { (Q(x) implies P(x_2, x_1)) and (P(x_3, x_1) implies Q(x)) } },
+                (Q(x) iff exists(x) { P(x, x_1) }).pnf())
         // both sides of binary formulas
         assertEquals(forall(x) { forall(x_1) { P(x) and Q(x_1) } }, (forall(x) { P(x) } and forall(x) { Q(x) }).pnf())
         assertEquals(forall(x) { exists(x_1) { P(x) and Q(x_1) } }, (forall(x) { P(x) } and exists(x) { Q(x) }).pnf())
@@ -415,6 +473,14 @@ internal class TransformTest {
         assertEquals(exists(x) { exists(x_1) { P(x) implies Q(x_1) } }, (forall(x) { P(x) } implies exists(x) { Q(x) }).pnf())
         assertEquals(forall(x) { forall(x_1) { P(x) implies Q(x_1) } }, (exists(x) { P(x) } implies forall(x) { Q(x) }).pnf())
         assertEquals(forall(x) { exists(x_1) { P(x) implies Q(x_1) } }, (exists(x) { P(x) } implies exists(x) { Q(x) }).pnf())
+        assertEquals(exists(x) { forall(x_1) { exists(x_2) { forall(x_3) { (P(x) implies Q(x_1)) and (Q(x_2) implies P(x_3)) } } } },
+                (forall(x) { P(x) } iff forall(x) { Q(x) }).pnf())
+        assertEquals(exists(x) { exists(x_1) { forall(x_2) { forall(x_3) { (P(x) implies Q(x_1)) and (Q(x_2) implies P(x_3)) } } } },
+                (forall(x) { P(x) } iff exists(x) { Q(x) }).pnf())
+        assertEquals(forall(x) { forall(x_1) { exists(x_2) { exists(x_3) { (P(x) implies Q(x_1)) and (Q(x_2) implies P(x_3)) } } } },
+                (exists(x) { P(x) } iff forall(x) { Q(x) }).pnf())
+        assertEquals(forall(x) { exists(x_1) { forall(x_2) { exists(x_3) { (P(x) implies Q(x_1)) and (Q(x_2) implies P(x_3)) } } } },
+                (exists(x) { P(x) } iff exists(x) { Q(x) }).pnf())
         // multiple steps
         assertEquals(exists(x) { !!P(x) }, (!(!exists(x) { P(x) })).pnf())
         assertEquals(forall(x) { !!P(x) }, (!(!forall(x) { P(x) })).pnf())
@@ -424,15 +490,20 @@ internal class TransformTest {
         assertEquals(exists(x_1) { P(x) or (Q(x_1) or R(x)) }, (P(x) or (exists(x) { Q(x) } or R(x))).pnf())
         assertEquals(exists(x_1) { P(x) implies (Q(x_1) implies R(x)) }, (P(x) implies (forall(x) { Q(x) } implies R(x))).pnf())
         assertEquals(forall(x_1) { P(x) implies (Q(x_1) implies R(x)) }, (P(x) implies (exists(x) { Q(x) } implies R(x))).pnf())
+        assertEquals(exists(x_1) { forall(x_2) { forall(x_3) { exists(x_4) { (P(x) implies ((Q(x_1) implies R(x)) and (R(x) implies Q(x_2)))) and (((Q(x_3) implies R(x)) and (R(x) implies Q(x_4))) implies P(x)) } } } },
+                (P(x) iff (forall(x) { Q(x) } iff R(x))).pnf())
+        assertEquals(forall(x_1) { exists(x_2) { exists(x_3) { forall(x_4) { (P(x) implies ((Q(x_1) implies R(x)) and (R(x) implies Q(x_2)))) and (((Q(x_3) implies R(x)) and (R(x) implies Q(x_4))) implies P(x)) } } } },
+                (P(x) iff (exists(x) { Q(x) } iff R(x))).pnf())
         // random formulas
         assertEquals(forall(x) { exists(y) { P(x) implies (P(y) and Q(x, y)) } }, (forall(x) { P(x) implies exists(y) { P(y) and Q(x, y) } }).pnf())
         assertEquals(exists(x) { forall(y) { P(x) and (P(y) implies Q(x, y)) } }, exists(x) { P(x) and forall(y) { P(y) implies Q(x, y) } }.pnf())
         assertEquals(forall(x) { exists(y) { P(x) implies !(P(y) implies Q(x, y)) } }, forall(x) { P(x) implies !forall(y) { P(y) implies Q(x, y) } }.pnf())
         assertEquals(exists(x) { exists(y_1) { P(y_1) implies (P(x) implies Q(x, y)) } }, exists(x) { forall(y) { P(y) } implies (P(x) implies Q(x, y)) }.pnf())
         assertEquals(forall(x) { forall(z) { (P() or Q(x)) implies R(z) } }, ((P() or exists(x) { Q(x) }) implies forall(z) { R(z) }).pnf())
-        assertEquals(forall(x) { exists(y) { forall(z) { forall(x_1) { forall(w) { (Q(x) and !R(x_1)) or ((!Q(y) implies R(y))) } } } } }
-                , (forall(x) { exists(y) { (forall(z) { Q(x) and !exists(x) { R(x) } }) or (!Q(y) implies forall(w) { R(y) }) } }).pnf())
-        assertEquals(forall(x) { exists(y) { exists(y_1) { P(y, x) implies Q(x, y_1) } } }, forall(x) { forall(y) { P(y, x) } implies exists(y) { Q(x, y) } }.pnf())
+        assertEquals(forall(x) { exists(y) { forall(z) { forall(x_1) { forall(w) { (Q(x) and !R(x_1)) or ((!Q(y) implies R(y))) } } } } },
+                (forall(x) { exists(y) { (forall(z) { Q(x) and !exists(x) { R(x) } }) or (!Q(y) implies forall(w) { R(y) }) } }).pnf())
+        assertEquals(forall(x) { exists(y) { exists(y_1) { P(y, x) implies Q(x, y_1) } } },
+                forall(x) { forall(y) { P(y, x) } implies exists(y) { Q(x, y) } }.pnf())
     }
 
     @Test
@@ -466,6 +537,7 @@ internal class TransformTest {
         assertEquals(P(x) and Q(y), (P(x) and Q(y)).nnf())
         assertEquals(P(x) or Q(y), (P(x) or Q(y)).nnf())
         assertEquals(!P(x) or Q(y), (P(x) implies Q(y)).nnf())
+        assertEquals((!P(x) or Q(y)) and (P(x) or !Q(y)), (P(x) iff Q(y)).nnf())
         assertEquals(exists(x) { P(x) }, exists(x) { P(x) }.nnf())
         assertEquals(forall(x) { P(x) }, forall(x) { P(x) }.nnf())
         // sanity checking
@@ -476,23 +548,31 @@ internal class TransformTest {
         assertEquals(!P(x) or !Q(y), (!(P(x) and Q(y))).nnf())
         assertEquals(!P(x) and !Q(y), (!(P(x) or Q(y))).nnf())
         assertEquals(P(x) and !Q(y), (!(P(x) implies Q(y))).nnf())
+        assertEquals((P(x) and !Q(y)) or (!P(x) and Q(y)), (!(P(x) iff Q(y))).nnf())
         assertEquals((!P(x) and !Q(y)) or R(z), ((P(x) or Q(y)) implies R(z)).nnf())
+        assertEquals(((!P(x) and !Q(y)) or R(z)) and ((P(x) or Q(y)) or !R(z)), ((P(x) or Q(y)) iff R(z)).nnf())
         assertEquals(forall(x) { !P(x) }, (!exists(x) { P(x) }).nnf())
         assertEquals(exists(x) { !P(x) }, (!forall(x) { P(x) }).nnf())
         // recursive application
         assertEquals(P(x) and Q(y), (!!P(x) and !!Q(y)).nnf())
         assertEquals(P(x) or Q(y), (!!P(x) or !!Q(y)).nnf())
         assertEquals(!P(x) or Q(y), (!!P(x) implies !!Q(y)).nnf())
+        assertEquals((!P(x) or Q(y)) and (P(x) or !Q(y)), (!!P(x) iff !!Q(y)).nnf())
         assertEquals(exists(x) { P(x) }, (exists(x) { !!P(x) }).nnf())
         assertEquals(forall(x) { P(x) }, (forall(x) { !!P(x) }).nnf())
         assertEquals(!P(x), (!!!P(x)).nnf())
         assertEquals(P(x) or Q(y), (!(!P(x) and !Q(y))).nnf())
         assertEquals(P(x) and Q(y), (!(!P(x) or !Q(y))).nnf())
         assertEquals(!P(x) and Q(y), (!(!P(x) implies !Q(y))).nnf())
+        assertEquals((!P(x) and Q(y)) or (P(x) and !Q(y)), (!(!P(x) iff !Q(y))).nnf())
         assertEquals((P(x) and Q(x)) or (P(y) and Q(y)), (!(!(P(x) and Q(x)) and !(P(y) and Q(y)))).nnf())
         assertEquals((P(x) and Q(x)) and (P(y) and Q(y)), (!(!(P(x) and Q(x)) or !(P(y) and Q(y)))).nnf())
         assertEquals((!P(x) or !Q(x)) and (P(y) and Q(y)), (!(!(P(x) and Q(x)) implies !(P(y) and Q(y)))).nnf())
         assertEquals(forall(x) { exists(y) { P(x) and !Q(y) } }, (!exists(x) { forall(y) { P(x) implies Q(y) } }).nnf())
+        assertEquals((((!P(x)) or (!Q(x))) and (P(y) and Q(y))) or ((P(x) and Q(x)) and ((!P(y)) or (!Q(y)))),
+                (!(!(P(x) and Q(x)) iff !(P(y) and Q(y)))).nnf())
+        assertEquals(forall(x) { exists(y) { (P(x) and (!Q(y))) or ((!P(x)) and Q(y)) } },
+                (!exists(x) { forall(y) { P(x) iff Q(y) } }).nnf())
         assertEquals((forall(x) { !P(x) }) or (exists(y) { !Q(y) }), (!((exists(x) { P(x) }) and (forall(y) { Q(y) }))).nnf())
     }
 
@@ -507,12 +587,17 @@ internal class TransformTest {
         assertEquals(P(x) and Q(y), (P(x) and Q(y)).cnf())
         assertEquals(P(x) or Q(y), (P(x) or Q(y)).cnf())
         assertEquals(!P(x) or Q(y), (P(x) implies Q(y)).cnf())
+        assertEquals((!P(x) or Q(y)) and (!Q(y) or P(x)), (P(x) iff Q(y)).cnf())
         assertEquals(P(x), forall(x) { P(x) }.cnf())
         assertEquals(P(f(), g(f(), x)), forall(x) { P(f(), g(f(), x)) }.cnf())
         // quantifier-free formulas
         assertEquals((!P(x1) or !Q(y)) and (!P(x2) or !Q(y)), (!((P(x1) or P(x2)) and Q(y))).cnf())
         assertEquals((P(x) or Q(x)) and (P(x) or !Q(y)), (P(x) or !(Q(x) implies Q(y))).cnf())
         assertEquals((!P(x) or R(z)) and (!Q(y) or R(z)), ((P(x) or Q(y)) implies R(z)).cnf())
+        assertEquals(((P(x) or (Q(x) or Q(y))) and (P(x) or (Q(x) or !Q(x)))) and ((P(x) or (!Q(y) or Q(y))) and (P(x) or (!Q(y) or !Q(x)))),
+                (P(x) or !(Q(x) iff Q(y))).cnf())
+        assertEquals(((!P(x) or R(z)) and (!Q(y) or R(z))) and (!R(z) or (P(x) or Q(y))),
+                ((P(x) or Q(y)) iff R(z)).cnf())
         assertEquals((P(x) or (Q(x) or R(y))) and (P(x) or (Q(x) or R(z))), (P(x) or (Q(x) or (R(y) and R(z)))).cnf())
         assertEquals(((Q(x) or R(y)) or P(x)) and ((Q(x) or R(z)) or P(x)), ((Q(x) or (R(y) and R(z))) or P(x)).cnf())
         assertEquals(((P(x1) or Q(x1)) and (P(x1) or Q(x2))) and ((P(x2) or Q(x1)) and (P(x2) or Q(x2))), ((P(x1) and P(x2)) or (Q(x1) and Q(x2))).cnf())
@@ -620,11 +705,16 @@ internal class TransformTest {
                 P(x) implies P(y),
                 P(x) implies Q(y),
                 Q(x) implies P(y),
-                Q(x) implies Q(y)
-        ), (P(x) or Q(x) implies (P(y) and Q(y))).geometric())
+                Q(x) implies Q(y),
+                (P(y) and Q(y)) implies (P(x) or Q(x))
+        ), (P(x) or Q(x) iff (P(y) and Q(y))).geometric())
         assertEquals(setOf(
                 P(x) implies Q(x, sk_0(x))
         ), (forall(x) { P(x) implies (exists(y) { Q(x, y) }) }).geometric())
+        assertEquals(setOf(
+                P(x) implies Q(x, sk_0(x)),
+                Q(x, y_1) implies P(x)
+        ), (forall(x) { P(x) iff (exists(y) { Q(x, y) }) }).geometric())
         assertEquals(setOf(
                 P(x) implies (Q(sk_0(x)) or P(sk_1(x))),
                 P(x) implies (Q(sk_0(x)) or S(x, sk_1(x))),
@@ -634,6 +724,18 @@ internal class TransformTest {
         assertEquals(setOf(
                 ((P(x) and Q(y)) and R(x, y)) implies S(x, y)
         ), (forall(x, y) { (P(x) and Q(y)) implies (R(x, y) implies S(x, y)) }).geometric())
+        assertEquals(setOf(
+                ((P(x) and Q(y)) and R(x, y)) implies S(x, y),
+                ((P(x) and Q(y)) and S(x, y)) implies R(x, y),
+                TRUE implies ((R(x, y) or S(x, y)) or P(x)),
+                TRUE implies ((R(x, y) or S(x, y)) or Q(y)),
+                R(x, y) implies (R(x, y) or P(x)),
+                R(x, y) implies (R(x, y) or Q(y)),
+                S(x, y) implies (S(x, y) or P(x)),
+                S(x, y) implies (S(x, y) or Q(y)),
+                (S(x, y) and R(x, y)) implies P(x),
+                (S(x, y) and R(x, y)) implies Q(y)
+        ), (forall(x, y) { (P(x) and Q(y)) iff (R(x, y) iff S(x, y)) }).geometric())
         assertEquals(setOf(
                 P(x_1) implies Q(x)
         ), (exists(x) { P(x) } implies Q(x)).geometric())

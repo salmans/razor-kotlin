@@ -776,6 +776,17 @@ class BasicTest {
         assertEquals("Domain: {e#0}\n" +
                 "Facts: \n" +
                 "'sk#0, 'e, f[e#0, e#0], i[e#0] -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy42.raz").readText())))
+        assertEquals("Domain: {e#0, e#1}\n" +
+                "Facts: <P(e#0)>, <Q(e#1)>, <P(e#1)>, <Q(e#0)>\n" +
+                "'a -> e#0\n" +
+                "'b -> e#1", printModels(solveBasic(this.javaClass.getResource("/core/thy43.raz").readText())))
+        assertEquals("Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <Q(e#0)>\n" +
+                "'a -> e#0\n" +
+                "-- -- -- -- -- -- -- -- -- --\n" +
+                "Domain: {e#0}\n" +
+                "Facts: <P(e#0)>, <R(e#0)>\n" +
+                "'a -> e#0", printModels(solveBasic(this.javaClass.getResource("/core/thy44.raz").readText())))
     }
 
     @Test

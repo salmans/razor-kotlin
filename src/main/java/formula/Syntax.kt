@@ -178,6 +178,16 @@ data class Implies(val left: Formula, val right: Formula) : Formula() {
 }
 
 /**
+ * Bi-implication
+ * e.g. P(x) ⇔ Q(x)
+ */
+data class Iff(val left: Formula, val right: Formula) : Formula() {
+    override val freeVars by lazy { this.left.freeVars + this.right.freeVars }
+
+    override fun toString(): String = "${left.printParens()} ⇔ ${right.printParens()}"
+}
+
+/**
  * Exists
  * e.g. ∃ x.P(x)
  */
