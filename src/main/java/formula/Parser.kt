@@ -159,7 +159,7 @@ fun tokenize(source: String): List<Token> {
     return tokens
 }
 
-fun expect(type: TokenType) = { tokens: Sequence<Token> ->
+private fun expect(type: TokenType) = { tokens: Sequence<Token> ->
     tokens.firstOrNull().let {
         when {
             it == null -> Either.left(UnexpectedEndOfInputFailure(type.toString())) to tokens
@@ -171,12 +171,12 @@ fun expect(type: TokenType) = { tokens: Sequence<Token> ->
     }
 }
 
-fun <R> parens(parser: Parser<Token, R>): Parser<Token, R> = between(expect(TokenType.LPAREN), expect(TokenType.RPAREN), parser)
+private fun <R> parens(parser: Parser<Token, R>): Parser<Token, R> = between(expect(TokenType.LPAREN), expect(TokenType.RPAREN), parser)
 
 /**
  * Parses the input source and returns a first-order theory.
  */
-fun parse(source: String): Theory {
+private fun parse(source: String): Theory {
     val tokens = tokenize(source).asSequence()
     return manyTill(parseFormula(), expect(TokenType.END))(tokens).let {
         when (it.first) {
@@ -235,13 +235,12 @@ fun parseFormula(): Parser<Token, Formula> = run {
     chainl1(parseQuantified(), (expect(TokenType.IMPLIES) or expect(TokenType.IFF)){ makeFormula(it) })
 }
 
-
 /**
  * Qualified = EXISTS Vars DOT Qualified
  * Qualified = FORALL Vars DOT Qualified
  * Qualified = Or
  */
-fun parseQuantified(): Parser<Token, Formula> = run {
+private fun parseQuantified(): Parser<Token, Formula> = run {
     fun makeFormula(quantifier: Token, vars: Vars, formula: Formula): Parser<Token, Formula> {
         return when (quantifier.type) {
             TokenType.EXISTS -> give<Token, Formula>(Exists(vars, formula))
@@ -265,12 +264,12 @@ fun parseQuantified(): Parser<Token, Formula> = run {
 /**
  * Vars = Var (COMMA Var)*
  */
-fun parseVars(): Parser<Token, Vars> = sepBy1(parseVar(), expect(TokenType.COMMA))
+private fun parseVars(): Parser<Token, Vars> = sepBy1(parseVar(), expect(TokenType.COMMA))
 
 /**
  * Var = LOWER
  */
-fun parseVar(): Parser<Token, Var> = run {
+private fun parseVar(): Parser<Token, Var> = run {
     fun makeVar(name: String): Parser<Token, Var> = give(Var(name))
 
     (expect(TokenType.LOWER)) { makeVar(it.token) }
@@ -279,7 +278,7 @@ fun parseVar(): Parser<Token, Var> = run {
 /**
  * Const = APOSTROPHE LOWER
  */
-fun parseConst(): Parser<Token, Const> = run {
+private fun parseConst(): Parser<Token, Const> = run {
     fun makeConst(name: String): Parser<Token, Const> = give(Const(name))
 
     (expect(TokenType.APOSTROPHE) right expect(TokenType.LOWER)) { makeConst(it.token) }
@@ -289,7 +288,7 @@ fun parseConst(): Parser<Token, Const> = run {
  * Or = And OR Quantified
  * Or = And
  */
-fun parseOr(): Parser<Token, Formula> = run {
+private fun parseOr(): Parser<Token, Formula> = run {
     fun makeFormula(l: Formula, r: Formula): Parser<Token, Formula> = give(Or(l, r))
 
     fun helper(l: Formula): Parser<Token, Formula> = attempt((expect(TokenType.OR) right parseQuantified()) { r ->
@@ -304,7 +303,7 @@ fun parseOr(): Parser<Token, Formula> = run {
  * And = Not AND And
  * And = Not
  */
-fun parseAnd(): Parser<Token, Formula> = run {
+private fun parseAnd(): Parser<Token, Formula> = run {
     fun makeFormula(l: Formula, r: Formula): Parser<Token, Formula> = give(And(l, r))
 
     fun helper(l: Formula): Parser<Token, Formula> = attempt(expect(TokenType.AND) right (parseAnd() or parseQuantified()) { r ->
@@ -318,7 +317,7 @@ fun parseAnd(): Parser<Token, Formula> = run {
  * Not = NOT Quantified
  * Not = Atom
  */
-fun parseNot(): Parser<Token, Formula> = { tokens: Sequence<Token> ->
+private fun parseNot(): Parser<Token, Formula> = { tokens: Sequence<Token> ->
     fun makeFormula(formula: Formula): Parser<Token, Formula> = give<Token, Formula>(Not(formula))
 
     ((expect(TokenType.NOT) right (parseNot() or parseQuantified()) { makeFormula(it) }) or parseAtom())(tokens)
@@ -332,11 +331,9 @@ fun parseNot(): Parser<Token, Formula> = { tokens: Sequence<Token> ->
  * Atom = UPPER LPAREN Terms RPAREN
  * Atom = LPAREN Formula RPAREN
  */
-fun parseAtom(): Parser<Token, Formula> = run {
+private fun parseAtom(): Parser<Token, Formula> = run {
     fun makeAtomic(pred: Pred, terms: Terms): Parser<Token, Formula> = give<Token, Formula>(Atom(pred, terms))
     fun atomicHelper(pred: Pred): Parser<Token, Formula> = (parens(parseTerms())) { terms -> makeAtomic(pred, terms) }
-
-    //fun atomic(): Parser<Token, Formula> =
 
     choice(listOf(
             expect(TokenType.TRUE) right give(TRUE),
@@ -346,7 +343,7 @@ fun parseAtom(): Parser<Token, Formula> = run {
             parens(parseFormula())))
 }
 
-fun parseEquals(): Parser<Token, Equals> = run {
+private fun parseEquals(): Parser<Token, Equals> = run {
     fun makeEquals(first: Term, second: Term): Parser<Token, Equals> = give(Equals(first, second))
 
     ((parseTerm() left expect(TokenType.EQUALS)) and parseTerm()) { makeEquals(it.first, it.second) }
@@ -355,14 +352,14 @@ fun parseEquals(): Parser<Token, Equals> = run {
 /**
  * Terms = Term*
  */
-fun parseTerms(): Parser<Token, Terms> = sepEndBy(parseTerm(), expect(TokenType.COMMA))
+private fun parseTerms(): Parser<Token, Terms> = sepEndBy(parseTerm(), expect(TokenType.COMMA))
 
 /**
  * Term = Var
  * Term = Const
  * Term = LOWER LPAREN Terms RPAREN
  */
-fun parseTerm(): Parser<Token, Term> = { tokens: Sequence<Token> ->
+private fun parseTerm(): Parser<Token, Term> = { tokens: Sequence<Token> ->
     fun makeComplex(func: Func, terms: Terms): Parser<Token, Term> = give(App(func, terms))
 
     fun complex(): Parser<Token, Term> =
