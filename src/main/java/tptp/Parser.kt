@@ -8,6 +8,11 @@ import java.util.*
 import java.util.regex.Pattern
 
 
+const val RE_NUMERIC = "[0-9]"
+const val RE_NON_ZERO_NUMERIC = "[1-9]"
+const val RE_DECIMAL = "([0]|$RE_NON_ZERO_NUMERIC$RE_NUMERIC*)"
+const val RE_POSITIVE_DECIMAL = "($RE_NON_ZERO_NUMERIC$RE_NUMERIC*)"
+const val RE_DECIMAL_FRACTION = "$RE_DECIMAL\\.$RE_NUMERIC$RE_NUMERIC*"
 const val SQ_CHAR = "([\\x28-\\x2E\\x32-\\x85\\x87-\\xB0]|[^\\\\][^\\'])"
 const val DO_CHAR = "([\\x28-\\x2E\\x32-\\x85\\x87-\\xB0]|[^\\\\][^\\'])"
 
@@ -69,6 +74,18 @@ enum class TokenType(vararg regex: String) {
     },
     COMMA(",") {
         override fun toString(): String = ","
+    },
+    UNSIGNED_RATIONAL("$RE_DECIMAL\\/$RE_POSITIVE_DECIMAL") {
+        override fun toString(): String = "<exponent>"
+    },
+    DECIMAL_EXPONENT("($RE_DECIMAL|$RE_DECIMAL_FRACTION)[Ee]([\\+\\-]?$RE_NUMERIC$RE_NUMERIC*)") {
+        override fun toString(): String = "<exponent>"
+    },
+    DECIMAL_FRACTION(RE_DECIMAL_FRACTION) {
+        override fun toString(): String = "<decimal_fraction>"
+    },
+    DECIMAL(RE_DECIMAL) {
+        override fun toString(): String = "<decimal>"
     },
     DOT("\\.") {
         override fun toString(): String = "."
@@ -210,18 +227,17 @@ fun tokenize(source: String): List<Token> {
 }
 
 
-fun expect(type: TokenType) = { tokens: Sequence<Token> ->
+fun expect(type: TokenType, token: String? = null) = { tokens: Sequence<Token> ->
     tokens.firstOrNull().let {
         when {
             it == null -> Either.left(UnexpectedEndOfInputFailure(type.toString())) to tokens
-            it.type == type -> Either.right(it) to tokens.drop(1)
+            it.type == type && (if (token != null) it.token == token else true) -> Either.right(it) to tokens.drop(1)
             else -> {
-                Either.left(UnexpectedTokenFailure(Token(type, "", Token.Location(0, 0)))) to tokens
+                Either.left(UnexpectedTokenFailure(Token(type, token ?: "", Token.Location(0, 0)))) to tokens
             }
         }
     }
 }
-
 
 fun <R> parens(parser: Parser<Token, R>): Parser<Token, R> =
         between(expect(TokenType.LPAREN), expect(TokenType.RPAREN), parser)
@@ -291,11 +307,27 @@ fun pVariable(): Parser<Token, Var> = run {
     (expect(TokenType.UPPER_WORD)) { makeVariable(it.token) }
 }
 
-fun pReal(): Parser<Token, String> = { _ -> TODO() }
+fun pReal(): Parser<Token, String> = run {
+    fun makeInteger(sign: String?, i: String): Parser<Token, String> = give("${sign ?: ""}$i")
 
-fun pRational(): Parser<Token, String> = { _ -> TODO() }
+    (optionMaybe(pSign()) and pUnsignedReal()) { (s, i) -> makeInteger(s, i) }
+}
 
-fun pUnsignedInteger(): Parser<Token, String> = { _ -> TODO() }
+fun pUnsignedReal(): Parser<Token, String> = run {
+    fun makeString(token: Token): Parser<Token, String> = give(token.token)
+    (expect(TokenType.DECIMAL_FRACTION) or expect(TokenType.DECIMAL_EXPONENT)) { makeString(it) }
+}
+
+fun pRational(): Parser<Token, String> = run {
+    fun makeInteger(sign: String?, i: String): Parser<Token, String> = give("${sign ?: ""}$i")
+
+    (optionMaybe(pSign()) and pUnsignedRational()) { (s, i) -> makeInteger(s, i) }
+}
+
+fun pUnsignedRational(): Parser<Token, String> = run {
+    fun makeString(t: Token): Parser<Token, String> = give(t.token)
+    (expect(TokenType.UNSIGNED_RATIONAL)){ makeString(it) }
+}
 
 fun pSign(): Parser<Token, String> = run {
     fun makeString(t: Token): Parser<Token, String> = give(t.token)
@@ -307,6 +339,11 @@ fun pInteger(): Parser<Token, String> = run {
     fun makeInteger(sign: String?, i: String): Parser<Token, String> = give("${sign ?: ""}$i")
 
     (optionMaybe(pSign()) and pUnsignedInteger()) { (s, i) -> makeInteger(s, i) }
+}
+
+fun pUnsignedInteger(): Parser<Token, String> = run {
+    fun makeString(t: Token): Parser<Token, String> = give(t.token)
+    (expect(TokenType.DECIMAL)) { makeString(it) }
 }
 
 fun pNumber(): Parser<Token, String> = pInteger() or pRational() or pReal()
@@ -474,14 +511,6 @@ fun pFormulaRole(): Parser<Token, String> = run {
 private val pAnnotations: Parser<Token, Unit> = optional(expect(TokenType.COMMA) right pSource() right pOptionalInfo()) right give(Unit)
 
 fun pFOFFormulaTuple(): Parser<Token, Unit> = bracks(sepBy(pFOFLogicFormula(), expect(TokenType.COMMA))) right give(Unit)
-
-enum class BinaryConnective {
-    IMPLIES,
-    IMPLIED,
-    IFF,
-    NAND,
-    NOR
-}
 
 fun pFOFVariableList(): Parser<Token, List<Var>> = sepBy1(pVariable(), expect(TokenType.COMMA))
 
