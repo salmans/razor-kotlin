@@ -223,7 +223,7 @@ private fun printToken(token: Token?): String = if (token != null) {
 /**
  * Formula = Qualified (IMPLIES Qualified)*
  */
-fun parseFormula(): Parser<Token, Formula> = run {
+private fun parseFormula(): Parser<Token, Formula> = run {
     fun makeFormula(connective: Token): Parser<Token, (Formula, Formula) -> Formula> {
         return if (connective.type == TokenType.IFF) {
             give({ l, r -> Iff(l, r) })

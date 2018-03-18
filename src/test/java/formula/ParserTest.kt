@@ -230,10 +230,6 @@ internal class TokenizerTest {
 
 internal class ParserTest {
     @Test
-    fun tempTest() {
-    }
-
-    @Test
     fun parse() {
         assertTheoriesEqual(actual = "".parseTheory())
         assertTheoriesEqual(TRUE

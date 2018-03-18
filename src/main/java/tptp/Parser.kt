@@ -227,7 +227,7 @@ fun tokenize(source: String): List<Token> {
 }
 
 
-fun expect(type: TokenType, token: String? = null) = { tokens: Sequence<Token> ->
+private fun expect(type: TokenType, token: String? = null) = { tokens: Sequence<Token> ->
     tokens.firstOrNull().let {
         when {
             it == null -> Either.left(UnexpectedEndOfInputFailure(type.toString())) to tokens
@@ -239,13 +239,23 @@ fun expect(type: TokenType, token: String? = null) = { tokens: Sequence<Token> -
     }
 }
 
-fun <R> parens(parser: Parser<Token, R>): Parser<Token, R> =
+fun parse(source: String): Theory {
+    val tokens = tokenize(source).asSequence()
+    return pTPTPFile()(tokens).let {
+        when (it.first) {
+            is Either.Left -> throw reportError(it.first.left()!!, it.second.firstOrNull())
+            is Either.Right -> Theory(it.first.right()!!)
+        }
+    }
+}
+
+private fun <R> parens(parser: Parser<Token, R>): Parser<Token, R> =
         between(expect(TokenType.LPAREN), expect(TokenType.RPAREN), parser)
 
-fun <R> bracks(parser: Parser<Token, R>): Parser<Token, R> =
+private fun <R> bracks(parser: Parser<Token, R>): Parser<Token, R> =
         between(expect(TokenType.LBRACKET), expect(TokenType.RBRACKET), parser)
 
-fun <T, R> chainl2(parser: Parser<T, R>, operator: Parser<T, (R, R) -> R>): Parser<T, R> = run {
+private fun <T, R> chainl2(parser: Parser<T, R>, operator: Parser<T, (R, R) -> R>): Parser<T, R> = run {
     fun helper(l: R, o: (R, R) -> R, r: R): Parser<T, R> = give(o(l, r))
 
     (parser and operator and chainl1(parser, operator)) { (lo, r) ->
@@ -253,7 +263,7 @@ fun <T, R> chainl2(parser: Parser<T, R>, operator: Parser<T, (R, R) -> R>): Pars
     }
 }
 
-fun reportError(value: ParserFailure, found: Token?): Exception = when (value) {
+private fun reportError(value: ParserFailure, found: Token?): Exception = when (value) {
     is UnexpectedTokenFailure<*> -> {
         val tokens = value.tokens
         val message = if (tokens.size == 1) {
@@ -277,78 +287,80 @@ fun reportError(value: ParserFailure, found: Token?): Exception = when (value) {
 
 private fun printToken(token: Token?): String = token?.token ?: "unknown"
 
-fun pDistinctObject(): Parser<Token, Unit> = expect(TokenType.DOUBLE_QUOTED) right give(Unit)
+private fun pDistinctObject(): Parser<Token, Unit> = expect(TokenType.DOUBLE_QUOTED) right give(Unit)
 
-fun pAtomicWord(): Parser<Token, Token> = expect(TokenType.LOWER_WORD) or expect(TokenType.SINGLE_QUOTED)
+private fun pAtomicWord(): Parser<Token, Token> = expect(TokenType.LOWER_WORD) or expect(TokenType.SINGLE_QUOTED)
 
-fun pName(): Parser<Token, Token> = pAtomicWord() /* TODO or pInteger */
+private fun pName(): Parser<Token, String> = run {
+    fun makeString(t: Token): Parser<Token, String> = give(t.token)
+    (pAtomicWord()){ makeString(it) } or pInteger()
+}
 
-fun pGeneralData(): Parser<Token, Unit> = {
+private fun pGeneralData(): Parser<Token, Unit> = {
     ((pAtomicWord() right give(Unit)) or pGeneralFunction() or
             (pVariable() right give(Unit)) or (pNumber() right give(Unit)) or
             pDistinctObject() or pFormulaData())(it)
 }
 
-fun pGeneralTerm(): Parser<Token, Unit> = {
+private fun pGeneralTerm(): Parser<Token, Unit> = {
     (pGeneralData() or
             (pGeneralData() right expect(TokenType.COLON) right pGeneralTerm()) or
             pGeneralList())(it)
 }
 
-fun pGeneralList(): Parser<Token, Unit> = bracks(optional(pGeneralTerms()))
+private fun pGeneralList(): Parser<Token, Unit> = bracks(optional(pGeneralTerms()))
 
-fun pGeneralTerms(): Parser<Token, Unit> = sepBy1(pGeneralTerm(), expect(TokenType.COMMA)) right give(Unit)
+private fun pGeneralTerms(): Parser<Token, Unit> = sepBy1(pGeneralTerm(), expect(TokenType.COMMA)) right give(Unit)
 
-fun pGeneralFunction(): Parser<Token, Unit> = pAtomicWord() right parens(pGeneralTerms())
+private fun pGeneralFunction(): Parser<Token, Unit> = pAtomicWord() right parens(pGeneralTerms())
 
-fun pVariable(): Parser<Token, Var> = run {
+private fun pVariable(): Parser<Token, Var> = run {
     fun makeVariable(name: String): Parser<Token, Var> = give(Var(name))
 
     (expect(TokenType.UPPER_WORD)) { makeVariable(it.token) }
 }
 
-fun pReal(): Parser<Token, String> = run {
+private fun pReal(): Parser<Token, String> = run {
     fun makeInteger(sign: String?, i: String): Parser<Token, String> = give("${sign ?: ""}$i")
 
     (optionMaybe(pSign()) and pUnsignedReal()) { (s, i) -> makeInteger(s, i) }
 }
 
-fun pUnsignedReal(): Parser<Token, String> = run {
+private fun pUnsignedReal(): Parser<Token, String> = run {
     fun makeString(token: Token): Parser<Token, String> = give(token.token)
     (expect(TokenType.DECIMAL_FRACTION) or expect(TokenType.DECIMAL_EXPONENT)) { makeString(it) }
 }
 
-fun pRational(): Parser<Token, String> = run {
+private fun pRational(): Parser<Token, String> = run {
     fun makeInteger(sign: String?, i: String): Parser<Token, String> = give("${sign ?: ""}$i")
-
     (optionMaybe(pSign()) and pUnsignedRational()) { (s, i) -> makeInteger(s, i) }
 }
 
-fun pUnsignedRational(): Parser<Token, String> = run {
+private fun pUnsignedRational(): Parser<Token, String> = run {
     fun makeString(t: Token): Parser<Token, String> = give(t.token)
     (expect(TokenType.UNSIGNED_RATIONAL)){ makeString(it) }
 }
 
-fun pSign(): Parser<Token, String> = run {
+private fun pSign(): Parser<Token, String> = run {
     fun makeString(t: Token): Parser<Token, String> = give(t.token)
 
     (expect(TokenType.PLUS) or expect(TokenType.MINUS)) { makeString(it) }
 }
 
-fun pInteger(): Parser<Token, String> = run {
+private fun pInteger(): Parser<Token, String> = run {
     fun makeInteger(sign: String?, i: String): Parser<Token, String> = give("${sign ?: ""}$i")
 
     (optionMaybe(pSign()) and pUnsignedInteger()) { (s, i) -> makeInteger(s, i) }
 }
 
-fun pUnsignedInteger(): Parser<Token, String> = run {
+private fun pUnsignedInteger(): Parser<Token, String> = run {
     fun makeString(t: Token): Parser<Token, String> = give(t.token)
     (expect(TokenType.DECIMAL)) { makeString(it) }
 }
 
-fun pNumber(): Parser<Token, String> = pInteger() or pRational() or pReal()
+private fun pNumber(): Parser<Token, String> = pInteger() or pRational() or pReal()
 
-fun pFOFUnitaryFormula(): Parser<Token, Formula> = {
+private fun pFOFUnitaryFormula(): Parser<Token, Formula> = {
     (pFOFQuantifiedFormula() or pFOFUnaryFormula() or pFOFAtomicFormula() or parens(pFOFLogicFormula()))(it)
 }
 
@@ -370,7 +382,7 @@ fun pFOFQuantifiedFormula(): Parser<Token, Formula> = {
     helper()(it)
 }
 
-fun pFOFBinaryNonAssoc(): Parser<Token, Formula> = {
+private fun pFOFBinaryNonAssoc(): Parser<Token, Formula> = {
     fun operator(): Parser<Token, (Formula, Formula) -> Formula> = run {
         fun makeIFF(): Parser<Token, (Formula, Formula) -> Formula> = give({ l, r -> Iff(l, r) })
         fun makeIMPLIES(): Parser<Token, (Formula, Formula) -> Formula> = give({ l, r -> Implies(l, r) })
@@ -394,24 +406,24 @@ fun pFOFBinaryNonAssoc(): Parser<Token, Formula> = {
     chainl2(pFOFUnitaryFormula(), operator())(it)
 }
 
-fun pFOFAndFormula(): Parser<Token, Formula> = chainl2(pFOFUnitaryFormula(), expect(TokenType.AND) right give({ l, r -> And(l, r) }))
+private fun pFOFAndFormula(): Parser<Token, Formula> = chainl2(pFOFUnitaryFormula(), expect(TokenType.AND) right give({ l, r -> And(l, r) }))
 
-fun pFOFOrFormula(): Parser<Token, Formula> = chainl2(pFOFUnitaryFormula(), expect(TokenType.OR) right give({ l, r -> Or(l, r) }))
+private fun pFOFOrFormula(): Parser<Token, Formula> = chainl2(pFOFUnitaryFormula(), expect(TokenType.OR) right give({ l, r -> Or(l, r) }))
 
-fun pFOFBinaryAssoc(): Parser<Token, Formula> = {
+private fun pFOFBinaryAssoc(): Parser<Token, Formula> = {
     (attempt(pFOFOrFormula()) or pFOFAndFormula())(it)
 }
 
-fun pFOFBinaryFormula(): Parser<Token, Formula> = {
+private fun pFOFBinaryFormula(): Parser<Token, Formula> = {
     (attempt(pFOFBinaryNonAssoc()) or attempt(pFOFBinaryAssoc()))(it)
 }
 
 
-fun pFOFLogicFormula(): Parser<Token, Formula> = {
+private fun pFOFLogicFormula(): Parser<Token, Formula> = {
     (pFOFBinaryFormula() or pFOFUnitaryFormula())(it)
 }
 
-fun pFOFUnaryFormula(): Parser<Token, Formula> = {
+private fun pFOFUnaryFormula(): Parser<Token, Formula> = {
     fun makeNot(formula: Formula): Parser<Token, Formula> = give(Not(formula))
 
     // the compiler is buggy!
@@ -420,7 +432,7 @@ fun pFOFUnaryFormula(): Parser<Token, Formula> = {
     helper()(it)
 }
 
-fun pFOFPlainTerm(): Parser<Token, Term> = {
+private fun pFOFPlainTerm(): Parser<Token, Term> = {
     fun makeConstant(t: Token): Parser<Token, Const> = give(Const(t.token))
     fun makeFunctionTerm(f: Token, args: Terms): Parser<Token, Term> = give(App(Func(f.token), args))
     // stupid compiler
@@ -434,13 +446,13 @@ fun pFOFPlainTerm(): Parser<Token, Term> = {
     helper()(it)
 }
 
-fun pFOFFunctionTerm(): Parser<Token, Term> = pFOFPlainTerm() // TODO or pFOFDefinedTerm or pFOFSystemTerm
+private fun pFOFFunctionTerm(): Parser<Token, Term> = pFOFPlainTerm() or pFOFDefinedTerm() // TODO  or pFOFSystemTerm
 
-fun pFOFTerm(): Parser<Token, Term> = pFOFFunctionTerm() or pVariable()
+private fun pFOFTerm(): Parser<Token, Term> = pFOFFunctionTerm() or pVariable()
 
-fun pFOFArguments(): Parser<Token, Terms> = sepBy1(pFOFTerm(), expect(TokenType.COMMA))
+private fun pFOFArguments(): Parser<Token, Terms> = sepBy1(pFOFTerm(), expect(TokenType.COMMA))
 
-fun pFOFPlainAtomicFormula(): Parser<Token, Formula> = run {
+private fun pFOFPlainAtomicFormula(): Parser<Token, Formula> = run {
     fun makeFunctionTerm(p: Token, args: Terms): Parser<Token, Atom> = give(Atom(Pred(p.token), args))
 
     (pAtomicWord() and option(emptyList(), parens(pFOFArguments()))){ (f, args) ->
@@ -448,9 +460,9 @@ fun pFOFPlainAtomicFormula(): Parser<Token, Formula> = run {
     }
 }
 
-fun pFOFAtomicFormula(): Parser<Token, Formula> = pFOFPlainAtomicFormula()// TODO or pFOFDefinedAtomicFormula or pFOFSystemAtomicFormula
+private fun pFOFAtomicFormula(): Parser<Token, Formula> = pFOFPlainAtomicFormula() or pFOFDefinedAtomicFormula() // TODO or pFOFSystemAtomicFormula
 
-fun pFOFSequent(): Parser<Token, Formula> = {
+private fun pFOFSequent(): Parser<Token, Formula> = {
     // TODO
     fun makeSequence(l: Unit, r: Unit): Parser<Token, Formula> = give(TRUE)
 
@@ -459,40 +471,40 @@ fun pFOFSequent(): Parser<Token, Formula> = {
     } or parens(pFOFSequent()))(it)
 }
 
-fun pFOFFormula(): Parser<Token, Formula> = pFOFLogicFormula() or pFOFSequent()
+private fun pFOFFormula(): Parser<Token, Formula> = pFOFLogicFormula() or pFOFSequent()
 
-fun pFormulaData(): Parser<Token, Unit> = expect(TokenType.DOLLAR_FOF) right parens(pFOFFormula()) right give(Unit)
+private fun pFormulaData(): Parser<Token, Unit> = expect(TokenType.DOLLAR_FOF) right parens(pFOFFormula()) right give(Unit)
 
-fun pUsefulInfo(): Parser<Token, Unit> = pGeneralList()
+private fun pUsefulInfo(): Parser<Token, Unit> = pGeneralList()
 
-fun pOptionalInfo(): Parser<Token, Unit> = optional(expect(TokenType.COMMA) right pUsefulInfo())
+private fun pOptionalInfo(): Parser<Token, Unit> = optional(expect(TokenType.COMMA) right pUsefulInfo())
 
-fun pDagSource(): Parser<Token, Unit> = { _ ->
+private fun pDagSource(): Parser<Token, Unit> = { _ ->
     TODO()
 }
 
-fun pInternalSource(): Parser<Token, Unit> = { _ ->
+private fun pInternalSource(): Parser<Token, Unit> = { _ ->
     TODO()
 }
 
-fun pExternalSource(): Parser<Token, Unit> = { _ ->
+private fun pExternalSource(): Parser<Token, Unit> = { _ ->
     TODO()
 }
 
-fun pSources(): Parser<Token, Unit> = sepBy1(pSource(), expect(TokenType.COMMA)) right give(Unit)
+private fun pSources(): Parser<Token, Unit> = sepBy1(pSource(), expect(TokenType.COMMA)) right give(Unit)
 
-fun pSource(): Parser<Token, Unit> = {
+private fun pSource(): Parser<Token, Unit> = {
     (pDagSource() or pInternalSource() or
             pExternalSource() or (expect(TokenType.UNKNOWN) right give(Unit)) or bracks(pSources()))(it)
 }
 
 fun pTPTPFile(): Parser<Token, List<Formula>> = many(pTPTPInput())
 
-fun pTPTPInput(): Parser<Token, Formula> = pAnnotatedFormula() /*TODO or pInclude() */
+private fun pTPTPInput(): Parser<Token, Formula> = pAnnotatedFormula() /*TODO or pInclude() */
 
-fun pAnnotatedFormula(): Parser<Token, Formula> = pFOFAnnotated() /*TODO or pCNFAnnotated() */
+private fun pAnnotatedFormula(): Parser<Token, Formula> = pFOFAnnotated() /*TODO or pCNFAnnotated() */
 
-fun pFOFAnnotated(): Parser<Token, Formula> =
+private fun pFOFAnnotated(): Parser<Token, Formula> =
         expect(TokenType.FOF) right
                 parens(
                         pName() right
@@ -502,7 +514,7 @@ fun pFOFAnnotated(): Parser<Token, Formula> =
                                 pFOFFormula() /*TODO left pAnnotations*/) left
                 expect(TokenType.DOT)
 
-fun pFormulaRole(): Parser<Token, String> = run {
+private fun pFormulaRole(): Parser<Token, String> = run {
     fun makeString(token: Token): Parser<Token, String> = give(token.token)
 
     (expect(TokenType.LOWER_WORD)){ makeString(it) }
@@ -510,17 +522,17 @@ fun pFormulaRole(): Parser<Token, String> = run {
 
 private val pAnnotations: Parser<Token, Unit> = optional(expect(TokenType.COMMA) right pSource() right pOptionalInfo()) right give(Unit)
 
-fun pFOFFormulaTuple(): Parser<Token, Unit> = bracks(sepBy(pFOFLogicFormula(), expect(TokenType.COMMA))) right give(Unit)
+private fun pFOFFormulaTuple(): Parser<Token, Unit> = bracks(sepBy(pFOFLogicFormula(), expect(TokenType.COMMA))) right give(Unit)
 
-fun pFOFVariableList(): Parser<Token, List<Var>> = sepBy1(pVariable(), expect(TokenType.COMMA))
+private fun pFOFVariableList(): Parser<Token, List<Var>> = sepBy1(pVariable(), expect(TokenType.COMMA))
 
-fun pFOFInfixUnary(): Parser<Token, Formula> = run {
+private fun pFOFInfixUnary(): Parser<Token, Formula> = run {
     fun makeFormula(t1: Term, t2: Term): Parser<Token, Formula> = give<Token, Formula>(Not(Equals(t1, t2)))
 
     (pFOFTerm() left expect(TokenType.NOT_EQUALS) and pFOFTerm()){ (l, r) -> makeFormula(l, r) }
 }
 
-fun pFOFSystemTerm(): Parser<Token, Term> = run {
+private fun pFOFSystemTerm(): Parser<Token, Term> = run {
     fun makeConstant(t: Token): Parser<Token, Const> = give(Const(t.token))
     fun makeFunctionTerm(f: Token, args: Terms): Parser<Token, Term> = give(App(Func(f.token), args))
     (expect(TokenType.DOLLAR_WORD)){
@@ -530,45 +542,67 @@ fun pFOFSystemTerm(): Parser<Token, Term> = run {
     }
 }
 
-// TODO
-fun pDefinedTerm(): Parser<Token, Term> = (pNumber() or pDistinctObject()) right give(Var("x"))
+// TODO How are they interpreted? Do we need them?
+private fun pDefinedTerm(): Parser<Token, Term> = (pNumber() or pDistinctObject()) right give(Var("x"))
 
-fun pAtomicDefinedWord(): Parser<Token, String> = run {
+private fun pAtomicDefinedWord(): Parser<Token, String> = run {
     fun makeString(token: Token): Parser<Token, String> = give(token.token)
 
     (expect(TokenType.DOLLAR_WORD)) { makeString(it) }
 }
 
-fun pFOFDefinedPlainTerm(): Parser<Token, Term> = run {
+private fun pFOFDefinedPlainTerm(): Parser<Token, Term> = {
     fun makeConstant(t: String): Parser<Token, Const> = give(Const(t))
     fun makeFunctionTerm(f: String, args: Terms): Parser<Token, Term> = give(App(Func(f), args))
-    (pAtomicDefinedWord()){
+    ((pAtomicDefinedWord()){
         makeConstant(it)
     } or (pAtomicDefinedWord() and parens(pFOFArguments())){ (f, args) ->
         makeFunctionTerm(f, args)
+    })(it)
+}
+
+private fun pFOFDefinedAtomicTerm(): Parser<Token, Term> = pFOFDefinedPlainTerm()
+
+private fun pFOFDefinedTerm(): Parser<Token, Term> = pDefinedTerm() or pFOFDefinedAtomicTerm()
+
+private fun pFOFSystemAtomicFormula(): Parser<Token, Formula> = { token ->
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+}
+
+private fun pFOFDefinedAtomicFormula(): Parser<Token, Formula> = pFOFDefinedPlainFormula() or pFOFDefinedInfixFormula()
+
+fun pFOFDefinedPlainFormula(): Parser<Token, Formula> = run {
+    fun makeProposition(t: String): Parser<Token, Formula> = when (t) {
+        "\$true" -> give(Top)
+        "\$false" -> give(Bottom)
+        else -> give(Atom(Pred(t))) // TODO make error
+    }
+
+    fun makePredicate(f: String, args: Terms): Parser<Token, Formula> = when (f) {
+        "\$distinct", "\$less", "\$lesseq", "\$greater", "\$greatereq", "\$is_int", "\$is_rat", "\$box_P", "\$box_i", "\$box_int", "\$box", "\$dia_P", "\$dia_i", "\$dia_int", "\$dia" -> give(Atom(Pred(f), args))
+        else -> give(Atom(Pred(f), args)) // TODO make error
+    }
+
+    (pAtomicDefinedWord()){
+        makeProposition(it)
+    } or (pAtomicDefinedWord() and parens(pFOFArguments())){ (f, args) ->
+        makePredicate(f, args)
     }
 }
 
-fun pFOFDefinedAtomicTerm(): Parser<Token, Term> = pFOFDefinedPlainTerm()
+fun pFOFDefinedInfixFormula(): Parser<Token, Formula> = run {
+    fun makeFormula(t1: Term, t2: Term): Parser<Token, Formula> = give<Token, Formula>(Equals(t1, t2))
 
-fun pFOFDefinedTerm(): Parser<Token, Term> = pDefinedTerm() or pFOFDefinedAtomicTerm()
-
-
-fun pFOFSystemAtomicFormula(): Parser<Token, Formula> = { token ->
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    (pFOFTerm() left expect(TokenType.EQUALS) and pFOFTerm()){ (l, r) -> makeFormula(l, r) }
 }
 
-fun pFOFDefinedAtomicFormula(): Parser<Token, Formula> = { token ->
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-}
-
-fun pFileName(): Parser<Token, String> = run {
+private fun pFileName(): Parser<Token, String> = run {
     fun makeString(token: Token): Parser<Token, String> = give(token.token)
 
     (expect(TokenType.SINGLE_QUOTED)) { makeString(it) }
 }
 
-fun pAtomicSystemWord(): Parser<Token, String> = run {
+private fun pAtomicSystemWord(): Parser<Token, String> = run {
     fun makeString(token: Token): Parser<Token, String> = give(token.token)
 
     (expect(TokenType.DOLLAR_DOLLAR_WORD)) { makeString(it) }
@@ -577,7 +611,5 @@ fun pAtomicSystemWord(): Parser<Token, String> = run {
 
 fun main(args: Array<String>) {
     val source = "fof(prove_reflexivity, conjecture, (! [C] : part_of(C, C)))."
-    val tokens = tokenize(source).asSequence()
-    val result = pFOFAnnotated()(tokens)
-    System.out.println(result.first.either({ reportError(it, result.second.firstOrNull()) }, { it }))
+    System.out.println(parse(source))
 }

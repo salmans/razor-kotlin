@@ -1,5 +1,6 @@
 package tptp
 
+import formula.*
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -138,5 +139,31 @@ class TokenizerTest {
         assertEquals(listOf(token(TokenType.END, "end of input", 1, 12)), tokenize("/*comment*/"))
         assertEquals(listOf(token(TokenType.SINGLE_QUOTED, "'te(st'", 1, 1)
                 , token(TokenType.END, "end of input", 1, 8)), tokenize("'te(st'"))
+    }
+
+    @Test
+    fun parse() {
+        assertTheoriesEqual(TRUE
+                , actual = parse("fof(true, axiom, \$true)."))
+        assertTheoriesEqual(FALSE
+                , actual = parse("fof(false, axiom, \$false)."))
+        assertTheoriesEqual(TRUE
+                , actual = parse("fof(true, axiom, ((((\$true)))))."))
+//        assertTheoriesEqual(P()
+//                , actual = parse("P()"))
+//        assertTheoriesEqual(P(x)
+//                , actual = parse("P(x)"))
+//        assertTheoriesEqual(P(a)
+//                , actual = parse("P('a)"))
+//        assertTheoriesEqual(P(x, y)
+//                , actual = parse("P(x,y)"))
+//        assertTheoriesEqual(P(a, b)
+//                , actual = parse("P('a,'b)"))
+//        assertTheoriesEqual(P(a, x)
+//                , actual = parse("P('a,x)"))
+//        assertTheoriesEqual(P(x, y)
+//                , actual = parse("P(x, y)"))
+//        assertTheoriesEqual(P(x, y)
+//                , actual = parse("P(x,            y     \n)"))
     }
 }
