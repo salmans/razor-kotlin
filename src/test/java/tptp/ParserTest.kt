@@ -149,21 +149,56 @@ class TokenizerTest {
                 , actual = parse("fof(false, axiom, \$false)."))
         assertTheoriesEqual(TRUE
                 , actual = parse("fof(true, axiom, ((((\$true)))))."))
-//        assertTheoriesEqual(P()
-//                , actual = parse("P()"))
-//        assertTheoriesEqual(P(x)
-//                , actual = parse("P(x)"))
-//        assertTheoriesEqual(P(a)
-//                , actual = parse("P('a)"))
-//        assertTheoriesEqual(P(x, y)
-//                , actual = parse("P(x,y)"))
-//        assertTheoriesEqual(P(a, b)
-//                , actual = parse("P('a,'b)"))
-//        assertTheoriesEqual(P(a, x)
-//                , actual = parse("P('a,x)"))
-//        assertTheoriesEqual(P(x, y)
-//                , actual = parse("P(x, y)"))
-//        assertTheoriesEqual(P(x, y)
-//                , actual = parse("P(x,            y     \n)"))
+        assertTheoriesEqual(p()
+                , actual = parse("fof(predicate, axiom, p)."))
+        assertTheoriesEqual(p(X)
+                , actual = parse("fof(predicate, axiom, p(X))."))
+        assertTheoriesEqual(p(a)
+                , actual = parse("fof(predicate, axiom, p(a))."))
+        assertTheoriesEqual(p(X, Y)
+                , actual = parse("fof(predicate, axiom, p(X, Y))."))
+        assertTheoriesEqual(p(a, b)
+                , actual = parse("fof(predicate, axiom, p(a, b))."))
+        assertTheoriesEqual(p(a, X)
+                , actual = parse("fof(predicate, axiom, p(a, X))."))
+        assertTheoriesEqual(p(X, X)
+                , actual = parse("fof(predicate, axiom, p(X, X))."))
+        assertTheoriesEqual(p(X, Y)
+                , actual = parse("fof(predicate, axiom, p(X,            Y     \n))."))
+        assertTheoriesEqual(p(f(X))
+                , actual = parse("fof(predicate, axiom, p(f(X)))."))
+        assertTheoriesEqual(p(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(X)))))))))))))))))))))
+                , actual = parse("fof(predicate, axiom, p(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(X))))))))))))))))))))))."))
+        assertTheoriesEqual(p(f(X, g(Y)), g(f(g(Y))))
+                , actual = parse("fof(predicate, axiom, p(f(X, g(Y)), g(f(g(Y)))))."))
+        assertTheoriesEqual(X equals Y
+                , actual = parse("fof(predicate, axiom, X = Y)."))
+        assertTheoriesEqual(a equals b
+                , actual = parse("fof(predicate, axiom, a = b)."))
+        assertTheoriesEqual(X equals X
+                , actual = parse("fof(predicate, axiom, X = X)."))
+        assertTheoriesEqual(a equals X
+                , actual = parse("fof(predicate, axiom, a = X)."))
+        assertTheoriesEqual(f(X) equals X
+                , actual = parse("fof(predicate, axiom, f(X) = X)."))
+        assertTheoriesEqual(f(X) equals g(h(g(f(X)), Y))
+                , actual = parse("fof(predicate, axiom, f(X) = g(h(g(f(X)), Y)))."))
+        assertTheoriesEqual(p(X) implies q(X)
+                , actual = parse("fof(predicate, axiom, p(X) => q(X))."))
+//        assertTheoriesEqual(p(X) implies ((q(X) implies r(X)) implies s(X))
+//                , actual = parse("fof(predicate, axiom, p(X) => q(X) => r(X) => s(X))."))
+        assertTheoriesEqual(p(X) iff q(X)
+                , actual = parse("fof(predicate, axiom, p(X) <=> q(X))."))
+//        assertTheoriesEqual(p(X) iff ((q(X) iff r(X)) iff s(X))
+//                , actual = parse("fof(predicate, axiom, p(X) <=> q(X) <=> r(X) <=> s(X))."))
+        assertTheoriesEqual(p(X) implies (q(X) iff r(X))
+                , actual = parse("fof(predicate, axiom, p(X) => q(X) <=> r(X)).")) // TODO is this correct?
+        assertTheoriesEqual(p(X) iff (q(X) implies r(X))
+                , actual = parse("fof(predicate, axiom, p(X) <=> q(X) => r(X)).")) // TODO is this correct?
     }
+
+    // failure cases
+//    assertTheoriesEqual(a equals b
+//    , actual = parse("fof(predicate, axiom, \$true = \$false)."))
+
 }

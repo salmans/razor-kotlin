@@ -454,13 +454,15 @@ private fun pFOFArguments(): Parser<Token, Terms> = sepBy1(pFOFTerm(), expect(To
 
 private fun pFOFPlainAtomicFormula(): Parser<Token, Formula> = run {
     fun makeFunctionTerm(p: Token, args: Terms): Parser<Token, Atom> = give(Atom(Pred(p.token), args))
-
-    (pAtomicWord() and option(emptyList(), parens(pFOFArguments()))){ (f, args) ->
+    fun helper(): Parser<Token, Formula> = (pAtomicWord() and option(emptyList(), parens(pFOFArguments()))){ (f, args) ->
         makeFunctionTerm(f, args)
     }
+        helper()
 }
 
-private fun pFOFAtomicFormula(): Parser<Token, Formula> = pFOFPlainAtomicFormula() or pFOFDefinedAtomicFormula() // TODO or pFOFSystemAtomicFormula
+private fun pFOFAtomicFormula(): Parser<Token, Formula> = run {
+    attempt(pFOFDefinedAtomicFormula()) or pFOFPlainAtomicFormula()
+} // TODO or pFOFSystemAtomicFormula
 
 private fun pFOFSequent(): Parser<Token, Formula> = {
     // TODO
@@ -569,13 +571,18 @@ private fun pFOFSystemAtomicFormula(): Parser<Token, Formula> = { token ->
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 }
 
-private fun pFOFDefinedAtomicFormula(): Parser<Token, Formula> = pFOFDefinedPlainFormula() or pFOFDefinedInfixFormula()
+private fun pFOFDefinedAtomicFormula(): Parser<Token, Formula> = run {
+    pFOFDefinedPlainFormula() or pFOFDefinedInfixFormula()
+}
 
-fun pFOFDefinedPlainFormula(): Parser<Token, Formula> = run {
+fun pFOFDefinedPlainFormula(): Parser<Token, Formula> = {
     fun makeProposition(t: String): Parser<Token, Formula> = when (t) {
         "\$true" -> give(Top)
         "\$false" -> give(Bottom)
-        else -> give(Atom(Pred(t))) // TODO make error
+        else -> parserException(UnexpectedTokenFailure(
+                Token(TokenType.DOLLAR_WORD, "\$true", it.first().location),
+                Token(TokenType.DOLLAR_WORD, "\$false", it.first().location)
+        ))
     }
 
     fun makePredicate(f: String, args: Terms): Parser<Token, Formula> = when (f) {
@@ -583,17 +590,19 @@ fun pFOFDefinedPlainFormula(): Parser<Token, Formula> = run {
         else -> give(Atom(Pred(f), args)) // TODO make error
     }
 
-    (pAtomicDefinedWord()){
+    ((pAtomicDefinedWord()){
         makeProposition(it)
     } or (pAtomicDefinedWord() and parens(pFOFArguments())){ (f, args) ->
         makePredicate(f, args)
-    }
+    })(it)
 }
 
 fun pFOFDefinedInfixFormula(): Parser<Token, Formula> = run {
     fun makeFormula(t1: Term, t2: Term): Parser<Token, Formula> = give<Token, Formula>(Equals(t1, t2))
 
-    (pFOFTerm() left expect(TokenType.EQUALS) and pFOFTerm()){ (l, r) -> makeFormula(l, r) }
+    fun helper(): Parser<Token, Formula> = (pFOFTerm() left expect(TokenType.EQUALS) and pFOFTerm()){ (l, r) -> makeFormula(l, r) }
+
+    helper()
 }
 
 private fun pFileName(): Parser<Token, String> = run {
